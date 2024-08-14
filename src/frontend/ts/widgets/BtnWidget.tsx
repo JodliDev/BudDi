@@ -1,5 +1,6 @@
 import m, { Vnode } from "mithril"
 import addSvg from "../../img/icons/add.svg";
+import editSvg from "../../img/icons/edit.svg";
 import trashSvg from "../../img/icons/trash.svg";
 import reloadSvg from "../../img/icons/reload.svg";
 import toStartSvg from "../../img/icons/toStart.svg"
@@ -26,6 +27,9 @@ export class BtnWidget {
 	}
 	public static Delete(onClick: () => void): Vnode {
 		return BtnWidget.DefaultBtn(trashSvg, onClick)
+	}
+	public static Edit(onClick?: () => void): Vnode {
+		return BtnWidget.DefaultBtn(editSvg, onClick)
 	}
 	public static Reload(onClick: () => void): Vnode {
 		return BtnWidget.DefaultBtn(reloadSvg, onClick)

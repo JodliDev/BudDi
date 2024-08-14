@@ -1,8 +1,9 @@
 import {ConfirmMessage} from "./ConfirmMessage";
 import {BaseListEntry} from "../BaseListEntry";
 import {Class} from "../Class";
+import {BaseListMessage} from "../BaseListMessage";
 
-export class ListMessage extends ConfirmMessage {
+export class ListMessage extends ConfirmMessage implements BaseListMessage{
 	public readonly listName: string
 	
 	constructor(

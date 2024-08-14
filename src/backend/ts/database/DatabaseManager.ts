@@ -95,7 +95,10 @@ export class DatabaseManager {
 	}
 	
 	public update<T extends TableDefinition>(table: Class<T>, values: Partial<T>, where: string, limit?: number) {
-		const query = SqlQueryGenerator.createUpdateSql(table, values, where, limit)
+		return this.unsafeUpdate(table.name, values, where)
+	}
+	public unsafeUpdate<T extends TableDefinition>(tableName: string, values: Partial<T>, where: string, limit?: number) {
+		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where, limit)
 		
 		const sqlValues: unknown[] = []
 		for(let key in values) {

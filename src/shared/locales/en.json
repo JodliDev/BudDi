@@ -1,9 +1,11 @@
 {
 	"add": "Add",
+	"change": "Change",
 	"colon": "%s:",
 	"confirmDelete": "Are you sure you want to delete this entry?",
 	"errorAdd": "Could not add item",
 	"errorDelete": "Failed to delete",
+	"errorFaultyList": "Faulty list",
 	"errorPageDoesNotExist": "%s does not exist",
 	"errorLogin": "Login failed",
 	"errorList": "Could not load list",

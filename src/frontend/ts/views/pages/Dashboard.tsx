@@ -14,6 +14,7 @@ export class Dashboard extends BasePage {
 					listClass: ListDonationEntry,
 					site: this.site,
 					addOptions: ["donationName", "homepage", "donationUrl"],
+					editOptions: ["donationName", "homepage", "donationUrl", "enabled"],
 					canDelete: true,
 					getEntryView: entry => <span
 						class="fillSpace"

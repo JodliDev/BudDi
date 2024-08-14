@@ -156,12 +156,12 @@ export class SqlQueryGenerator {
 		const keys = Object.keys(values)
 		return `INSERT INTO ${tableName} (${keys}) VALUES (${keys.map(() => "?").join(",")});`
 	}
-	public static createUpdateSql<T extends TableDefinition>(table: Class<T>, values: Partial<T>, where?: string, limit?: number): string {
+	public static createUpdateSql<T extends TableDefinition>(tableName: string, values: Partial<T>, where?: string, limit?: number): string {
 		let valuesQuery: string[] = []
 		for(let key in values) {
 			valuesQuery.push(`${key} = ?`)
 		}
-		let query = `UPDATE ${table.name} SET ${valuesQuery.join(",")}`
+		let query = `UPDATE ${tableName} SET ${valuesQuery.join(",")}`
 		if(where)
 			query += ` WHERE ${where}`
 		if(limit)
