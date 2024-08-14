@@ -1,0 +1,14 @@
+.dropdown {
+	z-index: 1;
+	position: absolute;
+	min-width: 150px;
+	min-height: 20px;
+	margin: auto;
+	padding: 5px;
+	background-color: var(--color-surface);
+	border: 1px solid var(--color-surface-border);
+	border-radius: var(--radius);
+	text-align: left;
+	box-shadow: 3px 3px 5px #0002;
+	overflow: auto;
+}

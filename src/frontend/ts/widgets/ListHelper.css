@@ -1,0 +1,9 @@
+.listHelper {
+	min-width: 200px;
+	.entry {
+		white-space: nowrap;
+	}
+	.selected {
+		text-decoration: underline;
+	}
+}
