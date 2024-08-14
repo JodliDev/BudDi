@@ -13,7 +13,7 @@ import {NoPermissionException} from "../../exceptions/NoPermissionException";
 export class LoginMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [user] = db.quickSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
+		const [user] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
 		if(!user) {
 			session.send(new LoginResponseMessage(this.data, false))
 			return

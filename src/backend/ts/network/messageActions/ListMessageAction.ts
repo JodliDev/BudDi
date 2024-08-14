@@ -10,50 +10,49 @@ import {ConfirmMessage} from "../../../../shared/messages/ConfirmMessage";
 import {BaseListMessage} from "../../../../shared/BaseListMessage";
 import {FaultyListException} from "../../exceptions/FaultyListException";
 import {TableDefinition} from "../../database/TableDefinition";
+import {Class} from "../../../../shared/Class";
 
 export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const obj = await ListMessageAction.getPublicListObj(this.data)
+		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
+		const obj = new publicListClass
+		const listClass = await ListMessageAction.getListClass(this.data, obj)
 		
 		const tableName = obj.getTableName()
 		
-		const response = db.unsafeSelect(tableName, obj.getColumnNames(), undefined, this.data.limit, this.data.from)
+		const response = db.publicTableSelect(listClass, obj, undefined, this.data.limit, this.data.from)
 		const count = db.getCount(tableName)
 		
 		session.send(new ListResponseMessage(this.data, true, response as BaseListEntry[], obj.getPrimaryKey().toString(), count))
 	}
 	
 	
-	public static async getPublicListObj(data: BaseListMessage): Promise<BaseListEntry> {
+	public static async getPublicListClass(data: BaseListMessage): Promise<Class<BaseListEntry>> {
 		if(!Convenience.stringIsSafe(data.listName))
 			throw new FaultyListException()
 		const listClass = await import(`../../../../shared/lists/${data.listName}`);
 		if(!listClass)
 			throw new FaultyListException()
 		
-		const obj = new listClass[data.listName] as BaseListEntry
-		if(!obj)
+		const c = listClass[data.listName] as Class<BaseListEntry>
+		if(!c)
 			throw new FaultyListException()
-		
-		return obj
+		return c
 	}
 	
-	public static async getListObj(data: BaseListMessage, publicObj: BaseListEntry): Promise<TableDefinition> {
+	public static async getListClass(data: BaseListMessage, publicObj: BaseListEntry): Promise<Class<TableDefinition>> {
 		const tableName = publicObj.getTableName()
-		if(!Convenience.stringIsSafe(data.listName))
-			throw new FaultyListException()
 		const listClass = await import(`../../database/dataClasses/${tableName}`);
 		if(!listClass)
 			throw new FaultyListException()
 		
-		const obj = new listClass[tableName] as TableDefinition
-		if(!obj)
+		const c = listClass[tableName] as Class<TableDefinition>
+		if(!c)
 			throw new FaultyListException()
-		
-		return obj
+		return c
 	}
 	
-	public static async checkValues(values: Partial<BaseListEntry>, publicObj: BaseListEntry) {
+	public static checkValues(values: Partial<BaseListEntry>, publicObj: BaseListEntry) {
 		const primaryKey = publicObj.getPrimaryKey()
 		for(const key in values) {
 			if(!Object.prototype.hasOwnProperty.call(publicObj, key) || key == primaryKey)

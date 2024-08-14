@@ -15,7 +15,7 @@ import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/Reason
 export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [existingUser] = db.quickSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
+		const [existingUser] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
 		if(existingUser) {
 			session.send(new ReasonedConfirmResponseMessage(this.data, false, Lang.get("errorUserAlreadyExists")))
 			return
@@ -27,7 +27,7 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 		const newUser = {
 			username: this.data.username,
 			hashedPassword: hash,
-			isAdmin: db.quickSelect(User, undefined, 1).length == 0
+			isAdmin: db.tableSelect(User, undefined, 1).length == 0
 		} as User
 		
 		const userId = db.insert(User, newUser)

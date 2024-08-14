@@ -9,7 +9,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = `${column(LoginSession, "userId")} = '${this.data.userId}' AND ${column(LoginSession, "sessionHash")} = '${this.data.sessionHash}'`
-		const [loginSession] = db.quickSelect(
+		const [loginSession] = db.tableSelect(
 			LoginSession,
 			sqlConstraint, 
 			1

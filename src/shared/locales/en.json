@@ -22,6 +22,7 @@
 	"Register": "Register",
 	"donationEntries": "Donation entries",
 	"DonationEntry~donationName": "Name",
+	"DonationEntry~enabled": "Enabled",
 	"DonationEntry~homepage": "Homepage",
 	"DonationEntry~donationUrl": "Url for donation"
 }

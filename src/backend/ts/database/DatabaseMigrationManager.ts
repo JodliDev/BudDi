@@ -186,7 +186,7 @@ export class DatabaseMigrationManager {
 				let query: string
 				let queryValues: unknown[] = []
 				if(entry.newIdColumn) {
-					query = SqlQueryGenerator.createUpdateSql(entry.table, values, `${entry.newIdColumn} = ?`)
+					query = SqlQueryGenerator.createUpdateSql(entry.table.name, values, `${entry.newIdColumn} = ?`)
 					queryValues = [...Object.values(sqlValues), data[entry.backupIdColumn]]
 				}
 				else {

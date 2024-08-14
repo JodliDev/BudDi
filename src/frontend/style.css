@@ -40,6 +40,9 @@ label, .labelLike {
 		border-radius: 5px;
 		box-shadow: var(--color-surface) 0 0 5px 1px;
 	}
+	input[type="checkbox"], input[type="radio"] {
+		margin: 15px 0 0 5px;
+	}
 }
 
 form {

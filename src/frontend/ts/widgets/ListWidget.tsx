@@ -18,6 +18,7 @@ import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryRespon
 const PAGE_SIZE = 25;
 
 interface ListEditComponentOptions<EntryT> {
+	editMode?: boolean
 	listClass: Class<EntryT>
 	columns: (keyof EntryT)[]
 	onFinish: (data: Partial<any>) => Promise<void>,
@@ -28,17 +29,20 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 	private isLoading: boolean = false
 	private data: Partial<EntryT> = {}
 	
-	getTypedInputView(data: Partial<EntryT>, obj: EntryT, column: keyof EntryT) {
+	getTypedInputView(data: Partial<EntryT>, type: string, obj: EntryT, column: keyof EntryT) {
 		const eventHandler = (formatValue: (value: string) => any, e: InputEvent) => {
 			data[column] = formatValue((e.target as HTMLInputElement)?.value)
 		}
 		
 		const entry = data[column] ?? obj[column]
-		switch(typeof entry) {
+		switch(type) {
 			case "number":
 				return <input type="number" value={entry} onchange={eventHandler.bind(this, value => parseInt(value))}/>
 			case "string":
 				return <input value={entry} onchange={eventHandler.bind(this, value => value.toString())}/>
+			case "boolean":
+				// @ts-ignore
+				return <input type="checkbox" checked={!!entry} onclick={() => data[column] = !entry}/>
 		}
 	}
 	
@@ -55,11 +59,11 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 			{
 				vNode.attrs.columns.map((column) => <label>
 					<small>{Lang.getGrouped(obj.getTableName(), column.toString())}</small>
-					{ this.getTypedInputView(this.data, vNode.attrs.defaults ?? obj, column) }
+					{ this.getTypedInputView(this.data, typeof obj[column], vNode.attrs.defaults ?? obj, column) }
 				</label>)
 			}
 			{ LoadingSpinner(this.isLoading) }
-			<input disabled={this.isLoading} type="submit" value={Lang.get(vNode.attrs.defaults ? "change" : "add")}/>
+			<input disabled={this.isLoading} type="submit" value={Lang.get(vNode.attrs.editMode ? "change" : "add")}/>
 		</form>;
 	}
 	
@@ -181,7 +185,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 						() => m(ListEditComponent<EntryT>, {
 							listClass: vNode.attrs.listClass,
 							columns: vNode.attrs.addOptions!,
-							onFinish: this.addItem.bind(this)
+							onFinish: this.addItem.bind(this),
 						})
 					)
 				}
@@ -197,6 +201,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 									`Edit~${vNode.attrs.listClass.name}`,
 									BtnWidget.Edit(),
 									() => m(ListEditComponent<EntryT>, {
+										editMode: true,
 										listClass: vNode.attrs.listClass,
 										columns: vNode.attrs.editOptions!,
 										onFinish: this.editItem.bind(this, this.getId(entry)),

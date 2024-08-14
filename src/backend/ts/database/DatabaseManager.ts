@@ -6,6 +6,8 @@ import {TableDefinition} from "./TableDefinition";
 import {Class} from "../../../shared/Class";
 import {Options} from "../Options";
 import {DatabaseMigrationManager} from "./DatabaseMigrationManager";
+import {BaseListEntry} from "../../../shared/BaseListEntry";
+import {column} from "./column";
 
 
 const DB_NAME = "db.sqlite"
@@ -38,10 +40,48 @@ export class DatabaseManager {
 		
 	}
 	
-	public quickSelect<T extends TableDefinition>(table: Class<T>, where?: string, limit?: number, from?: number): T[] {
-		return this.select(table, undefined, where, limit, from) as T[]
+	private correctValues<T extends TableDefinition>(
+		table: Class<T>,
+		values: Partial<T>[],
+		newBoolean: (value: unknown) => any
+	): Partial<T>[] {
+		if(!values.length)
+			return values
+		
+		const obj = new table
+		const keys = values[0]
+		for(const key in keys) {
+			switch(typeof obj[key]) {
+				case "boolean":
+					values.forEach(entry => entry[key] = newBoolean(entry[key]))
+			}
+		}
+		return values
 	}
-	public select<T extends TableDefinition, JoinedT extends TableDefinition>(
+	public typesToJs<T extends TableDefinition>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
+		return this.correctValues(table, values, value => !!value)
+	}
+	public typesToSql<T extends TableDefinition>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
+		return this.correctValues(table, values, value => SqlQueryGenerator.booleanToSqlValue(value))
+	}
+	
+	public publicTableSelect<TableT extends TableDefinition, ListT extends BaseListEntry>(
+		table: Class<TableT>,
+		publicListObj: ListT,
+		where?: string,
+		limit?: number,
+		from?: number
+	): Partial<TableT>[] {
+		return this.typesToJs(table, this.unsafeSelect(table.name, publicListObj.getColumnNames(), where, limit, from) as Partial<TableT>[]) as Partial<TableT>[]
+	}
+	public tableSelect<T extends TableDefinition>(table: Class<T>, where?: string, limit?: number, from?: number): T[] {
+		return this.typesToJs(table, this.unsafeSelect(table.name, undefined, where, limit, from) as Partial<T>[]) as T[]
+	}
+	
+	
+	
+	
+	public joinedSelect<T extends TableDefinition, JoinedT extends TableDefinition[]>(
 		table: Class<T>,
 		select?: string[],
 		where?: string,
@@ -61,15 +101,16 @@ export class DatabaseManager {
 		)
 	}
 	
-	public unsafeSelect(
+	private unsafeSelect(
 		tableName: string,
 		select?: string[],
 		where?: string,
 		limit?: number,
 		from?: number,
-		join?: { innerColumn: string, joinedTableName: string, joinedColumn: string }
+		join?: { joinedTableName: string, on: string }[]
 	) {
 		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, join)
+		console.log(query)
 		const statement = this.db.prepare(query)
 		return statement.all()
 	}
@@ -82,11 +123,11 @@ export class DatabaseManager {
 	}
 	
 	public insert<T extends TableDefinition>(table: Class<T>, values: Partial<T>): number | bigint {
-		return this.unsafeInsert(table.name, values)
+		return this.unsafeInsert(table.name, this.typesToSql(table, [values])[0])
 	}
-	public unsafeInsert<T extends TableDefinition>(tableName: string, values: Partial<T>): number | bigint {
+	private unsafeInsert<T extends TableDefinition>(tableName: string, values: Partial<T>): number | bigint {
 		const query = SqlQueryGenerator.createInsertSql(tableName, values)
-		const sqlValues = Object.values(values).map(value => SqlQueryGenerator.toSqlValue(value))
+		const sqlValues = Object.values(values)
 		
 		const statement = this.db.prepare(query)
 		const result = statement.run(Object.values(sqlValues))
@@ -95,9 +136,9 @@ export class DatabaseManager {
 	}
 	
 	public update<T extends TableDefinition>(table: Class<T>, values: Partial<T>, where: string, limit?: number) {
-		return this.unsafeUpdate(table.name, values, where)
+		return this.unsafeUpdate(table.name, this.typesToSql(table, [values])[0], where, limit)
 	}
-	public unsafeUpdate<T extends TableDefinition>(tableName: string, values: Partial<T>, where: string, limit?: number) {
+	private unsafeUpdate<T extends TableDefinition>(tableName: string, values: Partial<T>, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where, limit)
 		
 		const sqlValues: unknown[] = []
@@ -112,12 +153,10 @@ export class DatabaseManager {
 	public delete<T extends TableDefinition>(table: Class<T>, where: string, limit?: number) {
 		return this.unsafeDelete(table.name, where, limit)
 	}
-	public unsafeDelete<T extends TableDefinition>(tableName: string, where: string, limit?: number) {
+	private unsafeDelete<T extends TableDefinition>(tableName: string, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createDeleteSql(tableName, where, limit)
 		
 		const statement = this.db.prepare(query)
 		return statement.run().changes
 	}
-	
-	
 }

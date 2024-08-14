@@ -116,7 +116,7 @@ export class SqlQueryGenerator {
 	public static toSqlValue(value: unknown): string | number | null {
 		switch(typeof value) {
 			case "boolean":
-				return value ? 1 : 0
+				return this.booleanToSqlValue(value)
             case "number":
 			case "string":
 				return value
@@ -124,6 +124,10 @@ export class SqlQueryGenerator {
 				return null
 		}
 	}
+	public static booleanToSqlValue(value: unknown): number {
+		return value ? 1 : 0
+	}
+	
 	public static createNewColumnSql(table: string, columnInfo: ColumnInfo): string {
 		return `ALTER TABLE ${table} ADD ${SqlQueryGenerator.getColumnDefinitionSql(columnInfo)};\n`
 	}
