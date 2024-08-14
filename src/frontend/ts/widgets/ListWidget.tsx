@@ -10,7 +10,7 @@ import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
 import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {AddMessage} from "../../../shared/messages/AddMessage";
-import {DropdownMenu} from "./DropdownMenu";
+import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {EditMessage} from "../../../shared/messages/EditMessage";
 import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
@@ -131,12 +131,14 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 	}
 	
 	private async addItem(data: Partial<EntryT>) {
-		const response = await this.options!.site.socket.sendAndReceive(
-			new AddMessage(this.options!.listClass, data)
+		const options = this.options!
+		const response = await options.site.socket.sendAndReceive(
+			new AddMessage(options.listClass, data)
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
 			this.items.push(response.entry)
+			closeDropdown(`Add~${options.listClass.name}`)
 			m.redraw()
 		}
 		else
@@ -144,13 +146,15 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 	}
 	
 	private async editItem(id: number | bigint, data: Partial<EntryT>) {
-		const response = await this.options!.site.socket.sendAndReceive(
-			new EditMessage(this.options!.listClass, id, data)
+		const options = this.options!
+		const response = await options.site.socket.sendAndReceive(
+			new EditMessage(options.listClass, id, data)
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
 			const index = this.items.findIndex(entry => this.getId(entry) == id)
 			this.items[index] = response.entry
+			closeDropdown(`Edit~${options.listClass.name}`)
 			m.redraw()
 		}
 		else

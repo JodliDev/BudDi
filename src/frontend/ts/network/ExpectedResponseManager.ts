@@ -19,7 +19,6 @@ export class ExpectedResponseManager {
 	public check(message: BaseMessage): boolean {
 		const className = message.name
 		
-		console.log(message, message instanceof ConfirmResponseMessage)
 		if(this.isResponse(message)) {
 			const id = message.confirmId
 			if(this.confirmList.hasOwnProperty(id)) {
