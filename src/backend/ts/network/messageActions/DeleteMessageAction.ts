@@ -10,7 +10,7 @@ import {ListMessageAction} from "./ListMessageAction";
 
 export class DeleteMessageAction extends AuthorisedMessageAction<DeleteMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
+		const publicListClass = await ListMessageAction.getPublicListClassFromMessage(this.data)
 		const publicObj = new publicListClass
 		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
 		const listObj = new listClass

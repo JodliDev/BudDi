@@ -1,9 +1,9 @@
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {TableDefinition} from "./TableDefinition";
-import {DatabaseManager} from "./DatabaseManager";
+import {DatabaseManager, JoinedData} from "./DatabaseManager";
 
 export class TableSettings<TableT> {
-	public readonly foreignKeys: Record<keyof TableT, ForeignKeyInfo<any>> = {} as Record<keyof TableT, ForeignKeyInfo<any>>
+	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public hasForeignKeys: boolean = false
 	public onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	public onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
@@ -17,7 +17,7 @@ export class TableSettings<TableT> {
 	}
 	
 	
-	setForeignKey<ColumnT extends TableDefinition>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to">) {
+	setForeignKey<ColumnT extends TableDefinition>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }
 		this.hasForeignKeys = true
 	}

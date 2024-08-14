@@ -48,7 +48,7 @@ export class WebSocketHelper {
 				}
 				catch(e: unknown) {
 					if(e instanceof Error)
-						console.error(e.stack)
+						console.trace(e.stack)
 					else
 						console.trace(e)
 					session.send(new ErrorMessage((e as Error)?.message ?? Lang.get("errorUnknown")))

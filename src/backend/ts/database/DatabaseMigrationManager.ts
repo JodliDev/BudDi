@@ -70,17 +70,19 @@ export class DatabaseMigrationManager {
 	private recreateTable(structure: TableStructure<any>) {
 		const tableName = structure.table.name
 		
-		
-		this.droppedTables[tableName] = true
-		this.columnsToTransfer.push({
-			table: structure.table,
-			backupIdColumn: structure.primaryKey.toString(),
-			columns: structure.columns.map(column => column.name)
-		})
 		const query = SqlQueryGenerator.getDropTableSql(tableName)
-		this.db.exec(query)
+		const statement = this.db.prepare(query)
+		const result = statement.run()
 		
-		console.log(`Dropped table ${tableName}`)
+		if(result.changes != 0) {
+			console.log(`Dropped table ${tableName}`)
+			this.droppedTables[tableName] = true
+			this.columnsToTransfer.push({
+				table: structure.table,
+				backupIdColumn: structure.primaryKey.toString(),
+				columns: structure.columns.map(column => column.name)
+			})
+		}
 	}
 	
 	private migrateForeignKeys(tableStructure: SqlQueryGenerator) {

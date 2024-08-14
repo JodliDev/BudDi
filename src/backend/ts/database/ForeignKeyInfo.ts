@@ -6,7 +6,8 @@ export type ForeignKeyActions = "SET NULL" | "SET DEFAULT" | "RESTRICT" | "NO AC
 export interface ForeignKeyInfo<T extends TableDefinition> {
 	table: Class<T>,
 	from: string,
-	to: keyof T
+	to: keyof T,
+	isPublic?: boolean
 	on_update?: ForeignKeyActions
 	on_delete?: ForeignKeyActions
 }

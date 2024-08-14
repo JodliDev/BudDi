@@ -1,8 +1,9 @@
 import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import {ListWidget} from "../../widgets/ListWidget";
-import {ListDonationEntry} from "../../../../shared/lists/ListDonationEntry";
 import {Lang} from "../../../../shared/Lang";
+import {ListWaitingEntry} from "../../../../shared/lists/ListWaitingEntry";
+import {ListDonationEntry} from "../../../../shared/lists/ListDonationEntry";
 
 export class Dashboard extends BasePage {
 	
@@ -19,7 +20,20 @@ export class Dashboard extends BasePage {
 					getEntryView: entry => <span
 						class="fillSpace"
 					>
-						{ entry.donationName }
+						{ entry.entry.donationName }
+					</span>
+				})
+			}
+			{
+				ListWidget({
+					title: Lang.get("donationEntries"),
+					listClass: ListWaitingEntry,
+					site: this.site,
+					canDelete: true,
+					getEntryView: entry => <span
+						class="fillSpace"
+					>
+						{ entry.entry.addedAt }
 					</span>
 				})
 			}

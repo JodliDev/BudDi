@@ -13,7 +13,7 @@ import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryRes
 
 export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
+		const publicListClass = await ListMessageAction.getPublicListClassFromMessage(this.data)
 		const publicObj = new publicListClass
 		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
 		const obj = new listClass
@@ -26,9 +26,17 @@ export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 		const response = db.insert(listClass, this.data.values)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
 		
-		const entry = db.publicTableSelect(listClass, publicObj, settings?.getWhere(session.userId!, where) ?? where, 1)
-		session.send(new ListEntryResponseMessage<BaseListEntry>(this.data, response != 0 && entry.length != 0, entry[0] as BaseListEntry))
 		
+		
+		
+		const joinedResponse = await db.joinedSelectForPublicTable(
+			listClass,
+			publicObj.getColumnNames(),
+			settings,
+			settings?.getWhere(session.userId!, where) ?? where,
+			1
+		)
+		session.send(new ListEntryResponseMessage<BaseListEntry>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))
 	}
 	
 }

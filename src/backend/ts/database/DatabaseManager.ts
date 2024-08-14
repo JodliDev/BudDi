@@ -8,11 +8,14 @@ import {Options} from "../Options";
 import {DatabaseMigrationManager} from "./DatabaseMigrationManager";
 import {BaseListEntry} from "../../../shared/BaseListEntry";
 import {column} from "./column";
+import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
+import {ListMessageAction} from "../network/messageActions/ListMessageAction";
+import {TableSettings} from "./TableSettings";
 
 
 const DB_NAME = "db.sqlite"
 
-interface JoinedData<JoinedT extends TableDefinition> {
+export interface JoinedData<JoinedT extends TableDefinition> {
 	joinedTable: Class<JoinedT>,
 	on: string,
 	select: (keyof JoinedT)[]
@@ -20,9 +23,9 @@ interface JoinedData<JoinedT extends TableDefinition> {
 type MapToJoinedDataArray<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
 type MapToPartial<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: Partial<JoinedT[K]> };
 
-interface JoinedResponseEntry<T extends TableDefinition, JoinedT extends TableDefinition[]> {
+export interface JoinedResponseEntry<T extends TableDefinition> extends ListResponseEntry<Partial<T>>{
 	entry: Partial<T>,
-	joined: MapToPartial<JoinedT>
+	joined: Record<string, unknown>
 }
 
 
@@ -93,7 +96,18 @@ export class DatabaseManager {
 	}
 	
 	
-	
+	public async joinedSelectForPublicTable<T extends TableDefinition>(
+		table: Class<T>,
+		select: (keyof BaseListEntry)[],
+		settings?: TableSettings<T>,
+		where?: string,
+		limit?: number,
+		from?: number
+	): Promise<ListResponseEntry<T>[]> {
+		
+		const joinArray = settings ? await ListMessageAction.getJoinArray(table, settings) : []
+		return this.joinedSelect(table, select as (keyof T)[], joinArray, where, limit, from) as ListResponseEntry<T>[]
+	}
 	
 	public joinedSelect<T extends TableDefinition, JoinedT extends TableDefinition[]>(
 		table: Class<T>,
@@ -102,7 +116,7 @@ export class DatabaseManager {
 		where?: string,
 		limit?: number,
 		from?: number
-	): JoinedResponseEntry<T, JoinedT>[] {
+	): JoinedResponseEntry<T>[] {
 		let selectWithTable = select.map(entry => column(table, entry))
 		const joinSqlArray = []
 		for(const join of joinArray) {
@@ -120,22 +134,23 @@ export class DatabaseManager {
 		) as Record<string, unknown>[]
 		
 		//sort data into response object:
-		const response: JoinedResponseEntry<T, JoinedT>[] = []
+		const response: JoinedResponseEntry<T>[] = []
 		for(const line of lines) {
 			const entry: Partial<T> = {}
-			const joinedArray = [] as MapToPartial<JoinedT>
+			const joinedResult: Record<string, unknown> = {}
 			
 			for(const selectEntry of select) {
 				entry[selectEntry] = line[selectEntry.toString()] as any
 			}
+			
 			for(const join of joinArray) {
-				const joined: Partial<T> = {}
+				const joined: Partial<TableDefinition> = {}
 				for(const selectEntry of join.select) {
 					joined[selectEntry] = line[selectEntry.toString()] as any
 				}
-				joinedArray.push(joined)
+				joinedResult[join.joinedTable.name] = joined
 			}
-            response.push({entry: entry, joined: joinedArray})
+            response.push({entry: entry, joined: joinedResult})
 		}
 		return response
 	}

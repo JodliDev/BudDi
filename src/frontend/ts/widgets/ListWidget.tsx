@@ -7,7 +7,7 @@ import {BaseListEntry} from "../../../shared/BaseListEntry";
 import {Class} from "../../../shared/Class";
 import {Site} from "../views/Site";
 import {ListMessage} from "../../../shared/messages/ListMessage";
-import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
+import {ListResponseEntry, ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
 import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {AddMessage} from "../../../shared/messages/AddMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
@@ -74,7 +74,7 @@ interface ListOptions<EntryT extends BaseListEntry> {
 	site: Site
 	listClass: Class<EntryT>
 	title: string,
-	getEntryView: (entry: EntryT) => Vnode,
+	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
 	canDelete?: boolean
 	addOptions?: (keyof EntryT)[]
 	editOptions?: (keyof EntryT)[],
@@ -82,7 +82,7 @@ interface ListOptions<EntryT extends BaseListEntry> {
 }
 
 class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptions<EntryT>, unknown> {
-	private items: EntryT[] = []
+	private items: ListResponseEntry<EntryT>[] = []
 	private pagesHelper: PagesHelper = new PagesHelper(PAGE_SIZE, this.loadPage.bind(this))
 	private idColumn?: keyof EntryT
 	private isLoading: boolean = false
@@ -127,7 +127,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 		)
 		
 		if(response.success) {
-			this.items = this.items.filter((r) => this.getId(r) != id)
+			this.items = this.items.filter((r) => this.getId(r.entry) != id)
 			m.redraw()
 		}
 		else
@@ -156,7 +156,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
-			const index = this.items.findIndex(entry => this.getId(entry) == id)
+			const index = this.items.findIndex(entry => this.getId(entry.entry) == id)
 			this.items[index] = response.entry
 			closeDropdown(`Edit~${options.listClass.name}`)
 			m.redraw()
@@ -204,13 +204,13 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 										editMode: true,
 										listClass: vNode.attrs.listClass,
 										columns: vNode.attrs.editOptions!,
-										onFinish: this.editItem.bind(this, this.getId(entry)),
-										defaults: entry
+										onFinish: this.editItem.bind(this, this.getId(entry.entry)),
+										defaults: entry.entry
 									})
 								)
 							
 							}
-							{ vNode.attrs.canDelete && BtnWidget.Delete(() => this.deleteItem(entry)) }
+							{ vNode.attrs.canDelete && BtnWidget.Delete(() => this.deleteItem(entry.entry)) }
 						</div>
 					})
 				}

@@ -1,18 +1,18 @@
 import {DonationEntry} from "./dataClasses/DonationEntry";
 import {TableDefinition} from "./TableDefinition";
-import {WaitingListEntry} from "./dataClasses/WaitingListEntry";
+import {WaitingEntry} from "./dataClasses/WaitingEntry";
 import {User} from "./dataClasses/User";
 import {Class} from "../../../shared/Class";
 import {LoginSession} from "./dataClasses/LoginSession";
 
 export class DatabaseInstructions {
-	public version: number = 3
+	public version: number = 4
 	
 	public tables: Class<TableDefinition>[] = [
 		DonationEntry,
 		LoginSession,
 		User,
-		WaitingListEntry
+		WaitingEntry
 	]
 	
 	public preMigration(fromVersion: number, toVersion: number): Record<number, unknown> {
