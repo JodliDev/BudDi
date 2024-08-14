@@ -1,14 +1,14 @@
 import {Class} from "../Class";
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 import {ConfirmMessage} from "./ConfirmMessage";
 
 export class DeleteMessage extends ConfirmMessage {
 	public readonly listName: string
 	constructor(
-		entryClass: Class<BaseListEntry>,
+		tableClass: Class<BasePublicTable>,
 		public readonly id: number,
 	) {
 		super()
-		this.listName = entryClass.name
+		this.listName = BasePublicTable.getName(tableClass)
 	}
 }

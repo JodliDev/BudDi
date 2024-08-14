@@ -1,10 +1,9 @@
-import {TableDefinition} from "../TableDefinition";
 import {DonationEntry} from "./DonationEntry";
-import {ForeignKeyInfo} from "../ForeignKeyInfo";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
+import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
-export class NeedsDonationListEntry implements TableDefinition {
+export class NeedsDonationListEntry extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "needsDonationListEntryId"
 	}

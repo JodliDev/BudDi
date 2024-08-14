@@ -1,11 +1,9 @@
-import {TableDefinition} from "../TableDefinition";
-import {DonationEntry} from "./DonationEntry";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {randomBytes} from "node:crypto";
-import {ForeignKeyInfo} from "../ForeignKeyInfo";
+import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
-export class LoginSession implements TableDefinition {
+export class LoginSession extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "loginSessionId"
 	}

@@ -1,6 +1,6 @@
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
-import {TableDefinition} from "./TableDefinition";
-import {DatabaseManager, JoinedData} from "./DatabaseManager";
+import {DatabaseManager} from "./DatabaseManager";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
 
 export class TableSettings<TableT> {
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
@@ -17,7 +17,7 @@ export class TableSettings<TableT> {
 	}
 	
 	
-	setForeignKey<ColumnT extends TableDefinition>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic">) {
+	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }
 		this.hasForeignKeys = true
 	}

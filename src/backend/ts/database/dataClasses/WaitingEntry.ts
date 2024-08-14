@@ -1,10 +1,9 @@
-import {TableDefinition} from "../TableDefinition";
 import {DonationEntry} from "./DonationEntry";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
-import {ListWaitingEntry} from "../../../../shared/lists/ListWaitingEntry";
+import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
 
-export class WaitingEntry extends ListWaitingEntry implements TableDefinition {
+export class WaitingEntry extends PubWaitingEntry {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		

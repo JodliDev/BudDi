@@ -1,12 +1,10 @@
 import {SqlQueryGenerator} from "./SqlQueryGenerator";
 import BetterSqlite3 from "better-sqlite3";
 import {DatabaseInstructions} from "./DatabaseInstructions";
-import {ColumnInfo} from "./ColumnInfo";
-import {TableDefinition} from "./TableDefinition";
 import {Class} from "../../../shared/Class";
 import {Options} from "../Options";
 import {DatabaseMigrationManager} from "./DatabaseMigrationManager";
-import {BaseListEntry} from "../../../shared/BaseListEntry";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {column} from "./column";
 import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {ListMessageAction} from "../network/messageActions/ListMessageAction";
@@ -15,15 +13,14 @@ import {TableSettings} from "./TableSettings";
 
 const DB_NAME = "db.sqlite"
 
-export interface JoinedData<JoinedT extends TableDefinition> {
+export interface JoinedData<JoinedT extends BasePublicTable> {
 	joinedTable: Class<JoinedT>,
 	on: string,
 	select: (keyof JoinedT)[]
 }
-type MapToJoinedDataArray<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
-type MapToPartial<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: Partial<JoinedT[K]> };
+type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
 
-export interface JoinedResponseEntry<T extends TableDefinition> extends ListResponseEntry<Partial<T>>{
+export interface JoinedResponseEntry<T extends BasePublicTable> extends ListResponseEntry<Partial<T>>{
 	entry: Partial<T>,
 	joined: Record<string, unknown>
 }
@@ -57,7 +54,7 @@ export class DatabaseManager {
 		
 	}
 	
-	private correctValues<T extends TableDefinition>(
+	private correctValues<T extends BasePublicTable>(
 		table: Class<T>,
 		values: Partial<T>[],
 		newBoolean: (value: unknown) => any
@@ -75,41 +72,31 @@ export class DatabaseManager {
 		}
 		return values
 	}
-	public typesToJs<T extends TableDefinition>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
+	public typesToJs<T extends BasePublicTable>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
 		return this.correctValues(table, values, value => !!value)
 	}
-	public typesToSql<T extends TableDefinition>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
+	public typesToSql<T extends BasePublicTable>(table: Class<T>, values: Partial<T>[]): Partial<T>[] {
 		return this.correctValues(table, values, value => SqlQueryGenerator.booleanToSqlValue(value))
 	}
 	
-	public publicTableSelect<TableT extends TableDefinition, ListT extends BaseListEntry>(
-		table: Class<TableT>,
-		publicListObj: ListT,
-		where?: string,
-		limit?: number,
-		from?: number
-	): Partial<TableT>[] {
-		return this.typesToJs(table, this.unsafeSelect(table.name, publicListObj.getColumnNames(), where, limit, from) as Partial<TableT>[]) as Partial<TableT>[]
-	}
-	public tableSelect<T extends TableDefinition>(table: Class<T>, where?: string, limit?: number, from?: number): T[] {
-		return this.typesToJs(table, this.unsafeSelect(table.name, undefined, where, limit, from) as Partial<T>[]) as T[]
+	public tableSelect<T extends BasePublicTable>(table: Class<T>, where?: string, limit?: number, from?: number): T[] {
+		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from) as Partial<T>[]) as T[]
 	}
 	
 	
-	public async joinedSelectForPublicTable<T extends TableDefinition>(
+	public async joinedSelectForPublicTable<T extends BasePublicTable>(
 		table: Class<T>,
-		select: (keyof BaseListEntry)[],
+		select: (keyof BasePublicTable)[],
 		settings?: TableSettings<T>,
 		where?: string,
 		limit?: number,
 		from?: number
 	): Promise<ListResponseEntry<T>[]> {
-		
 		const joinArray = settings ? await ListMessageAction.getJoinArray(table, settings) : []
-		return this.joinedSelect(table, select as (keyof T)[], joinArray, where, limit, from) as ListResponseEntry<T>[]
+		return this.joinedSelect(table, select, joinArray, where, limit, from) as ListResponseEntry<T>[]
 	}
 	
-	public joinedSelect<T extends TableDefinition, JoinedT extends TableDefinition[]>(
+	public joinedSelect<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
 		table: Class<T>,
 		select: (keyof T)[],
 		joinArray: MapToJoinedDataArray<JoinedT>,
@@ -121,11 +108,11 @@ export class DatabaseManager {
 		const joinSqlArray = []
 		for(const join of joinArray) {
 			selectWithTable = selectWithTable.concat(join.select.map(entry => column(join.joinedTable, entry)))
-			joinSqlArray.push({ joinedTableName: join.joinedTable.name, on: join.on })
+			joinSqlArray.push({ joinedTableName: BasePublicTable.getName(join.joinedTable), on: join.on })
 		}
 		
 		const lines = this.unsafeSelect(
-			table.name,
+			BasePublicTable.getName(table),
 			selectWithTable,
 			where,
 			limit,
@@ -144,11 +131,11 @@ export class DatabaseManager {
 			}
 			
 			for(const join of joinArray) {
-				const joined: Partial<TableDefinition> = {}
+				const joined: Partial<BasePublicTable> = {}
 				for(const selectEntry of join.select) {
 					joined[selectEntry] = line[selectEntry.toString()] as any
 				}
-				joinedResult[join.joinedTable.name] = joined
+				joinedResult[BasePublicTable.getName(join.joinedTable)] = joined
 			}
             response.push({entry: entry, joined: joinedResult})
 		}
@@ -176,10 +163,10 @@ export class DatabaseManager {
 		return result["COUNT(*)"]
 	}
 	
-	public insert<T extends TableDefinition>(table: Class<T>, values: Partial<T>): number | bigint {
-		return this.unsafeInsert(table.name, this.typesToSql(table, [values])[0])
+	public insert<T extends BasePublicTable>(table: Class<T>, values: Partial<T>): number | bigint {
+		return this.unsafeInsert(BasePublicTable.getName(table), this.typesToSql(table, [values])[0])
 	}
-	private unsafeInsert<T extends TableDefinition>(tableName: string, values: Partial<T>): number | bigint {
+	private unsafeInsert<T extends BasePublicTable>(tableName: string, values: Partial<T>): number | bigint {
 		const query = SqlQueryGenerator.createInsertSql(tableName, values)
 		const sqlValues = Object.values(values)
 		
@@ -189,10 +176,10 @@ export class DatabaseManager {
 		return result.changes > 0 ? result.lastInsertRowid : 0
 	}
 	
-	public update<T extends TableDefinition>(table: Class<T>, values: Partial<T>, where: string, limit?: number) {
-		return this.unsafeUpdate(table.name, this.typesToSql(table, [values])[0], where, limit)
+	public update<T extends BasePublicTable>(table: Class<T>, values: Partial<T>, where: string, limit?: number) {
+		return this.unsafeUpdate(BasePublicTable.getName(table), this.typesToSql(table, [values])[0], where, limit)
 	}
-	private unsafeUpdate<T extends TableDefinition>(tableName: string, values: Partial<T>, where: string, limit?: number) {
+	private unsafeUpdate<T extends BasePublicTable>(tableName: string, values: Partial<T>, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where, limit)
 		
 		const sqlValues: unknown[] = []
@@ -204,10 +191,10 @@ export class DatabaseManager {
 		return statement.run(Object.values(sqlValues)).changes
 	}
 	
-	public delete<T extends TableDefinition>(table: Class<T>, where: string, limit?: number) {
-		return this.unsafeDelete(table.name, where, limit)
+	public delete<T extends BasePublicTable>(table: Class<T>, where: string, limit?: number) {
+		return this.unsafeDelete(BasePublicTable.getName(table), where, limit)
 	}
-	private unsafeDelete<T extends TableDefinition>(tableName: string, where: string, limit?: number) {
+	private unsafeDelete(tableName: string, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createDeleteSql(tableName, where, limit)
 		
 		const statement = this.db.prepare(query)

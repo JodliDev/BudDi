@@ -3,7 +3,7 @@ import { BtnWidget } from "./BtnWidget";
 import { Lang } from "../../../shared/Lang";
 import { LoadingSpinner } from "./LoadingSpinner";
 import "./ListHelper.css"
-import {BaseListEntry} from "../../../shared/BaseListEntry";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {Class} from "../../../shared/Class";
 import {Site} from "../views/Site";
 import {ListMessage} from "../../../shared/messages/ListMessage";
@@ -19,13 +19,13 @@ const PAGE_SIZE = 25;
 
 interface ListEditComponentOptions<EntryT> {
 	editMode?: boolean
-	listClass: Class<EntryT>
+	tableClass: Class<EntryT>
 	columns: (keyof EntryT)[]
 	onFinish: (data: Partial<any>) => Promise<void>,
 	defaults?: EntryT
 }
 
-class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListEditComponentOptions<EntryT>, unknown> {
+class ListEditComponent<EntryT extends BasePublicTable> implements Component<ListEditComponentOptions<EntryT>, unknown> {
 	private isLoading: boolean = false
 	private data: Partial<EntryT> = {}
 	
@@ -47,7 +47,7 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 	}
 	
 	view(vNode: Vnode<ListEditComponentOptions<EntryT>, unknown>): Vnode {
-		const obj = new vNode.attrs.listClass()
+		const obj = new vNode.attrs.tableClass()
 
 		return <form onsubmit={ async () => {
 			this.isLoading = true
@@ -58,7 +58,7 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 		}} class="vertical">
 			{
 				vNode.attrs.columns.map((column) => <label>
-					<small>{Lang.getGrouped(obj.getTableName(), column.toString())}</small>
+					<small>{Lang.getGrouped(BasePublicTable.getName(vNode.attrs.tableClass), column.toString())}</small>
 					{ this.getTypedInputView(this.data, typeof obj[column], vNode.attrs.defaults ?? obj, column) }
 				</label>)
 			}
@@ -70,9 +70,9 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 }
 
 
-interface ListOptions<EntryT extends BaseListEntry> {
+interface ListOptions<EntryT extends BasePublicTable> {
 	site: Site
-	listClass: Class<EntryT>
+	tableClass: Class<EntryT>
 	title: string,
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
 	canDelete?: boolean
@@ -81,7 +81,7 @@ interface ListOptions<EntryT extends BaseListEntry> {
 	pageSize?: number
 }
 
-class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptions<EntryT>, unknown> {
+class ListComponent<EntryT extends BasePublicTable> implements Component<ListOptions<EntryT>, unknown> {
 	private items: ListResponseEntry<EntryT>[] = []
 	private pagesHelper: PagesHelper = new PagesHelper(PAGE_SIZE, this.loadPage.bind(this))
 	private idColumn?: keyof EntryT
@@ -95,7 +95,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 		
 		const pageSize = PAGE_SIZE
 		const response = await this.options!.site.socket.sendAndReceive(
-			new ListMessage(this.options!.listClass, pageNumber * pageSize, pageSize)
+			new ListMessage(this.options!.tableClass, pageNumber * pageSize, pageSize)
 		)
 		const listMessage = response as ListResponseMessage<EntryT>
 		if(!listMessage.success) {
@@ -123,7 +123,7 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 			return
 		const id = this.getId(entry)
 		const response = await this.options!.site.socket.sendAndReceive(
-			new DeleteMessage(this.options!.listClass, id as number)
+			new DeleteMessage(this.options!.tableClass, id as number)
 		)
 		
 		if(response.success) {
@@ -137,12 +137,12 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 	private async addItem(data: Partial<EntryT>) {
 		const options = this.options!
 		const response = await options.site.socket.sendAndReceive(
-			new AddMessage(options.listClass, data)
+			new AddMessage(options.tableClass, data)
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
 			this.items.push(response.entry)
-			closeDropdown(`Add~${options.listClass.name}`)
+			closeDropdown(`Add~${BasePublicTable.getName(options.tableClass)}`)
 			m.redraw()
 		}
 		else
@@ -152,13 +152,13 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 	private async editItem(id: number | bigint, data: Partial<EntryT>) {
 		const options = this.options!
 		const response = await options.site.socket.sendAndReceive(
-			new EditMessage(options.listClass, id, data)
+			new EditMessage(options.tableClass, id, data)
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
 			const index = this.items.findIndex(entry => this.getId(entry.entry) == id)
 			this.items[index] = response.entry
-			closeDropdown(`Edit~${options.listClass.name}`)
+			closeDropdown(`Edit~${BasePublicTable.getName(options.tableClass)}`)
 			m.redraw()
 		}
 		else
@@ -180,10 +180,10 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 					}
 				{ vNode.attrs.addOptions &&
 					DropdownMenu(
-						`Add~${vNode.attrs.listClass.name}`,
+						`Add~${BasePublicTable.getName(vNode.attrs.tableClass)}`,
 						BtnWidget.Add(),
 						() => m(ListEditComponent<EntryT>, {
-							listClass: vNode.attrs.listClass,
+							tableClass: vNode.attrs.tableClass,
 							columns: vNode.attrs.addOptions!,
 							onFinish: this.addItem.bind(this),
 						})
@@ -198,11 +198,11 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 							{ vNode.attrs.getEntryView(entry) }
 							{ vNode.attrs.editOptions &&
 								DropdownMenu(
-									`Edit~${vNode.attrs.listClass.name}`,
+									`Edit~${BasePublicTable.getName(vNode.attrs.tableClass)}`,
 									BtnWidget.Edit(),
 									() => m(ListEditComponent<EntryT>, {
 										editMode: true,
-										listClass: vNode.attrs.listClass,
+										tableClass: vNode.attrs.tableClass,
 										columns: vNode.attrs.editOptions!,
 										onFinish: this.editItem.bind(this, this.getId(entry.entry)),
 										defaults: entry.entry
@@ -221,6 +221,6 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 }
 
 
-export function ListWidget<EntryT extends BaseListEntry>(options: ListOptions<EntryT>): Vnode<ListOptions<EntryT>, unknown> {
+export function ListWidget<EntryT extends BasePublicTable>(options: ListOptions<EntryT>): Vnode<ListOptions<EntryT>, unknown> {
 	return m(ListComponent<EntryT>, options)
 }

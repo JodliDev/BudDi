@@ -1,15 +1,15 @@
 import {Class} from "../Class";
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 import {ConfirmMessage} from "./ConfirmMessage";
 import {BaseListMessage} from "../BaseListMessage";
 
 export class AddMessage extends ConfirmMessage implements BaseListMessage {
 	public readonly listName: string
 	constructor(
-		entryClass: Class<BaseListEntry>,
-		public readonly values: Partial<BaseListEntry>
+		tableClass: Class<BasePublicTable>,
+		public readonly values: Partial<BasePublicTable>
 	) {
 		super()
-		this.listName = entryClass.name
+		this.listName = BasePublicTable.getName(tableClass)
 	}
 }

@@ -1,6 +1,6 @@
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 
-export class ListWaitingEntry extends BaseListEntry {
+export class PubWaitingEntry extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "waitingListEntryId"
 	}

@@ -1,13 +1,13 @@
 import {ConfirmResponseMessage} from "./ConfirmResponseMessage";
 import {ListMessage} from "./ListMessage";
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 
 export interface ListResponseEntry<T> {
 	entry: T,
 	joined: Record<string, unknown>
 }
 
-export class ListResponseMessage<T extends BaseListEntry> extends ConfirmResponseMessage {
+export class ListResponseMessage<T extends BasePublicTable> extends ConfirmResponseMessage {
 	public readonly listName: string
 	
 	constructor(

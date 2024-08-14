@@ -1,14 +1,13 @@
 import {DatabaseInstructions} from "./DatabaseInstructions";
-import {SqlQueryGenerator} from "./SqlQueryGenerator";
+import {SqlQueryGenerator, TableStructure} from "./SqlQueryGenerator";
 import {ColumnInfo} from "./ColumnInfo";
 import BetterSqlite3 from "better-sqlite3";
-import {TableDefinition} from "./TableDefinition";
 import {Class} from "../../../shared/Class";
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
-import {TableStructure} from "./TableStructure";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
 
 interface TransferEntry {
-	table: Class<TableDefinition>
+	table: Class<BasePublicTable>
 	columns: string[]
 	backupIdColumn: string
 	newIdColumn?: string
@@ -33,7 +32,7 @@ export class DatabaseMigrationManager {
 		
 		const transaction = db.transaction(() => {
 			//Run pre migrations:
-			const preMigrationData = dbInstructions.preMigration(fromVersion, dbInstructions.version)
+			const preMigrationData = dbInstructions.preMigration(db, fromVersion, dbInstructions.version)
 			
 			//Find changed foreign keys:
 			if(tableExists)
@@ -57,7 +56,7 @@ export class DatabaseMigrationManager {
 			this.moveDataFromBackup()
 			
 			//Run post migrations:
-			dbInstructions.postMigration(fromVersion, dbInstructions.version, preMigrationData)
+			dbInstructions.postMigration(db, fromVersion, dbInstructions.version, preMigrationData)
 			
 			//Update database version:
 			db.pragma(`user_version = ${dbInstructions.version}`)
@@ -68,7 +67,7 @@ export class DatabaseMigrationManager {
 	
 	
 	private recreateTable(structure: TableStructure<any>) {
-		const tableName = structure.table.name
+		const tableName = BasePublicTable.getName(structure.table)
 		
 		const query = SqlQueryGenerator.getDropTableSql(tableName)
 		const statement = this.db.prepare(query)
@@ -92,7 +91,7 @@ export class DatabaseMigrationManager {
 			const structure = tableStructure.tables[tableName]
 			const newForeignKeys = structure.foreignKeys
 			
-			const oldForeignKeys = this.db.pragma(`foreign_key_list(${tableName})`) as ForeignKeyInfo<TableDefinition>[]
+			const oldForeignKeys = this.db.pragma(`foreign_key_list(${tableName})`) as ForeignKeyInfo<BasePublicTable>[]
 			
 			if(!newForeignKeys) {
 				if(oldForeignKeys?.length)
@@ -124,7 +123,7 @@ export class DatabaseMigrationManager {
 		}
 	}
 	
-	private migrateColumns(tableDefinition: Class<TableDefinition>[], tableStructure: SqlQueryGenerator): string {
+	private migrateColumns(tableDefinition: Class<BasePublicTable>[], tableStructure: SqlQueryGenerator): string {
 		let additionalQuery = ""
 		for(const tableName in tableStructure.tables) {
 			if(this.droppedTables[tableName])
@@ -170,10 +169,10 @@ export class DatabaseMigrationManager {
 	
 	private moveDataFromBackup() {
         for(const entry of this.columnsToTransfer) {
-			console.log(`Copying columns from ${entry.table.name}: ${entry.columns.join(", ")}`)
+			console.log(`Copying columns from ${BasePublicTable.getName(entry.table)}: ${entry.columns.join(", ")}`)
             
             const selectSql = SqlQueryGenerator.createSelectSql(
-				entry.table.name,
+				BasePublicTable.getName(entry.table),
                 [entry.backupIdColumn, ...entry.columns]
             )
 			const statement = this.backupDb.prepare(selectSql)
@@ -188,11 +187,11 @@ export class DatabaseMigrationManager {
 				let query: string
 				let queryValues: unknown[] = []
 				if(entry.newIdColumn) {
-					query = SqlQueryGenerator.createUpdateSql(entry.table.name, values, `${entry.newIdColumn} = ?`)
+					query = SqlQueryGenerator.createUpdateSql(BasePublicTable.getName(entry.table), values, `${entry.newIdColumn} = ?`)
 					queryValues = [...Object.values(sqlValues), data[entry.backupIdColumn]]
 				}
 				else {
-					query = SqlQueryGenerator.createInsertSql(entry.table.name, values)
+					query = SqlQueryGenerator.createInsertSql(BasePublicTable.getName(entry.table), values)
 					queryValues = Object.values(sqlValues)
 				}				
 				const statement = this.db.prepare(query)

@@ -1,10 +1,10 @@
 import {ConfirmResponseMessage} from "./ConfirmResponseMessage";
 import {ListMessage} from "./ListMessage";
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 import {ConfirmMessage} from "./ConfirmMessage";
 import {ListResponseEntry} from "./ListResponseMessage";
 
-export class ListEntryResponseMessage<T extends BaseListEntry> extends ConfirmResponseMessage {
+export class ListEntryResponseMessage<T extends BasePublicTable> extends ConfirmResponseMessage {
 	constructor(
 		message: ConfirmMessage,
 		public readonly success: boolean,

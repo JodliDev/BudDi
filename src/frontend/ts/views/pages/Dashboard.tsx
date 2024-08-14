@@ -2,8 +2,8 @@ import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import {ListWidget} from "../../widgets/ListWidget";
 import {Lang} from "../../../../shared/Lang";
-import {ListWaitingEntry} from "../../../../shared/lists/ListWaitingEntry";
-import {ListDonationEntry} from "../../../../shared/lists/ListDonationEntry";
+import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
+import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
 
 export class Dashboard extends BasePage {
 	
@@ -12,7 +12,7 @@ export class Dashboard extends BasePage {
 			{
 				ListWidget({
 					title: Lang.get("donationEntries"),
-					listClass: ListDonationEntry,
+					tableClass: PubDonationEntry,
 					site: this.site,
 					addOptions: ["donationName", "homepage", "donationUrl"],
 					editOptions: ["donationName", "homepage", "donationUrl", "enabled"],
@@ -27,7 +27,7 @@ export class Dashboard extends BasePage {
 			{
 				ListWidget({
 					title: Lang.get("donationEntries"),
-					listClass: ListWaitingEntry,
+					tableClass: PubWaitingEntry,
 					site: this.site,
 					canDelete: true,
 					getEntryView: entry => <span

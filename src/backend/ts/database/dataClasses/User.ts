@@ -1,7 +1,6 @@
-import {TableDefinition} from "../TableDefinition";
-import {TableSettings} from "../TableSettings";
+import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
-export class User implements TableDefinition {
+export class User extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "userId"
 	}

@@ -1,11 +1,18 @@
-import {TableDefinition} from "./TableDefinition";
 import {DatabaseInstructions} from "./DatabaseInstructions";
 import {ColumnInfo} from "./ColumnInfo";
-import {TableStructure} from "./TableStructure";
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {Class} from "../../../shared/Class";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
+import {TableSettings} from "./TableSettings";
 
 const MAX_LIMIT = 100
+
+export interface TableStructure<T extends BasePublicTable> {
+	table: Class<T>
+	primaryKey: keyof T
+	columns: ColumnInfo[]
+	foreignKeys?: Record<keyof T, ForeignKeyInfo<any>>
+}
 
 export class SqlQueryGenerator {
 	public readonly tables: Record<string, TableStructure<any>> = {}
@@ -14,18 +21,18 @@ export class SqlQueryGenerator {
 		this.getExpectedStructure(dbContext.tables)
 	}
 	
-	private getExpectedStructure(tables: Class<TableDefinition>[]): void {
+	private getExpectedStructure(tables: Class<BasePublicTable>[]): void {
 		for(const table of tables) {
 			const obj = new table
 			
-			const tableSettings = obj.getSettings ? obj.getSettings() : undefined
+			const tableSettings = obj.getSettings() as TableSettings<BasePublicTable>
 			const primaryKey = obj.getPrimaryKey()
 			if(!obj.hasOwnProperty(primaryKey)) {
-				console.log(`Skipping table ${table.name} because it has no primary key (Could not find: "${primaryKey.toString()}")`)
+				console.log(`Skipping table ${BasePublicTable.getName(table)} because it has no primary key (Could not find: "${primaryKey.toString()}")`)
 				continue
 			}
 			
-			this.tables[table.name] = {
+			this.tables[BasePublicTable.getName(table)] = {
 				table: table,
 				primaryKey: primaryKey,
 				columns: this.getColumns(obj, primaryKey.toString()),
@@ -34,7 +41,7 @@ export class SqlQueryGenerator {
 		}
 	}
 	
-	private getColumns(obj: TableDefinition, primaryKey: string): ColumnInfo[] {
+	private getColumns(obj: BasePublicTable, primaryKey: string): ColumnInfo[] {
 		const columns: ColumnInfo[] = []
 		for(const property in obj) {
 			const value = obj[property as keyof unknown]
@@ -59,7 +66,7 @@ export class SqlQueryGenerator {
 				case "function":
 					continue
 				default:
-					console.log(`${obj.constructor.name}.${property} was skipped because its type is not supported (${typeof value})`)
+					console.log(`${BasePublicTable.getName(obj.constructor as Class<BasePublicTable>)}.${property} was skipped because its type is not supported (${typeof value})`)
 					continue
 			}
 			
@@ -96,7 +103,7 @@ export class SqlQueryGenerator {
 		return query
 	}
 	
-	private static getForeignKeySql(foreignKey: string, foreignKeyInfo: ForeignKeyInfo<any>): string {
+	private static getForeignKeySql(foreignKey: string, foreignKeyInfo: ForeignKeyInfo<BasePublicTable>): string {
 		let query = `FOREIGN KEY (${foreignKey}) REFERENCES ${foreignKeyInfo.table.name} (${foreignKeyInfo.to.toString()})`
 		if(foreignKeyInfo.on_update)
 			query += ` ON UPDATE ${foreignKeyInfo.on_update}`
@@ -158,11 +165,11 @@ export class SqlQueryGenerator {
 		return `${query};\n`
 	}
 	
-	public static createInsertSql<T extends TableDefinition>(tableName: string, values: Partial<T>): string {
+	public static createInsertSql<T extends BasePublicTable>(tableName: string, values: Partial<T>): string {
 		const keys = Object.keys(values)
 		return `INSERT INTO ${tableName} (${keys}) VALUES (${keys.map(() => "?").join(",")});`
 	}
-	public static createUpdateSql<T extends TableDefinition>(tableName: string, values: Partial<T>, where?: string, limit?: number): string {
+	public static createUpdateSql<T extends BasePublicTable>(tableName: string, values: Partial<T>, where?: string, limit?: number): string {
 		let valuesQuery: string[] = []
 		for(let key in values) {
 			valuesQuery.push(`${key} = ?`)

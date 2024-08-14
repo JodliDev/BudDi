@@ -1,10 +1,9 @@
-import {TableDefinition} from "../TableDefinition";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
-import {ListDonationEntry} from "../../../../shared/lists/ListDonationEntry";
+import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
 import {column} from "../column";
 
-export class DonationEntry extends ListDonationEntry implements TableDefinition {
+export class DonationEntry extends PubDonationEntry {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 

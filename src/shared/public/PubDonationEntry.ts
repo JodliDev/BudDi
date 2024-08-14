@@ -1,6 +1,6 @@
-import {BaseListEntry} from "../BaseListEntry";
+import {BasePublicTable} from "../BasePublicTable";
 
-export class ListDonationEntry extends BaseListEntry {
+export class PubDonationEntry extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "donationEntryId"
 	}
