@@ -4,6 +4,7 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 
 export class TableSettings<TableT> {
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
+	public readonly floatValues = {} as Record<keyof TableT, boolean>
 	public hasForeignKeys: boolean = false
 	public onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	public onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
@@ -28,5 +29,11 @@ export class TableSettings<TableT> {
 	
 	setListFilter(listFilter: (userId: number | bigint) => string): void {
 		this.listFilter = listFilter
+	}
+	
+	setFloatValues(... keys: (keyof TableT)[]) {
+		for(const key of keys) {
+			this.floatValues[key] = true
+		}
 	}
 }

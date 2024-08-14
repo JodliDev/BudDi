@@ -35,16 +35,20 @@ export class SqlQueryGenerator {
 			this.tables[BasePublicTable.getName(table)] = {
 				table: table,
 				primaryKey: primaryKey,
-				columns: this.getColumns(obj, primaryKey.toString()),
+				columns: this.getColumns(obj),
 				foreignKeys: tableSettings?.hasForeignKeys ? tableSettings.foreignKeys : undefined
 			}
 		}
 	}
 	
-	private getColumns(obj: BasePublicTable, primaryKey: string): ColumnInfo[] {
+	private getColumns(obj: BasePublicTable): ColumnInfo[] {
+		const tableSettings = obj.getSettings() as TableSettings<BasePublicTable>
+		const floatValues = tableSettings.floatValues
+		const primaryKey = obj.getPrimaryKey()
 		const columns: ColumnInfo[] = []
 		for(const property in obj) {
-			const value = obj[property as keyof unknown]
+			const propertyKey = property as keyof BasePublicTable
+			const value = obj[propertyKey]
 			const columnData = {
 				name: property,
 				pk: property == primaryKey ? 1 : 0
@@ -56,7 +60,7 @@ export class SqlQueryGenerator {
 					columnData.dflt_value = `"${value}"`
 					break
 				case "number":
-					columnData.type = value == Math.round(value as number) ? "INTEGER" : "REAL"
+					columnData.type = floatValues[propertyKey] ? "REAL" : "INTEGER"
 					columnData.dflt_value = (value as number).toString()
 					break
 				case "boolean":

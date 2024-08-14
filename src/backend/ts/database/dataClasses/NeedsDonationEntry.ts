@@ -3,7 +3,7 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
-export class NeedsDonationListEntry extends BasePublicTable {
+export class NeedsDonationEntry extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "needsDonationListEntryId"
 	}
@@ -19,6 +19,8 @@ export class NeedsDonationListEntry extends BasePublicTable {
 			table: User,
 			to: "userId"
 		})
+		
+		settings.setFloatValues("amount")
 		
 		return settings
 	}

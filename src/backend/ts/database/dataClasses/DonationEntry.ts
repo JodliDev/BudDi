@@ -17,6 +17,7 @@ export class DonationEntry extends PubDonationEntry {
 		})
 		
 		settings.setListFilter(userId => `${column(DonationEntry, "userId")} = ${userId}`)
+		settings.setFloatValues("donationsSum")
 
 		return settings
 	}

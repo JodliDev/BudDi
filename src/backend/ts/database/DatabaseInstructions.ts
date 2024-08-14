@@ -7,7 +7,7 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import BetterSqlite3 from "better-sqlite3";
 
 export class DatabaseInstructions {
-	public version: number = 4
+	public version: number = 1
 	
 	public tables: Class<BasePublicTable>[] = [
 		DonationEntry,
