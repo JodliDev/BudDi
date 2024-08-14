@@ -1,5 +1,4 @@
 import {BaseListEntry} from "../BaseListEntry";
-import {ListSettings} from "../ListSettings";
 
 export class ListDonationEntry extends BaseListEntry {
 	getPrimaryKey(): keyof this {

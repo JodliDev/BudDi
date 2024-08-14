@@ -1,5 +1,3 @@
-import {ListSettings} from "./ListSettings";
-
 const start = "List".length
 
 export abstract class BaseListEntry {
