@@ -18,7 +18,7 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = listObj.getSettings && listObj.getSettings()
-		settings?.onEdit && settings?.onEdit(this.data.values, db, session.userId!)
+		settings?.onEdit(this.data.values, db, session.userId!)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
 		const response = db.update(listClass, this.data.values, settings?.getWhere(session.userId!, where) ?? where, 1)

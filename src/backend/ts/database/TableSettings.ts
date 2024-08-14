@@ -5,8 +5,8 @@ import {DatabaseManager} from "./DatabaseManager";
 export class TableSettings<TableT> {
 	public readonly foreignKeys: Record<keyof TableT, ForeignKeyInfo<any>> = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public hasForeignKeys: boolean = false
-	public onAdd?: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = undefined
-	public onEdit?: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = undefined
+	public onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
+	public onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	private listFilter?: (userId: number | bigint) => string = undefined
 	
 	public getWhere(userId: number | bigint, where?: string): string | undefined {

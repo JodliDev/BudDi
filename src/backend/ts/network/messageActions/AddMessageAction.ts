@@ -21,7 +21,7 @@ export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = obj.getSettings && obj.getSettings()
-		settings?.onAdd && settings?.onAdd(this.data.values, db, session.userId!)
+		settings?.onAdd(this.data.values, db, session.userId!)
 		
 		const response = db.insert(listClass, this.data.values)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
