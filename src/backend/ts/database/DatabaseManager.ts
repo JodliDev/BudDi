@@ -36,7 +36,8 @@ export class DatabaseManager {
 		const version = db.pragma("user_version", { simple: true }) as number
 		
 		if(dbInstructions.version != version) {
-			const backupPath = `${options.sqlite}${Date.now()}.sqlite`
+			const date = new Date()
+			const backupPath = `${options.sqlite}${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getTime()}.sqlite`
 			await db.backup(backupPath)
 			const backupDb = new BetterSqlite3(`${backupPath}`)
 			
