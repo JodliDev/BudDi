@@ -67,6 +67,7 @@ class ListEditComponent<EntryT extends BaseListEntry> implements Component<ListE
 interface ListOptions<EntryT extends BaseListEntry> {
 	site: Site
 	listClass: Class<EntryT>
+	title: string,
 	getEntryView: (entry: EntryT) => Vnode,
 	canDelete?: boolean
 	addOptions?: (keyof EntryT)[]
@@ -147,11 +148,12 @@ class ListComponent<EntryT extends BaseListEntry> implements Component<ListOptio
 	
 	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {
 		return <div class="listHelper surface vertical">
-			<div class="subSurface horizontal hAlignCenter">
-				{this.isLoading
-					? LoadingSpinner(this.isLoading)
-					: BtnWidget.Reload(this.loadPage.bind(this, this.pagesHelper.getCurrentPage()))
-				}
+			<div class="subSurface horizontal hAlignCenter vAlignCenter">
+				<b class="fillSpace horizontal hAlignCenter">{ vNode.attrs.title }</b>
+					{ this.isLoading
+						? LoadingSpinner(this.isLoading)
+						: BtnWidget.Reload(this.loadPage.bind(this, this.pagesHelper.getCurrentPage()))
+					}
 				{ vNode.attrs.addOptions &&
 					DropdownMenu(
 						`Add~${vNode.attrs.listClass.name}`,

@@ -18,6 +18,7 @@
 	"Logout": "Logout",
 	"Logs": "Logs",
 	"Register": "Register",
+	"donationEntries": "Donation entries",
 	"DonationEntry~donationName": "Name",
 	"DonationEntry~homepage": "Homepage",
 	"DonationEntry~donationUrl": "Url for donation"
