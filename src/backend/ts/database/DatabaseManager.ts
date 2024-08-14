@@ -12,6 +12,20 @@ import {column} from "./column";
 
 const DB_NAME = "db.sqlite"
 
+interface JoinedData<JoinedT extends TableDefinition> {
+	joinedTable: Class<JoinedT>,
+	on: string,
+	select: (keyof JoinedT)[]
+}
+type MapToJoinedDataArray<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
+type MapToPartial<JoinedT extends TableDefinition[]> = { [K in keyof JoinedT]: Partial<JoinedT[K]> };
+
+interface JoinedResponseEntry<T extends TableDefinition, JoinedT extends TableDefinition[]> {
+	entry: Partial<T>,
+	joined: MapToPartial<JoinedT>
+}
+
+
 export class DatabaseManager {
 	private readonly db: BetterSqlite3.Database
 	
@@ -83,22 +97,47 @@ export class DatabaseManager {
 	
 	public joinedSelect<T extends TableDefinition, JoinedT extends TableDefinition[]>(
 		table: Class<T>,
-		select?: string[],
+		select: (keyof T)[],
+		joinArray: MapToJoinedDataArray<JoinedT>,
 		where?: string,
 		limit?: number,
-		from?: number,
-		join?: { innerColumn: keyof T, joinedTable: Class<JoinedT>, joinedColumn: keyof JoinedT }
-	): unknown[] {
-		return this.unsafeSelect(
+		from?: number
+	): JoinedResponseEntry<T, JoinedT>[] {
+		let selectWithTable = select.map(entry => column(table, entry))
+		const joinSqlArray = []
+		for(const join of joinArray) {
+			selectWithTable = selectWithTable.concat(join.select.map(entry => column(join.joinedTable, entry)))
+			joinSqlArray.push({ joinedTableName: join.joinedTable.name, on: join.on })
+		}
+		
+		const lines = this.unsafeSelect(
 			table.name,
-			select,
+			selectWithTable,
 			where,
 			limit,
 			from,
-			join
-				? { innerColumn: join.innerColumn.toString(), joinedTableName: join.joinedTable.name, joinedColumn: join.joinedColumn.toString() }
-				: undefined
-		)
+			joinSqlArray
+		) as Record<string, unknown>[]
+		
+		//sort data into response object:
+		const response: JoinedResponseEntry<T, JoinedT>[] = []
+		for(const line of lines) {
+			const entry: Partial<T> = {}
+			const joinedArray = [] as MapToPartial<JoinedT>
+			
+			for(const selectEntry of select) {
+				entry[selectEntry] = line[selectEntry.toString()] as any
+			}
+			for(const join of joinArray) {
+				const joined: Partial<T> = {}
+				for(const selectEntry of join.select) {
+					joined[selectEntry] = line[selectEntry.toString()] as any
+				}
+				joinedArray.push(joined)
+			}
+            response.push({entry: entry, joined: joinedArray})
+		}
+		return response
 	}
 	
 	private unsafeSelect(

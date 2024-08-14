@@ -141,11 +141,13 @@ export class SqlQueryGenerator {
 		where?: string,
 		limit?: number,
 		from?: number,
-		join?: { innerColumn: string, joinedTableName: string, joinedColumn: string }
+		joinArray?: { joinedTableName: string, on: string }[]
 	): string {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
-		if(join)
-			query += ` JOIN ${join.joinedTableName} ON ${join.joinedTableName}.${join.joinedColumn} = ${tableName}.${join.innerColumn}`
+		if(joinArray)
+			query += joinArray
+				.map(join =>` JOIN ${join.joinedTableName} ON ${join.on}`)
+				.join("")
 		if(where)
 			query += ` WHERE ${where}`
 		if(from)
