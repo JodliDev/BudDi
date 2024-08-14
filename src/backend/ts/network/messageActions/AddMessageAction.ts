@@ -14,19 +14,19 @@ import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryRes
 export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
-		const publicList = new publicListClass
-		const listClass = await ListMessageAction.getListClass(this.data, publicList)
-		const list = new listClass
-		const tableName = publicList.getTableName()
+		const publicObj = new publicListClass
+		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
+		const obj = new listClass
 		
-		ListMessageAction.checkValues(this.data.values, publicList)
+		ListMessageAction.checkValues(this.data.values, publicObj)
 		
-		const settings = list.getSettings && list.getSettings()
+		const settings = obj.getSettings && obj.getSettings()
 		settings?.onAdd && settings?.onAdd(this.data.values, db, session.userId!)
 		
 		const response = db.insert(listClass, this.data.values)
+		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
 		
-		const entry = db.publicTableSelect(listClass, publicList, `${publicList.getPrimaryKey().toString()} = ${response}`, 1)
+		const entry = db.publicTableSelect(listClass, publicObj, settings?.getWhere(session.userId!, where) ?? where, 1)
 		session.send(new ListEntryResponseMessage<BaseListEntry>(this.data, response != 0 && entry.length != 0, entry[0] as BaseListEntry))
 		
 	}

@@ -3,10 +3,8 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {BaseListEntry} from "../../../../shared/BaseListEntry";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
-import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
 import {Convenience} from "../../Convenience";
-import {ConfirmMessage} from "../../../../shared/messages/ConfirmMessage";
 import {BaseListMessage} from "../../../../shared/BaseListMessage";
 import {FaultyListException} from "../../exceptions/FaultyListException";
 import {TableDefinition} from "../../database/TableDefinition";
@@ -15,15 +13,17 @@ import {Class} from "../../../../shared/Class";
 export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
-		const obj = new publicListClass
-		const listClass = await ListMessageAction.getListClass(this.data, obj)
+		const publicObj = new publicListClass
+		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
+		const listObj = new listClass
 		
-		const tableName = obj.getTableName()
+		const tableName = publicObj.getTableName()
+		const settings = listObj.getSettings && listObj.getSettings()
 		
-		const response = db.publicTableSelect(listClass, obj, undefined, this.data.limit, this.data.from)
+		const response = db.publicTableSelect(listClass, publicObj, settings?.getWhere(session.userId!), this.data.limit, this.data.from)
 		const count = db.getCount(tableName)
 		
-		session.send(new ListResponseMessage(this.data, true, response as BaseListEntry[], obj.getPrimaryKey().toString(), count))
+		session.send(new ListResponseMessage(this.data, true, response as BaseListEntry[], publicObj.getPrimaryKey().toString(), count))
 	}
 	
 	

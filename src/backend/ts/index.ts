@@ -4,7 +4,6 @@ import {WebSocketHelper} from "./network/WebSocketHelper";
 import express from 'express';
 import {Lang} from "../../shared/Lang";
 import {Options} from "./Options";
-import {ErrorMessage} from "../../shared/messages/ErrorMessage";
 
 const options = new Options()
 console.log(options)

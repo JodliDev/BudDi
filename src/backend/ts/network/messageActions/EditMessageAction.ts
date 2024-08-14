@@ -14,15 +14,15 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 		const publicObj = new publicListClass
 		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
 		const listObj = new listClass
-		const tableName = publicObj.getTableName()
 		
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = listObj.getSettings && listObj.getSettings()
 		settings?.onEdit && settings?.onEdit(this.data.values, db, session.userId!)
+		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
-		const response = db.update(listClass, this.data.values, `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`, 1)
-		const entry = db.publicTableSelect(listClass, publicObj, `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`, 1)
+		const response = db.update(listClass, this.data.values, settings?.getWhere(session.userId!, where) ?? where, 1)
+		const entry = db.publicTableSelect(listClass, publicObj, settings?.getWhere(session.userId!, where) ?? where, 1)
 		session.send(new ListEntryResponseMessage<BaseListEntry>(this.data, response != 0 && entry.length != 0, entry[0] as BaseListEntry))
 	}
 	

@@ -11,11 +11,14 @@ import {ListMessageAction} from "./ListMessageAction";
 export class DeleteMessageAction extends AuthorisedMessageAction<DeleteMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicListClass = await ListMessageAction.getPublicListClass(this.data)
-		const obj = new publicListClass
-		const listClass = await ListMessageAction.getListClass(this.data, obj)
+		const publicObj = new publicListClass
+		const listClass = await ListMessageAction.getListClass(this.data, publicObj)
+		const listObj = new listClass
 		
+		const settings = listObj.getSettings && listObj.getSettings()
+		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
-		const response = db.delete(listClass, `${obj.getPrimaryKey().toString()} = ${this.data.id}`, 1)
+		const response = db.delete(listClass, settings?.getWhere(session.userId!, where) ?? where, 1)
 		
 		session.send(new ConfirmResponseMessage(this.data, response == 1))
 		
