@@ -47,7 +47,8 @@ export class Site {
 		const [page, variablesString] = pageName.split("/")
 		
 		try {
-			if(this.currentPage.constructor.name != page) {
+			await this.socket.waitUntilReady()
+			if(this.currentPage.constructor.name != page)
 				this.currentPage = await this.importPage(page)
 			
 			if(variablesString) {
