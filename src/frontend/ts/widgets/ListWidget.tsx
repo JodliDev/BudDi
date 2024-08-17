@@ -78,6 +78,7 @@ interface ListOptions<EntryT extends BasePublicTable> {
 	tableClass: Class<EntryT>
 	title: string,
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
+	hideRefresh?: boolean
 	deleteOptions?: { onDeleted?: () => void },
 	addOptions?: { columns: (keyof EntryT)[], onAdded?: () => void }
 	editOptions?: { columns: (keyof EntryT)[], onChanged?: () => void },
@@ -180,20 +181,21 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	}
 	
 	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {
+		const options = vNode.attrs
 		return <div class="listWidget surface vertical">
-			<div class="subSurface horizontal hAlignCenter vAlignCenter">
-				<b class="fillSpace horizontal hAlignCenter">{ vNode.attrs.title }</b>
+			<div class="header subSurface horizontal hAlignCenter vAlignCenter">
+				<b class="fillSpace horizontal hAlignCenter">{ options.title }</b>
 					{ this.isLoading
 						? LoadingSpinner(this.isLoading)
-						: BtnWidget.Reload(this.loadPage.bind(this, this.pagesHelper.getCurrentPage()))
+						: (options.hideRefresh ? "" : BtnWidget.Reload(this.loadPage.bind(this, this.pagesHelper.getCurrentPage())))
 					}
-				{ vNode.attrs.addOptions &&
+				{ options.addOptions &&
 					DropdownMenu(
-						`Add~${BasePublicTable.getName(vNode.attrs.tableClass)}`,
+						`Add~${BasePublicTable.getName(options.tableClass)}`,
 						BtnWidget.Add(),
 						() => m(ListEditComponent<EntryT>, {
-							tableClass: vNode.attrs.tableClass,
-							columns: vNode.attrs.addOptions!.columns,
+							tableClass: options.tableClass,
+							columns: options.addOptions!.columns,
 							onFinish: this.addItem.bind(this),
 						})
 					)
@@ -204,22 +206,22 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 					? Lang.get("noEntries")
 					: this.items.map((entry) => {
 						return <div class="horizontal entry vAlignCenter">
-							{ vNode.attrs.getEntryView(entry) }
-							{ vNode.attrs.editOptions &&
+							{ options.getEntryView(entry) }
+							{ options.editOptions &&
 								DropdownMenu(
-									`Edit~${BasePublicTable.getName(vNode.attrs.tableClass)}`,
+									`Edit~${BasePublicTable.getName(options.tableClass)}`,
 									BtnWidget.Edit(),
 									() => m(ListEditComponent<EntryT>, {
 										editMode: true,
-										tableClass: vNode.attrs.tableClass,
-										columns: vNode.attrs.editOptions!.columns,
+										tableClass: options.tableClass,
+										columns: options.editOptions!.columns,
 										onFinish: this.editItem.bind(this, this.getId(entry.item)),
 										defaults: entry.item
 									})
 								)
 							
 							}
-							{ vNode.attrs.deleteOptions && BtnWidget.Delete(() => this.deleteItem(entry.item)) }
+							{ options.deleteOptions && BtnWidget.Delete(() => this.deleteItem(entry.item)) }
 						</div>
 					})
 				}

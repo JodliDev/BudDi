@@ -170,6 +170,7 @@ export class Dashboard extends BasePage {
 							title: Lang.get("notDonatedYet"),
 							tableClass: PubWaitingEntry,
 							site: this.site,
+							hideRefresh: true,
 							deleteOptions: {},
 							callback: this.notDonatedListCallback,
 							getEntryView: entry => 
@@ -182,6 +183,7 @@ export class Dashboard extends BasePage {
 							title: Lang.get("allEntries"),
 							tableClass: PubDonationEntry,
 							site: this.site,
+							hideRefresh: true,
 							addOptions: {
 								columns: ["donationName", "homepage", "donationUrl"],
 								onAdded: async () => {

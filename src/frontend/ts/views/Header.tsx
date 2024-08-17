@@ -14,7 +14,7 @@ export class Header {
 	}
 	
 	public getView(currentPage: string): Vnode {
-		return <div class="header">
+		return <div class="siteHeader">
 			{ this.site.errorManager.getView() }
 			<div class="navigation">
 				{
