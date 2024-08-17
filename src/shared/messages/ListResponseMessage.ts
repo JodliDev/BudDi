@@ -3,7 +3,7 @@ import {ListMessage} from "./ListMessage";
 import {BasePublicTable} from "../BasePublicTable";
 
 export interface ListResponseEntry<T> {
-	entry: T,
+	item: T,
 	joined: Record<string, unknown>
 }
 

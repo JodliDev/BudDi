@@ -40,7 +40,7 @@ label, .labelLike {
 		border-radius: 5px;
 		box-shadow: var(--color-surface) 0 0 5px 1px;
 	}
-	input[type="checkbox"], input[type="radio"] {
+	input[type="checkbox"], input[type="radio"], span {
 		margin: 15px 0 0 5px;
 	}
 }
@@ -133,6 +133,10 @@ form {
 	&.hAlignCenter {
 		justify-content: center;
 	}
+	
+	&.wraps {
+		flex-wrap: wrap;
+	}
 }
 .vertical {
 	display: inline-flex;
@@ -158,13 +162,15 @@ form {
 	&.vAlignStart {
 		justify-content: flex-start;
 	}
-	
 	&.vAlignCenter {
 		justify-content: center;
 	}
-	
 	&.vAlignEnd {
 		justify-content: flex-end;
+	}
+	
+	&.wraps {
+		flex-wrap: wrap;
 	}
 }
 

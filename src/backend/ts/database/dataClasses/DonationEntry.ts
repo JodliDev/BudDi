@@ -2,6 +2,7 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
 import {column} from "../column";
+import {WaitingEntry} from "./WaitingEntry";
 
 export class DonationEntry extends PubDonationEntry {
 	getSettings(): TableSettings<this> {
@@ -10,10 +11,14 @@ export class DonationEntry extends PubDonationEntry {
 		settings.setForeignKey("userId", {
 			table: User,
             to: "userId",
+			on_delete: "CASCADE"
 		})
 		
-		settings.setOnAdd((data, db, userId) => {
+		settings.setOnBeforeAdd((data, db, userId) => {
 			data.userId = userId
+		})
+		settings.setOnAfterAdd((data, db, addedId) => {
+			db.insert(WaitingEntry, { donationEntryId: addedId, userId: data.userId })
 		})
 		
 		settings.setListFilter(userId => `${column(DonationEntry, "userId")} = ${userId}`)

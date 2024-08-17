@@ -4,6 +4,7 @@ import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {Class} from "../../../shared/Class";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {TableSettings} from "./TableSettings";
+import {UpdateValues} from "./DatabaseManager";
 
 const MAX_LIMIT = 100
 
@@ -155,6 +156,7 @@ export class SqlQueryGenerator {
 		where?: string,
 		limit?: number,
 		from?: number,
+		order?: string,
 		joinArray?: { joinedTableName: string, on: string }[]
 	): string {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
@@ -164,6 +166,8 @@ export class SqlQueryGenerator {
 				.join("")
 		if(where)
 			query += ` WHERE ${where}`
+		if(order)
+			query += ` ORDER BY ${order}`
 		if(from)
 			query += ` FROM ${from}`
 		if(limit)
@@ -176,10 +180,25 @@ export class SqlQueryGenerator {
 		const keys = Object.keys(values)
 		return `INSERT INTO ${tableName} (${keys}) VALUES (${keys.map(() => "?").join(",")});`
 	}
-	public static createUpdateSql<T extends BasePublicTable>(tableName: string, values: Partial<T>, where?: string, limit?: number): string {
-		let valuesQuery: string[] = []
-		for(let key in values) {
-			valuesQuery.push(`${key} = ?`)
+	public static createUpdateSql<T extends BasePublicTable>(tableName: string, values: UpdateValues<T>, where?: string, limit?: number): string {
+		const valuesQuery: string[] = []
+		for(const operator in values) {
+			let addFu: (key: string) => string
+			switch(operator) {
+				case "+=":
+					addFu = key => `${key} = ${key} + ?`
+					break
+				case "-=":
+					addFu = key => `${key} = ${key} - ?`
+					break
+				case "=":
+				default:
+					addFu = key => `${key} = ?`
+					break
+			}
+			for(const key in values[operator as keyof UpdateValues<T>]) {
+				valuesQuery.push(addFu(key))
+			}
 		}
 		let query = `UPDATE ${tableName} SET ${valuesQuery.join(",")}`
 		if(where)

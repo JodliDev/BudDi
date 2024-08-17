@@ -6,7 +6,8 @@ export class TableSettings<TableT> {
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public readonly floatValues = {} as Record<keyof TableT, boolean>
 	public hasForeignKeys: boolean = false
-	public onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
+	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
+	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	public onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	private listFilter?: (userId: number | bigint) => string = undefined
 	
@@ -18,13 +19,16 @@ export class TableSettings<TableT> {
 	}
 	
 	
-	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic">) {
+	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }
 		this.hasForeignKeys = true
 	}
 	
-	setOnAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {
-		this.onAdd = onAdd
+	setOnBeforeAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {
+		this.onBeforeAdd = onAdd
+	}
+	setOnAfterAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {
+		this.onAfterAdd = onAdd
 	}
 	
 	setListFilter(listFilter: (userId: number | bigint) => string): void {

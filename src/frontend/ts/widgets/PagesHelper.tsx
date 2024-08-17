@@ -26,6 +26,9 @@ export class PagesHelper {
 	public isEmpty() : boolean {
 		return this.totalCount == 0
 	}
+	public isNeeded() : boolean {
+		return this.maxPages > 1
+	}
 	
 	public setTotalCount(totalCount: number): void {
 		this.totalCount = totalCount

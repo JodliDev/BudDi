@@ -34,6 +34,5 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 		const success = userId != 0
 		session.login(userId)
 		session.send(new ConfirmResponseMessage(this.data, success))
-		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 }

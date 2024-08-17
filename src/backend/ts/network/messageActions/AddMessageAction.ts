@@ -17,12 +17,13 @@ export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		settings?.onAdd(this.data.values, db, session.userId!)
+		settings?.onBeforeAdd(this.data.values, db, session.userId!)
 		
 		const response = db.insert(listClass, this.data.values)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
 		
-		
+		if(response != 0)
+			settings?.onAfterAdd(this.data.values, db, response)
 		
 		
 		const joinedResponse = await db.joinedSelectForPublicTable(

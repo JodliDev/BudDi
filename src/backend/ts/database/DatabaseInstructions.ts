@@ -14,7 +14,8 @@ export class DatabaseInstructions {
 		DonationEntry,
 		LoginSession,
 		User,
-		WaitingEntry
+		WaitingEntry,
+		NeedsDonationEntry
 	]
 	
 	public preMigration(db: BetterSqlite3.Database, recreateTables: (tableName: string[]) => void, fromVersion: number, toVersion: number): Record<number, unknown> {

@@ -19,7 +19,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 			return
 		
 		const newSession = LoginSession.getNewSession(this.data.userId, loginSession.existsSince)
-		db.update(LoginSession, newSession, sqlConstraint, 1)
+		db.update(LoginSession, { "=": newSession }, sqlConstraint, 1)
 		
 		session.login(this.data.userId)
 		session.send(new SessionLoginMessage(this.data.userId, newSession.sessionHash))

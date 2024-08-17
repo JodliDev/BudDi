@@ -10,12 +10,18 @@ export class WaitingEntry extends PubWaitingEntry {
 		settings.setForeignKey("donationEntryId", {
 			table: DonationEntry,
 			to: "donationEntryId",
+			on_delete: "CASCADE",
 			isPublic: true
 		})
 		
 		settings.setForeignKey("userId", {
 			table: User,
-			to: "userId"
+			to: "userId",
+			on_delete: "CASCADE"
+		})
+		
+		settings.setOnBeforeAdd((data, db, userId) => {
+			data.userId = userId
 		})
 		
 		return settings

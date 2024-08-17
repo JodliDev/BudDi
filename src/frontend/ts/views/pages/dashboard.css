@@ -1,0 +1,12 @@
+.needsDonationEntry {
+	width: 150px;
+	height: 150px;
+	overflow: hidden;
+	margin: 5px;
+	
+	.donationHeader {
+		font-weight: bold;
+		font-size: x-large;
+		padding: 10px;
+	}
+}

@@ -21,8 +21,14 @@ export interface JoinedData<JoinedT extends BasePublicTable> {
 type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
 
 export interface JoinedResponseEntry<T extends BasePublicTable> extends ListResponseEntry<Partial<T>>{
-	entry: Partial<T>,
+	item: Partial<T>,
 	joined: Record<string, unknown>
+}
+
+export type UpdateValues<T> = {
+	"="?: Partial<T>,
+	"-="?: Partial<T>,
+	"+="?: Partial<T>
 }
 
 
@@ -36,10 +42,10 @@ export class DatabaseManager {
 		const version = db.pragma("user_version", { simple: true }) as number
 		
 		if(dbInstructions.version != version) {
-			const date = new Date()
-			const backupPath = `${options.sqlite}${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getTime()}.sqlite`
+			const backupName = `from_${version}_to_${dbInstructions.version}`
+			const backupPath = `${options.sqlite}${backupName}.sqlite`
 			await db.backup(backupPath)
-			const backupDb = new BetterSqlite3(`${backupPath}`)
+			const backupDb = new BetterSqlite3(backupPath)
 			
 			const migrationManager = new DatabaseMigrationManager(db, backupDb)
 			migrationManager.migrateTable(version, dbInstructions)
@@ -80,8 +86,14 @@ export class DatabaseManager {
 		return this.correctValues(table, values, value => SqlQueryGenerator.booleanToSqlValue(value))
 	}
 	
-	public tableSelect<T extends BasePublicTable>(table: Class<T>, where?: string, limit?: number, from?: number): T[] {
-		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from) as Partial<T>[]) as T[]
+	public tableSelect<T extends BasePublicTable>(
+		table: Class<T>,
+		where?: string,
+		limit?: number,
+		from?: number,
+		order?: keyof T | "RANDOM()"
+	): T[] {
+		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from, order?.toString()) as Partial<T>[]) as T[]
 	}
 	
 	
@@ -91,10 +103,11 @@ export class DatabaseManager {
 		settings?: TableSettings<T>,
 		where?: string,
 		limit?: number,
-		from?: number
+		from?: number,
+		order?: keyof T | "RANDOM()"
 	): Promise<ListResponseEntry<T>[]> {
 		const joinArray = settings ? await ListMessageAction.getJoinArray(table, settings) : []
-		return this.joinedSelect(table, select, joinArray, where, limit, from) as ListResponseEntry<T>[]
+		return this.joinedSelect(table, select, joinArray, where, limit, from, order) as ListResponseEntry<T>[]
 	}
 	
 	public joinedSelect<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
@@ -103,7 +116,8 @@ export class DatabaseManager {
 		joinArray: MapToJoinedDataArray<JoinedT>,
 		where?: string,
 		limit?: number,
-		from?: number
+		from?: number,
+		order?: keyof T | "RANDOM()"
 	): JoinedResponseEntry<T>[] {
 		let selectWithTable = select.map(entry => column(table, entry))
 		const joinSqlArray = []
@@ -118,6 +132,7 @@ export class DatabaseManager {
 			where,
 			limit,
 			from,
+			order?.toString(),
 			joinSqlArray
 		) as Record<string, unknown>[]
 		
@@ -138,7 +153,7 @@ export class DatabaseManager {
 				}
 				joinedResult[BasePublicTable.getName(join.joinedTable)] = joined
 			}
-            response.push({entry: entry, joined: joinedResult})
+            response.push({item: entry, joined: joinedResult})
 		}
 		return response
 	}
@@ -149,16 +164,16 @@ export class DatabaseManager {
 		where?: string,
 		limit?: number,
 		from?: number,
+		order?: string,
 		join?: { joinedTableName: string, on: string }[]
 	) {
-		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, join)
-		console.log(query)
+		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, order, join)
 		const statement = this.db.prepare(query)
 		return statement.all()
 	}
 	
-	public getCount(tableName: string, where?: string): number {
-		const query = SqlQueryGenerator.createSelectSql(tableName, ["COUNT(*)"], where)
+	public getCount<T extends BasePublicTable>(table: Class<T>, where?: string): number {
+		const query = SqlQueryGenerator.createSelectSql(table.name, ["COUNT(*)"], where)
 		const statement = this.db.prepare(query)
 		const result = statement.get() as Record<string, number>
 		return result["COUNT(*)"]
@@ -177,15 +192,29 @@ export class DatabaseManager {
 		return result.changes > 0 ? result.lastInsertRowid : 0
 	}
 	
-	public update<T extends BasePublicTable>(table: Class<T>, values: Partial<T>, where: string, limit?: number) {
-		return this.unsafeUpdate(BasePublicTable.getName(table), this.typesToSql(table, [values])[0], where, limit)
+	public update<T extends BasePublicTable>(
+		table: Class<T>,
+		values: UpdateValues<T>,
+		where: string,
+		limit: number = 1
+	) {
+		for(const key in values) {
+			const valueKey = key as keyof UpdateValues<T>
+			if(values[valueKey])
+				values[valueKey] = this.typesToSql(table, [values[valueKey]])[0]
+		}
+		
+		return this.unsafeUpdate(BasePublicTable.getName(table), values, where, limit)
 	}
-	private unsafeUpdate<T extends BasePublicTable>(tableName: string, values: Partial<T>, where: string, limit?: number) {
+	private unsafeUpdate<T extends BasePublicTable>(tableName: string, values: UpdateValues<T>, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where, limit)
 		
 		const sqlValues: unknown[] = []
-		for(let key in values) {
-			sqlValues.push(values[key])
+		for(const operator in values) {
+			const subValues = values[operator as keyof UpdateValues<T>]
+			for(const key in subValues) {
+				sqlValues.push(subValues[key])
+			}
 		}
 		
 		const statement = this.db.prepare(query)
@@ -197,7 +226,6 @@ export class DatabaseManager {
 	}
 	private unsafeDelete(tableName: string, where: string, limit?: number) {
 		const query = SqlQueryGenerator.createDeleteSql(tableName, where, limit)
-		
 		const statement = this.db.prepare(query)
 		return statement.run().changes
 	}

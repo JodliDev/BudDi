@@ -20,7 +20,7 @@ export class Header {
 				{
 					this.site.isLoggedIn()
 						? [
-							this.getLine(currentPage, "Home"),
+							this.getLine(currentPage, "Dashboard"),
 						] 
 						: [
 							this.getLine(currentPage, "Login"),

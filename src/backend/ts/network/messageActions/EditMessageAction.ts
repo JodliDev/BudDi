@@ -20,7 +20,7 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 		settings?.onEdit(this.data.values, db, session.userId!)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
-		const response = db.update(tableClass, this.data.values, settings?.getWhere(session.userId!, where) ?? where, 1)
+		const response = db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session.userId!, where) ?? where, 1)
 		
 		
 		

@@ -36,7 +36,7 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 			true,
 			joinedResponse,
 			publicObj.getPrimaryKey().toString(),
-			db.getCount(tableName)
+			db.getCount(tableClass)
 		))
 	}
 	

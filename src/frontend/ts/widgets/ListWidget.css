@@ -1,5 +1,5 @@
-.listHelper {
-	min-width: 200px;
+.listWidget {
+	min-width: 400px;
 	.entry {
 		white-space: nowrap;
 	}

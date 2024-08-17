@@ -2,7 +2,7 @@ import { PagesHelper } from "./PagesHelper";
 import { BtnWidget } from "./BtnWidget";
 import { Lang } from "../../../shared/Lang";
 import { LoadingSpinner } from "./LoadingSpinner";
-import "./ListHelper.css"
+import "./ListWidget.css"
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {Class} from "../../../shared/Class";
 import {Site} from "../views/Site";
@@ -69,16 +69,20 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 	
 }
 
+export interface ListWidgetCallback {
+	reload?: () => Promise<void>
+}
 
 interface ListOptions<EntryT extends BasePublicTable> {
 	site: Site
 	tableClass: Class<EntryT>
 	title: string,
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
-	canDelete?: boolean
-	addOptions?: (keyof EntryT)[]
-	editOptions?: (keyof EntryT)[],
+	deleteOptions?: { onDeleted?: () => void },
+	addOptions?: { columns: (keyof EntryT)[], onAdded?: () => void }
+	editOptions?: { columns: (keyof EntryT)[], onChanged?: () => void },
 	pageSize?: number
+	callback?: ListWidgetCallback
 }
 
 class ListComponent<EntryT extends BasePublicTable> implements Component<ListOptions<EntryT>, unknown> {
@@ -89,7 +93,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	private options?: ListOptions<EntryT>
 	
 	
-	private async loadPage(pageNumber: number): Promise<void> {
+	private async loadPage(pageNumber: number = this.pagesHelper.getCurrentPage()): Promise<void> {
 		this.isLoading = true
 		m.redraw()
 		
@@ -127,7 +131,8 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		)
 		
 		if(response.success) {
-			this.items = this.items.filter((r) => this.getId(r.entry) != id)
+			this.items = this.items.filter((r) => this.getId(r.item) != id)
+			this.options?.deleteOptions?.onDeleted && this.options?.deleteOptions?.onDeleted()
 			m.redraw()
 		}
 		else
@@ -142,6 +147,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		
 		if(response.success) {
 			this.items.push(response.entry)
+			options.addOptions?.onAdded && options.addOptions?.onAdded()
 			closeDropdown(`Add~${BasePublicTable.getName(options.tableClass)}`)
 			m.redraw()
 		}
@@ -156,8 +162,9 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success) {
-			const index = this.items.findIndex(entry => this.getId(entry.entry) == id)
+			const index = this.items.findIndex(entry => this.getId(entry.item) == id)
 			this.items[index] = response.entry
+			options.editOptions?.onChanged && options.editOptions?.onChanged()
 			closeDropdown(`Edit~${BasePublicTable.getName(options.tableClass)}`)
 			m.redraw()
 		}
@@ -167,11 +174,13 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	
 	public async oncreate(vNode: VnodeDOM<ListOptions<EntryT>, unknown>): Promise<void> {
 		this.options = vNode.attrs
-		await this.loadPage(this.pagesHelper.getCurrentPage())
+		if(this.options.callback)
+			this.options.callback.reload = this.loadPage.bind(this)
+		await this.loadPage()
 	}
 	
 	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {
-		return <div class="listHelper surface vertical">
+		return <div class="listWidget surface vertical">
 			<div class="subSurface horizontal hAlignCenter vAlignCenter">
 				<b class="fillSpace horizontal hAlignCenter">{ vNode.attrs.title }</b>
 					{ this.isLoading
@@ -184,7 +193,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 						BtnWidget.Add(),
 						() => m(ListEditComponent<EntryT>, {
 							tableClass: vNode.attrs.tableClass,
-							columns: vNode.attrs.addOptions!,
+							columns: vNode.attrs.addOptions!.columns,
 							onFinish: this.addItem.bind(this),
 						})
 					)
@@ -203,19 +212,19 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 									() => m(ListEditComponent<EntryT>, {
 										editMode: true,
 										tableClass: vNode.attrs.tableClass,
-										columns: vNode.attrs.editOptions!,
-										onFinish: this.editItem.bind(this, this.getId(entry.entry)),
-										defaults: entry.entry
+										columns: vNode.attrs.editOptions!.columns,
+										onFinish: this.editItem.bind(this, this.getId(entry.item)),
+										defaults: entry.item
 									})
 								)
 							
 							}
-							{ vNode.attrs.canDelete && BtnWidget.Delete(() => this.deleteItem(entry.entry)) }
+							{ vNode.attrs.deleteOptions && BtnWidget.Delete(() => this.deleteItem(entry.item)) }
 						</div>
 					})
 				}
 			</div>
-			{ !this.pagesHelper.isEmpty() && this.pagesHelper.getView() }
+			{ this.pagesHelper.isNeeded() && this.pagesHelper.getView() }
 		</div>
 	}
 }

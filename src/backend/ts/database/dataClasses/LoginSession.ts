@@ -13,7 +13,8 @@ export class LoginSession extends BasePublicTable {
 		
 		settings.setForeignKey("userId", {
 			table: User,
-			to: "userId"
+			to: "userId",
+			on_delete: "CASCADE"
 		})
 		
 		return settings
