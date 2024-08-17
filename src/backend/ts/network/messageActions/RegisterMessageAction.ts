@@ -24,15 +24,16 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 		const salt = await bcrypt.genSalt()
 		const hash = await bcrypt.hash(this.data.password, salt)
 		
-		const newUser = {
+		const userData = {
 			username: this.data.username,
 			hashedPassword: hash,
 			isAdmin: db.tableSelect(User, undefined, 1).length == 0
-		} as User
+		} as Partial<User>
 		
-		const userId = db.insert(User, newUser)
+		const userId = db.insert(User, userData)
+		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${userId}`)
 		const success = userId != 0
-		session.login(userId)
+		session.login(userId, user.currency)
 		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 }

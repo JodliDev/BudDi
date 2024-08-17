@@ -4,16 +4,13 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoginSession} from "../../database/dataClasses/LoginSession";
 import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessage";
+import {User} from "../../database/dataClasses/User";
 
 export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionLoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = `${column(LoginSession, "userId")} = '${this.data.userId}' AND ${column(LoginSession, "sessionHash")} = '${this.data.sessionHash}'`
-		const [loginSession] = db.tableSelect(
-			LoginSession,
-			sqlConstraint, 
-			1
-		)
+		const [loginSession] = db.tableSelect(LoginSession, sqlConstraint, 1)
 
 		if(!loginSession)
 			return
@@ -21,7 +18,9 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		const newSession = LoginSession.getNewSession(this.data.userId, loginSession.existsSince)
 		db.update(LoginSession, { "=": newSession }, sqlConstraint, 1)
 		
-		session.login(this.data.userId)
+		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${this.data.userId}`, 1)
+		
+		session.login(user.userId, user.currency)
 		session.send(new SessionLoginMessage(this.data.userId, newSession.sessionHash))
 	}
 }

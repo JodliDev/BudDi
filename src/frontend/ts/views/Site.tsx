@@ -10,6 +10,7 @@ import {deleteCookie, setCookie} from "../Convenience";
 import {Lang, LangKey} from "../../../shared/Lang";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
+import {UserSettings} from "../../../shared/UserSettings";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -19,6 +20,7 @@ export class Site {
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
 	private isLoggedInState: boolean = false
+	public userSettings?: UserSettings
 	
 	constructor() {
 		this.view = document.getElementById("site")!
@@ -81,6 +83,10 @@ export class Site {
 			this.errorManager.error(error)
 			return new Login(this)
 		}
+	}
+	
+	public setUserSettings(userSettings: UserSettings) {
+		this.userSettings = userSettings
 	}
 	
 	public login(userId: number | bigint, sessionHash: string) {

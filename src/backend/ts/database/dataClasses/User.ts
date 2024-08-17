@@ -23,7 +23,5 @@ export class User extends BasePublicTable {
 	public donationAmountType: number = DonationAmountType.PerEntry
 	public donationAmount: number = 1
 	
-	getForeignKey() {
-		return {};
-	}
+	public currency: string = "€"
 }

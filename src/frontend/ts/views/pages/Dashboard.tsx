@@ -78,7 +78,7 @@ export class Dashboard extends BasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("totalDonations")}</small>
-					<span>{entry.donationsSum}</span>
+					<span>{entry.donationsSum}{this.site.userSettings?.currency}</span>
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastDonation")}</small>
@@ -134,7 +134,7 @@ export class Dashboard extends BasePage {
 					{
 						this.needsDonationEntries.map(info => 
 							<div class="vertical surface needsDonationEntry hAlignStretched">
-								<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}</div>
+								<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.site.userSettings?.currency}</div>
 								{
 									this.donationDropdown(
 										<div class="textCentered">{info.donationEntry.donationName}</div>,
