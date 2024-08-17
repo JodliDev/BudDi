@@ -1,5 +1,5 @@
 import m from "mithril";
-import { WebSocketHelper } from "../network/WebSocketHelper";
+import { FrontendWebSocketHelper } from "../network/FrontendWebSocketHelper";
 import { Login } from "./pages/Login";
 import "../../style.css"
 import { BasePage, PageVariables } from "./BasePage";
@@ -15,14 +15,14 @@ export class Site {
 	private readonly view: HTMLElement
 	private currentPage: BasePage
 	
-	public readonly socket: WebSocketHelper
+	public readonly socket: FrontendWebSocketHelper
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
 	private isLoggedInState: boolean = false
 	
 	constructor() {
 		this.view = document.getElementById("site")!
-		this.socket = new WebSocketHelper(this)
+		this.socket = new FrontendWebSocketHelper(this)
 		this.socket.connect()
 		
 		window.onhashchange = async (e) => {
@@ -49,7 +49,6 @@ export class Site {
 		try {
 			if(this.currentPage.constructor.name != page) {
 				this.currentPage = await this.importPage(page)
-			}
 			
 			if(variablesString) {
 				const variables: PageVariables = {}

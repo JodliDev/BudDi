@@ -6,7 +6,7 @@ import {Site} from "../views/Site";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
 
-export class WebSocketHelper {
+export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
 	private static readonly PORT = 13040
 	
@@ -22,8 +22,8 @@ export class WebSocketHelper {
 	
 	private createSocket(): WebSocket {
 		const protocol = location.protocol === "http:" ? "ws" : "wss"
-		const port = WebSocketHelper.PORT
-		const socket = new WebSocket(`${ protocol }://${ document.location.hostname }:${ port }/${ WebSocketHelper.PATH }`)
+		const port = FrontendWebSocketHelper.PORT
+		const socket = new WebSocket(`${ protocol }://${ document.location.hostname }:${ port }/${ FrontendWebSocketHelper.PATH }`)
 		this.socket = socket
 		this.waitPromise = new Promise<void>((resolve, reject) => {
 			socket.addEventListener("open", () => resolve())
