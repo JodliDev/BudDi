@@ -3,10 +3,15 @@ import "./dropdownMenu.css"
 
 const openedMenus: Record<string, DropdownMenuImpl> = {}
 
-interface DropdownOptions {
+export interface DropdownOptions {
 	dontCenter?: boolean
 	fullScreen?: boolean
+	manualPositioning?: boolean
 	connectedDropdowns?: string[]
+	eventName?: string
+	disableMenuPointerEvents?: boolean
+	customEvent?: () => void
+	updatePositionCallback?: (x: number, y: number) => void
 }
 
 class DropdownMenuImpl {
@@ -33,7 +38,7 @@ class DropdownMenuImpl {
 		
 		if(options?.fullScreen)
 			view.style.cssText = "left: 0; right: 0; top: 0; bottom: 0;"
-		else {
+		else if(!options?.manualPositioning) {
 			const rect = this.openerView.getBoundingClientRect()
 			const x = options?.dontCenter ? rect.left - 6 : rect.left + rect.width / 2 //6 is for padding (5) and border width (1)
 			const y = Math.max(0, rect.top + rect.height + 1)
@@ -46,15 +51,17 @@ class DropdownMenuImpl {
 				transform = "none"
 			
 			view.style.cssText = `left: ${x}px; top: ${y}px; max-width: ${maxWidth}px; max-height: ${maxHeight}px; transform: ${transform};`
-			window.setTimeout(this.updatePosition.bind(this), 10)
+			window.setTimeout(this.validatePosition.bind(this), 10)
 		}
 		document.body.appendChild(view)
 		
 		this.openerView.classList.add("dropdownOpened")
+		if(options?.disableMenuPointerEvents)
+			view.style.pointerEvents = "none"
 		return view
 	}
 	
-	public updatePosition(): void {
+	public validatePosition(): void {
 		const rect = this.view.getBoundingClientRect()
 		if(rect.left < 0) {
 			this.view.style.left = "5px"
@@ -126,20 +133,32 @@ interface DropdownComponentOptions {
 class DropdownComponent implements Component<DropdownComponentOptions, unknown> {
 	private currentClickListener?: () => void
 	
-	private setClickListener(vNode: VnodeDOM<DropdownComponentOptions, unknown>): void {
+	private setListener(vNode: VnodeDOM<DropdownComponentOptions, unknown>): void {
 		const id = vNode.attrs.id
 		const clickDom = vNode.attrs.clickElement as VnodeDOM //clickElement should have become a VnodeDOM when this is called
+		const options = vNode.attrs.options
+		const eventName = options?.eventName ?? "click"
 		if(this.currentClickListener)
-			clickDom.dom.removeEventListener("click", this.currentClickListener)
-		this.currentClickListener = () => openDropdown(id, vNode.dom, vNode.attrs.menuContent, vNode.attrs.options)
-		clickDom.dom.addEventListener("click", this.currentClickListener)
+			clickDom.dom.removeEventListener(eventName, this.currentClickListener)
+		this.currentClickListener = () => {
+			const impl = openDropdown(id, vNode.dom, vNode.attrs.menuContent, options)
+			if(impl && options?.manualPositioning) {
+				options.updatePositionCallback = (x: number, y: number) => {
+					impl.view.style.top = `${y}px`
+					impl.view.style.left = `${x}px`
+					impl.view.style.right = "unset"
+					impl.validatePosition()
+				}
+			}
+		}
+		clickDom.dom.addEventListener(eventName, this.currentClickListener)
 	}
 	
 	public oncreate(vNode: VnodeDOM<DropdownComponentOptions, unknown>): void {
-		this.setClickListener(vNode)
+		this.setListener(vNode)
 	}
 	public onupdate(vNode: VnodeDOM<DropdownComponentOptions, unknown>): void {
-		this.setClickListener(vNode) //update in case vNode has changed
+		this.setListener(vNode) //update in case vNode has changed
 	}
 	
 	
@@ -150,17 +169,18 @@ class DropdownComponent implements Component<DropdownComponentOptions, unknown> 
 	}
 }
 
-export function openDropdown(id: string, openerView: Element, menuContent: (close: () => void) => Vnode, options?: DropdownOptions): void {
+export function openDropdown(id: string, openerView: Element, menuContent: (close: () => void) => Vnode, options?: DropdownOptions): DropdownMenuImpl | null {
 	const dropDownMenuImpl = createDropdown(id, openerView, options)
 	if(dropDownMenuImpl)
 		m.mount(dropDownMenuImpl.view, {
 			onupdate(): void {
-				dropDownMenuImpl.updatePosition()
+				dropDownMenuImpl.validatePosition()
 			},
 			view: () => menuContent(() => closeDropdown(id))
 		})
 	else
 		closeDropdown(id)
+	return dropDownMenuImpl
 }
 
 export function DropdownMenu(
@@ -177,15 +197,11 @@ export function DropdownMenu(
 	})
 }
 
-interface NativeDropdownOptions extends DropdownOptions{
-	eventName?: string
-}
-
 export function NativeDropdownMenu(
 	id: string,
 	clickElement: HTMLElement,
 	menuContent: (close: () => void) => HTMLElement,
-	options?: NativeDropdownOptions,
+	options?: DropdownOptions,
 ): void {
 	clickElement.addEventListener(options?.eventName ?? "click" , () => {
 		const dropDownMenuImpl = createDropdown(id, clickElement, options)
