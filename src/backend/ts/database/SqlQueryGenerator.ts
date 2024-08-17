@@ -80,31 +80,34 @@ export class SqlQueryGenerator {
 	}
 	
 	
-	public createTableSql(): string {
+	public createStructureSql(): string {
 		let query = ""
 		for(const tableName in this.tables) {
-			const tables = this.tables[tableName]
-			
-			//columns:
-			const queryLines = []
-			for(const columnInfo of tables.columns) {
-				let queryPart = SqlQueryGenerator.getColumnDefinitionSql(columnInfo)
-				if(columnInfo.pk)
-					queryPart += " PRIMARY KEY"
-				queryLines.push(queryPart)
-			}
-			
-			//foreign keys:
-			if(tables.foreignKeys) {
-				for(const foreignKey in tables.foreignKeys) {
-					queryLines.push(SqlQueryGenerator.getForeignKeySql(foreignKey, tables.foreignKeys[foreignKey]))
-				}
-			}
-			
-			query += `CREATE TABLE IF NOT EXISTS ${tableName} (\n\t${queryLines.join(",\n\t")}\n);\n`
+			query += this.createTableSql(tableName)
 		}
 		
 		return query
+	}
+	public createTableSql(tableName: string): string {
+		const tables = this.tables[tableName]
+		
+		//columns:
+		const queryLines = []
+		for(const columnInfo of tables.columns) {
+			let queryPart = SqlQueryGenerator.getColumnDefinitionSql(columnInfo)
+			if(columnInfo.pk)
+				queryPart += " PRIMARY KEY"
+			queryLines.push(queryPart)
+		}
+		
+		//foreign keys:
+		if(tables.foreignKeys) {
+			for(const foreignKey in tables.foreignKeys) {
+				queryLines.push(SqlQueryGenerator.getForeignKeySql(foreignKey, tables.foreignKeys[foreignKey]))
+			}
+		}
+		
+		return `CREATE TABLE IF NOT EXISTS ${tableName} (\n\t${queryLines.join(",\n\t")}\n);\n`
 	}
 	
 	private static getForeignKeySql(foreignKey: string, foreignKeyInfo: ForeignKeyInfo<BasePublicTable>): string {

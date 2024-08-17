@@ -32,14 +32,29 @@ export class DatabaseMigrationManager {
 		
 		const transaction = db.transaction(() => {
 			//Run pre migrations:
-			const preMigrationData = dbInstructions.preMigration(db, fromVersion, dbInstructions.version)
+			const preMigrationData = dbInstructions.preMigration(
+				db,
+				(tableNames: string[]) => {
+					for(const tableName of tableNames) {
+						this.recreateTable(tableStructure.tables[tableName])
+						db.exec(tableStructure.createTableSql(tableName))
+					}
+					
+					// If there were foreign keys involved, we have to create them in reversed order
+					
+					this.columnsToTransfer = this.columnsToTransfer.reverse()
+					this.moveDataFromBackup()
+				},
+				fromVersion,
+				dbInstructions.version
+			)
 			
 			//Find changed foreign keys:
 			if(tableExists)
 				this.migrateForeignKeys(tableStructure)
 			
 			//(re)create tables if needed:
-			const tableQuery = tableStructure.createTableSql()
+			const tableQuery = tableStructure.createStructureSql()
 			console.log(`New table definitions:\n${tableQuery}`)
 			db.exec(tableQuery)
 			
@@ -71,17 +86,15 @@ export class DatabaseMigrationManager {
 		
 		const query = SqlQueryGenerator.getDropTableSql(tableName)
 		const statement = this.db.prepare(query)
-		const result = statement.run()
+		statement.run()
 		
-		if(result.changes != 0) {
-			console.log(`Dropped table ${tableName}`)
-			this.droppedTables[tableName] = true
-			this.columnsToTransfer.push({
-				table: structure.table,
-				backupIdColumn: structure.primaryKey.toString(),
-				columns: structure.columns.map(column => column.name)
-			})
-		}
+		console.log(`Dropped table ${tableName}`)
+		this.droppedTables[tableName] = true
+		this.columnsToTransfer.push({
+			table: structure.table,
+			backupIdColumn: structure.primaryKey.toString(),
+			columns: structure.columns.map(column => column.name)
+		})
 	}
 	
 	private migrateForeignKeys(tableStructure: SqlQueryGenerator) {
@@ -110,8 +123,8 @@ export class DatabaseMigrationManager {
 				
 				if(!newForeignKey
 					|| oldForeignKey.to != newForeignKey.to
-					|| (oldForeignKey.on_update != "NO ACTION" && oldForeignKey.on_update != newForeignKey.on_update)
-					|| (oldForeignKey.on_delete != "NO ACTION" && oldForeignKey.on_delete != newForeignKey.on_delete)
+					|| (oldForeignKey.on_update != newForeignKey.on_update)
+					|| (oldForeignKey.on_delete != newForeignKey.on_delete)
 				) {
 					count = -1
 					break
@@ -193,10 +206,11 @@ export class DatabaseMigrationManager {
 				else {
 					query = SqlQueryGenerator.createInsertSql(BasePublicTable.getName(entry.table), values)
 					queryValues = Object.values(sqlValues)
-				}				
+				}
 				const statement = this.db.prepare(query)
 				statement.run(queryValues)
 			}
         }
+		this.columnsToTransfer = []
 	}
 }
