@@ -151,9 +151,12 @@ export class DatabaseManager {
 				for(const selectEntry of join.select) {
 					joined[selectEntry] = line[selectEntry.toString()] as any
 				}
-				joinedResult[BasePublicTable.getName(join.joinedTable)] = joined
+				joinedResult[BasePublicTable.getName(join.joinedTable)] = this.typesToJs(join.joinedTable, [joined])[0]
 			}
-            response.push({item: entry, joined: joinedResult})
+            response.push({
+				item: this.typesToJs(table, [entry])[0],
+				joined: joinedResult
+			})
 		}
 		return response
 	}
