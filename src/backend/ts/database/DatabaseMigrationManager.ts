@@ -84,17 +84,27 @@ export class DatabaseMigrationManager {
 	private recreateTable(structure: TableStructure<any>) {
 		const tableName = BasePublicTable.getName(structure.table)
 		
-		const query = SqlQueryGenerator.getDropTableSql(tableName)
-		const statement = this.db.prepare(query)
-		statement.run()
-		
-		console.log(`Dropped table ${tableName}`)
-		this.droppedTables[tableName] = true
-		this.columnsToTransfer.push({
-			table: structure.table,
-			backupIdColumn: structure.primaryKey.toString(),
-			columns: structure.columns.map(column => column.name)
-		})
+		if(this.tableExists(tableName)) {
+			const query = SqlQueryGenerator.getDropTableSql(tableName)
+			const statement = this.db.prepare(query)
+			statement.run()
+			
+			console.log(`Dropped table ${tableName}`)
+			this.droppedTables[tableName] = true
+			this.columnsToTransfer.push({
+				table: structure.table,
+				backupIdColumn: structure.primaryKey.toString(),
+				columns: structure.columns.map(column => column.name)
+			})
+		}
+		else
+			console.log(`Not recreating ${tableName} because it does not exist`)
+	}
+	
+	private tableExists(tableName: string): boolean {
+		const statement = this.db.prepare("SELECT name FROM sqlite_master WHERE name = ? LIMIT 1")
+		const result = statement.get(tableName)
+		return !!result
 	}
 	
 	private migrateForeignKeys(tableStructure: SqlQueryGenerator) {
@@ -123,8 +133,8 @@ export class DatabaseMigrationManager {
 				
 				if(!newForeignKey
 					|| oldForeignKey.to != newForeignKey.to
-					|| (oldForeignKey.on_update != newForeignKey.on_update)
-					|| (oldForeignKey.on_delete != newForeignKey.on_delete)
+					|| ((oldForeignKey.on_update ?? "NO ACTION") != (newForeignKey.on_update ?? "NO ACTION"))
+					|| ((oldForeignKey.on_delete ?? "NO ACTION") != (newForeignKey.on_delete ?? "NO ACTION"))
 				) {
 					count = -1
 					break
