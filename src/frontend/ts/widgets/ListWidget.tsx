@@ -14,6 +14,7 @@ import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {EditMessage} from "../../../shared/messages/EditMessage";
 import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
+import {BindValueToInput} from "./BindValueToInput";
 
 const PAGE_SIZE = 25;
 
@@ -30,20 +31,19 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 	private data: Partial<EntryT> = {}
 	
 	getTypedInputView(data: Partial<EntryT>, type: string, obj: EntryT, column: keyof EntryT) {
-		const eventHandler = (formatValue: (value: string) => any, e: InputEvent) => {
-			data[column] = formatValue((e.target as HTMLInputElement)?.value)
-		}
-		
 		const entry = data[column] ?? obj[column]
-		switch(type) {
+		let inputType: string
+		switch(typeof entry) {
 			case "number":
-				return <input type="number" value={entry} onchange={eventHandler.bind(this, value => parseInt(value))}/>
-			case "string":
-				return <input value={entry} onchange={eventHandler.bind(this, value => value.toString())}/>
+				inputType = "number"
+				break
 			case "boolean":
-				// @ts-ignore
-				return <input type="checkbox" checked={!!entry} onclick={() => data[column] = !entry}/>
+				inputType = "checkbox"
+				break
+			default:
+				inputType = "text"
 		}
+		return <input type={inputType} { ...BindValueToInput(() => entry, value => data[column] = value) }/>
 	}
 	
 	view(vNode: Vnode<ListEditComponentOptions<EntryT>, unknown>): Vnode {
