@@ -94,7 +94,6 @@ export class Site {
 		setCookie("sessionHash", sessionHash)
 		this.isLoggedInState = true
 		m.redraw()
-		this.goto("Dashboard")
 	}
 	
 	public logout() {
