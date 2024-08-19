@@ -30,7 +30,6 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 			this.data.from
 		)
 		
-		
 		session.send(new ListResponseMessage(
 			this.data, 
 			true,
@@ -95,8 +94,10 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 	
 	public static checkValues(values: Partial<BasePublicTable>, publicObj: BasePublicTable) {
 		const primaryKey = publicObj.getPrimaryKey()
+		if(Object.prototype.hasOwnProperty.call(publicObj, primaryKey))
+			delete values[primaryKey as keyof BasePublicTable]
 		for(const key in values) {
-			if(!Object.prototype.hasOwnProperty.call(publicObj, key) || key == primaryKey)
+			if(!Object.prototype.hasOwnProperty.call(publicObj, key))
 				throw new FaultyListException()
 		}
 	}
