@@ -125,6 +125,7 @@ export class Dashboard extends BasePage {
 	}
 	
 	async load(): Promise<void> {
+		await super.load()
 		await this.loadNeededDonations()
 	}
 	
