@@ -6,6 +6,7 @@ import {LoginSession} from "./dataClasses/LoginSession";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import BetterSqlite3 from "better-sqlite3";
 import {NeedsDonationEntry} from "./dataClasses/NeedsDonationEntry";
+import {Schedule} from "./dataClasses/Schedule";
 
 export class DatabaseInstructions {
 	public version: number = 1
@@ -15,7 +16,8 @@ export class DatabaseInstructions {
 		LoginSession,
 		User,
 		WaitingEntry,
-		NeedsDonationEntry
+		NeedsDonationEntry,
+		Schedule
 	]
 	
 	public preMigration(db: BetterSqlite3.Database, recreateTables: (tableName: string[]) => void, fromVersion: number, toVersion: number): Record<number, unknown> {

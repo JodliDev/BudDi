@@ -40,8 +40,16 @@ label, .labelLike {
 		border-radius: 5px;
 		box-shadow: var(--color-surface) 0 0 5px 1px;
 	}
+	small:last-child {
+		margin: -3px 0 10px 5px;
+		font-size: x-small;
+		color: gray;
+	}
+	input[type="number"] {
+		min-width: 100px
+	}
 	input[type="checkbox"], input[type="radio"], span {
-		margin: 15px 0 0 5px;
+		margin: 20px 0 10px 5px;
 	}
 }
 

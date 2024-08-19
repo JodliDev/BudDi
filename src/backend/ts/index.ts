@@ -4,6 +4,11 @@ import {WebSocketHelper} from "./network/WebSocketHelper";
 import express from 'express';
 import {Lang} from "../../shared/Lang";
 import {Options} from "./Options";
+import {DailyScheduleManager} from "./DailyScheduleManager";
+import {LoginSession} from "./database/dataClasses/LoginSession";
+import {column} from "./database/column";
+
+const LOGIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90
 
 const options = new Options()
 console.log(options)
@@ -22,6 +27,13 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 				await message.exec(session, dbManager)
 			}
 		)
+		
+		const scheduler = new DailyScheduleManager(dbManager)
+		
+		scheduler.addSchedule({ repeatDays: 1 }, () => {
+			const oldestLoginSession = Date.now() - LOGIN_SESSION_MAX_AGE
+			dbManager.delete(LoginSession, `${column(LoginSession, "lastUpdate")} < ${oldestLoginSession}`)
+		})
 		
 		
 		const webServer = express()
