@@ -64,7 +64,7 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 	
 	public static async getPublicTableClass(tableName: string): Promise<Class<BasePublicTable>> {
 		const className = `Pub${tableName}`
-		const tableClass = await import(`../../../../shared/public/${className}`);
+		const tableClass = await require(`../../../../shared/public/${className}`);
 		if(!tableClass)
 			throw new FaultyListException()
 		
@@ -82,7 +82,7 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 	
 	public static async getTableClass(publicTableClass: Class<BasePublicTable>): Promise<Class<BasePublicTable>> {
 		const tableName = BasePublicTable.getName(publicTableClass)
-		const tableClass = await import(`../../database/dataClasses/${tableName}`);
+		const tableClass = await require(`../../database/dataClasses/${tableName}`);
 		if(!tableClass)
 			throw new FaultyListException()
 		

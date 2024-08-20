@@ -39,7 +39,7 @@ export class WebSocketHelper {
 				try {
 					const message = JSON.parse(data.toString()) as BaseMessage
 					const className = `${message.name}Action`
-					const messageClass = await import(`./messageActions/${className}`);
+					const messageClass = await require(`./messageActions/${className}`);
 					
 					if(messageClass) {
 						const messageAction = new messageClass[className](message) as BaseBackendMessageAction<BaseMessage>;

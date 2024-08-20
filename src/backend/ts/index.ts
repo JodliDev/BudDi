@@ -37,7 +37,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 		
 		
 		const webServer = express()
-		webServer.use(options.pathHttp, express.static(options.frontend))
+		webServer.use(options.pathHttp, express.static(`${options.root}/${options.frontend}`))
 		
 		
 		webServer.listen(options.portHttp, () =>

@@ -1,4 +1,4 @@
-const frontend = require("./module.fronted");
+const frontend = require("./module.frontend");
 const backend = require("./module.backend");
 
 module.exports = [

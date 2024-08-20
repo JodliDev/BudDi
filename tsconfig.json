@@ -1,6 +1,5 @@
 {
 	"compilerOptions": {
-		
 		"target": "es2016",
 		"module": "node16",
 		"moduleResolution": "node16", /* Make sure dynamic imports are saved in their own chunks*/
@@ -10,10 +9,10 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
-		"rootDir": "./src",
-		"outDir": "./dist",
 		"jsx": "react" /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */,
 		"jsxFactory": "m",
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"rootDir": "./src",
+		"outDir": "./dist"
 	}
 }

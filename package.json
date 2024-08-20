@@ -9,14 +9,11 @@
 	"license": "",
 	"author": "JodliDev",
 	"scripts": {
-		"watch_all": "webpack --watch --config build_config/build.dev.js --stats-error-details",
-		"run": "npm run prepare_dist & node --enable-source-maps --watch dist/backend/backend.js",
-		"build_production": "webpack --config build_config/build.production.js",
-		"watch_only_backend": "node --watch -r ts-node/register src/backend/ts/index.ts --watch-preserve-output",
-		"run_only_frontend": "webpack serve --config build_config/build.dev.js --stats-error-details",
-		
-		"prepare_dist": "mkdir -p dist/backend & mkdir -p dist/frontend & mkdir -p dist/config"
-		
+		"dev_backend": "npm run prepare_dist & node --watch -r ts-node/register src/backend/ts/index.ts -- sqlite=dist/config frontend=dist/frontend",
+		"dev_frontend": "webpack --watch --stats-error-details --config src/frontend/webpack_config/build.dev.js",
+		"build_production": "npm run prepare_dist & webpack --config webpack_config/build.production.js",
+		"run_production": "node dist/backend/backend.js src/backend/ts/index.ts -- sqlite=dist/config frontend=dist/frontend",
+		"prepare_dist": "node create_folder_structure.js"
 	},
 	"dependencies": {
 		"bcrypt": "^5.1.1",

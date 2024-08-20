@@ -43,7 +43,7 @@ export class DatabaseManager {
 		
 		if(dbInstructions.version != version) {
 			const backupName = `from_${version}_to_${dbInstructions.version}`
-			const backupPath = `${options.sqlite}${backupName}.sqlite`
+			const backupPath = `${options.root}/${options.sqlite}/${backupName}.sqlite`
 			await db.backup(backupPath)
 			const backupDb = new BetterSqlite3(backupPath)
 			
@@ -55,9 +55,9 @@ export class DatabaseManager {
 	}
 	
 	private constructor(options: Options) {
-		const path = options.sqlite
-		console.log(`Loading Database ${path}${DB_NAME}`)
-		this.db = new BetterSqlite3(`${path}${DB_NAME}`)
+		const path = `${options.root}/${options.sqlite}`
+		console.log(`Loading Database ${path}/${DB_NAME}`)
+		this.db = new BetterSqlite3(`${path}/${DB_NAME}`)
 		
 	}
 	

@@ -1,7 +1,8 @@
 export class Options {
 	public readonly lang: string = "en"
-	public readonly frontend: string = `${__dirname}/../frontend/`
-	public readonly sqlite: string = `${__dirname}/../config/`
+	public readonly root: string = process.cwd()
+	public readonly frontend: string = "../frontend"
+	public readonly sqlite: string = "../config"
 	public readonly portHttp: number = 1304
 	public readonly pathHttp: string = "/"
 	public readonly portWs: number = 13040
@@ -24,37 +25,6 @@ export class Options {
 					}
 				}
 			}
-			
-			
-			// let match = val.match("^lang=(.+)$")
-			// if(match) {
-			// 	this.lang = match[1]
-			// 	return
-			// }
-			//
-			// match = val.match("^frontend=(.+)$")
-			// if(match) {
-			// 	this.pathFrontend = match[1]
-			// 	return
-			// }
-			//
-			// match = val.match("^sqlite=(.+)$")
-			// if(match) {
-			// 	this.sqlite = match[1]
-			// 	return
-			// }
-			//
-			// match = val.match("^portHttp=(.+)$")
-			// if(match) {
-			// 	this.portHttp = parseInt(match[1])
-			// 	return
-			// }
-			//
-			// match = val.match("^portWs=(.+)$")
-			// if(match) {
-			// 	this.portWs = parseInt(match[1])
-			// 	return
-			// }
 		}
 	}
 }
