@@ -20,6 +20,8 @@
 	"errorUnknown": "Unknown error",
 	"errorUserAlreadyExists": "User already exists",
 	"lastDonation": "Last donation",
+	"lastScheduleLoop": "Last run",
+	"nextScheduleLoop": "Next run",
 	"noEntries": "No entries",
 	"notDonatedYet": "Not donated yet",
 	"minimalNumberOfDaysBetweenRepeats": "Minimal number of days between repeats",

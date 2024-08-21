@@ -80,7 +80,18 @@ export class Schedule extends BasePage {
 			{ LoadingSpinner(this.isLoading) }
 			{ !this.isLoading && this.scheduleEnabled &&
 				<form class="surface vertical vAlignStart" onsubmit={this.saveSchedule.bind(this)}>
-					
+					{ schedule.lastLoop != 0 &&
+						<div class="labelLike subSurface">
+							<small>{Lang.get("lastScheduleLoop")}</small>
+							<span>{(new Date(schedule.lastLoop)).toLocaleDateString()}</span>
+						</div>
+					}
+					{ schedule.nextLoop != 0 &&
+						<div class="labelLike subSurface">
+							<small>{Lang.get("nextScheduleLoop")}</small>
+							<span>{(new Date(schedule.nextLoop)).toLocaleDateString()}</span>
+						</div>
+					}
 					<label class="subSurface">
 						<small>{Lang.get("daysBetween")}</small>
 						<input type="number" min="1"
