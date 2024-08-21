@@ -10,6 +10,7 @@ import {SessionLoginMessageAction} from "./messageActions/SessionLoginMessageAct
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ReasonedConfirmResponseMessage} from "../../../shared/messages/ReasonedConfirmResponseMessage";
+import {ServerSettingsMessage} from "../../../shared/messages/ServerSettingsMessage";
 
 export class WebSocketHelper {
 	private readonly wss: WebSocketServer;
@@ -24,6 +25,7 @@ export class WebSocketHelper {
 		
 		this.wss.on('connection', async (ws, connection) => {
 			const session = new WebSocketSession(ws)
+			session.send(new ServerSettingsMessage(Options.serverSettings))
 			
 			const cookies = connection.headers.cookie
 			if(cookies) {

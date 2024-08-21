@@ -3,15 +3,16 @@ import {WebSocketSession} from "./WebSocketSession";
 import {DatabaseManager} from "../database/DatabaseManager";
 import {BaseMessage} from "../../../shared/BaseMessage";
 import {NoPermissionException} from "../exceptions/NoPermissionException";
+import {LoggedInMessageAction} from "./LoggedInMessageAction";
 
-export abstract class AuthorisedMessageAction<T extends BaseMessage> extends BaseBackendMessageAction<T> {
+export abstract class AdminMessageAction<T extends BaseMessage> extends LoggedInMessageAction<T> {
 	
 	abstract authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void>
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		if(!session.isLoggedIn)
+		if(!session.isAdmin)
 			throw new NoPermissionException()
 		
-		return this.authorizedExec(session, db)
+		return super.exec(session, db)
 	}
 }

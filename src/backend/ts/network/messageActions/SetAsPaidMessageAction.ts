@@ -1,14 +1,14 @@
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {DonationEntry} from "../../database/dataClasses/DonationEntry";
 import {NeedsDonationEntry} from "../../database/dataClasses/NeedsDonationEntry";
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
 
-export class SetAsPaidMessageAction extends AuthorisedMessageAction<SetAsPaidMessage> {
+export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [needsDonationEntry] = db.tableSelect(

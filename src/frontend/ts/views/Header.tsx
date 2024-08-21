@@ -25,7 +25,7 @@ export class Header {
 					] 
 					: [
 						this.getLine(currentPage, "Login"),
-						this.getLine(currentPage, "Register"),
+						this.site.serverSettings.registrationAllowed && this.getLine(currentPage, "Register"),
 					]
 				}
 				{ this.site.isAdmin &&

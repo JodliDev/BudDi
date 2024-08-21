@@ -2,12 +2,12 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {AddMessage} from "../../../../shared/messages/AddMessage";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ListMessageAction} from "./ListMessageAction";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {TableSettings} from "../../database/TableSettings";
 
-export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
+export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicListClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)
 		const publicObj = new publicListClass

@@ -2,7 +2,7 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {User} from "../../database/dataClasses/User";
 import {column} from "../../database/column";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {AddToDonationMessage} from "../../../../shared/messages/AddToDonationMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {DonationEntry} from "../../database/dataClasses/DonationEntry";
@@ -11,7 +11,7 @@ import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 import {AddToDonationMessageAction} from "./AddToDonationMessageAction";
 import {DonationAmountType} from "../../../../shared/public/PubUser";
 
-export class ChooseDonationMessageAction extends AuthorisedMessageAction<AddToDonationMessage> {
+export class ChooseDonationMessageAction extends LoggedInMessageAction<AddToDonationMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const success = ChooseDonationMessageAction.saveChoice(db, session.userId!)

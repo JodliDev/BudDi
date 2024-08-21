@@ -15,6 +15,7 @@
 	"donationAmount": "Donation amount",
 	"donationCalculation": "Donation calculation",
 	"enableSchedule": "Enable automatic schedule",
+	"enableRegistration": "Enable registration",
 	"errorAdd": "Could not add item",
 	"errorDelete": "Failed to delete",
 	"errorFaultyList": "Faulty list",

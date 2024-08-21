@@ -3,9 +3,9 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoginSession} from "../../database/dataClasses/LoginSession";
 import {LogoutMessage} from "../../../../shared/messages/LogoutMessage";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 
-export class LogoutMessageAction extends AuthorisedMessageAction<LogoutMessage> {
+export class LogoutMessageAction extends LoggedInMessageAction<LogoutMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [loginSession] = db.tableSelect(LoginSession, `${column(LoginSession, "userId")} = '${session.userId}'`, 1)

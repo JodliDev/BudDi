@@ -9,14 +9,14 @@ import bcrypt from "bcrypt";
 import {LoginSession} from "../../database/dataClasses/LoginSession";
 import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMessage";
 import {NoPermissionException} from "../../exceptions/NoPermissionException";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {AddToDonationMessage} from "../../../../shared/messages/AddToDonationMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {DonationEntry} from "../../database/dataClasses/DonationEntry";
 import {NeedsDonationEntry} from "../../database/dataClasses/NeedsDonationEntry";
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 
-export class AddToDonationMessageAction extends AuthorisedMessageAction<AddToDonationMessage> {
+export class AddToDonationMessageAction extends LoggedInMessageAction<AddToDonationMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [donationEntry] = db.tableSelect(

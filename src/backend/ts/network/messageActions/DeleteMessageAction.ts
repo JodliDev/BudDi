@@ -3,12 +3,12 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ListMessageAction} from "./ListMessageAction";
 import {TableSettings} from "../../database/TableSettings";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
-export class DeleteMessageAction extends AuthorisedMessageAction<DeleteMessage> {
+export class DeleteMessageAction extends LoggedInMessageAction<DeleteMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)
 		const publicObj = new publicTableClass

@@ -10,6 +10,7 @@ import {deleteCookie, setCookie} from "../Convenience";
 import {Lang, LangKey} from "../../../shared/Lang";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
+import {ServerSettings} from "../../../shared/ServerSettings";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -18,6 +19,7 @@ export class Site {
 	public readonly socket: FrontendWebSocketHelper
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
+	public serverSettings: ServerSettings = new ServerSettings()
 	public isAdmin: boolean = false
 	private isLoggedInState: boolean = false
 	public userId: number | bigint = 0
@@ -103,6 +105,7 @@ export class Site {
 		deleteCookie("sessionHash")
 		this.socket.send(new LogoutMessage())
 		this.isLoggedInState = false
+		this.isAdmin = false
 		m.redraw()
 		this.goto("Login")
 		// document.location.reload()

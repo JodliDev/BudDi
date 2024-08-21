@@ -1,4 +1,7 @@
+import {ServerSettings} from "../../shared/ServerSettings";
+
 export class Options {
+	public static serverSettings = new ServerSettings()
 	public readonly lang: string = "en"
 	public readonly root: string = process.cwd()
 	public readonly frontend: string = "../frontend"
@@ -21,6 +24,9 @@ export class Options {
 							break
 						case "number":
 							this[key as keyof this] = parseInt(match[1]) as any
+							break
+						case "boolean":
+							this[key as keyof this] = !!match[1] as any
 							break
 					}
 				}

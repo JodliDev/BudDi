@@ -5,15 +5,17 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {User} from "../../database/dataClasses/User";
 import bcrypt from "bcrypt";
 import {column} from "../../database/column";
-import {Lang} from "../../../../shared/Lang";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/ReasonedConfirmResponseMessage";
 import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
+import {Options} from "../../Options";
+import {NoPermissionException} from "../../exceptions/NoPermissionException";
 
 
 export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
+		if(!Options.serverSettings.registrationAllowed)
+			throw new NoPermissionException()
 		const [existingUser] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
 		if(existingUser)
 			throw new UsernameAlreadyExistsException()

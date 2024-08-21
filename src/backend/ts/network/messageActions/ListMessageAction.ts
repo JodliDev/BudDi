@@ -3,7 +3,7 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager, JoinedData, JoinedResponseEntry} from "../../database/DatabaseManager";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {ListResponseEntry, ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
-import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
+import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {Convenience} from "../../Convenience";
 import {BaseListMessage} from "../../../../shared/BaseListMessage";
 import {FaultyListException} from "../../exceptions/FaultyListException";
@@ -11,7 +11,7 @@ import {Class} from "../../../../shared/Class";
 import {column} from "../../database/column";
 import {TableSettings} from "../../database/TableSettings";
 
-export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
+export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)
 		const publicObj = new publicTableClass
