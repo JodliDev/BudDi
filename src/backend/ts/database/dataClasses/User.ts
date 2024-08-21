@@ -22,7 +22,7 @@ export class User extends PubUser {
 		settings.setOnBeforeAdd(() => {
 			throw new NoPermissionException()
 		})
-		settings.setListFilter(session => `${column(User, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => session.isAdmin ? "" : `${column(User, "userId")} = ${session.userId}`)
 		settings.setFloatValues("donationAmount")
 		return settings
 	}

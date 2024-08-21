@@ -30,7 +30,7 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 		const userId = db.insert(User, userData)
 		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${userId}`)
 		const success = userId != 0
-		session.login(userId, user.currency)
+		session.login(userId, user.isAdmin)
 		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 }

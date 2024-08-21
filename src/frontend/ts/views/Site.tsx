@@ -18,6 +18,7 @@ export class Site {
 	public readonly socket: FrontendWebSocketHelper
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
+	public isAdmin: boolean = false
 	private isLoggedInState: boolean = false
 	public userId: number | bigint = 0
 	public readonly waitForLogin: Promise<void>

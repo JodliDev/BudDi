@@ -20,7 +20,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		
 		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${this.data.userId}`, 1)
 		
-		session.login(user.userId, user.currency)
+		session.login(user.userId, user.isAdmin)
 		session.send(new SessionLoginMessage(this.data.userId, newSession.sessionHash))
 	}
 }
