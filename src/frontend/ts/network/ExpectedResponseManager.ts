@@ -1,6 +1,5 @@
 import {BaseMessage} from "../../../shared/BaseMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
-import {Class} from "../../../shared/Class";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
 
 export class ExpectedResponseManager {
