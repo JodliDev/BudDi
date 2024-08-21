@@ -6,10 +6,10 @@ import {ErrorMessage} from "../../../shared/messages/ErrorMessage";
 import {Lang} from "../../../shared/Lang";
 import {Options} from "../Options";
 import {Cookies} from "../../../shared/Cookies";
-import {LoginSession} from "../database/dataClasses/LoginSession";
-import {column} from "../database/column";
 import {SessionLoginMessageAction} from "./messageActions/SessionLoginMessageAction";
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
+import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
+import {ReasonedConfirmResponseMessage} from "../../../shared/messages/ReasonedConfirmResponseMessage";
 
 export class WebSocketHelper {
 	private readonly wss: WebSocketServer;
@@ -36,8 +36,13 @@ export class WebSocketHelper {
 			ws.on('error', console.error)
 			
 			ws.on('message', async (data ) => {
+				let confirmMessage: ConfirmMessage | null = null
+				
 				try {
 					const message = JSON.parse(data.toString()) as BaseMessage
+					if(ConfirmMessage.isConfirmMessage(message))
+						confirmMessage = message
+					
 					const className = `${message.name}Action`
 					const messageClass = await require(`./messageActions/${className}`);
 					
@@ -45,13 +50,16 @@ export class WebSocketHelper {
 						const messageAction = new messageClass[className](message) as BaseBackendMessageAction<BaseMessage>;
 						await onMessage(messageAction, session)
 					}
+					confirmMessage = null
 				}
 				catch(e: unknown) {
-					if(e instanceof Error)
-						console.trace(e.stack)
-					else
-						console.trace(e)
-					session.send(new ErrorMessage((e as Error)?.message ?? Lang.get("errorUnknown")))
+					const message = (e as Error)?.message ?? Lang.get("errorUnknown")
+					console.trace(e instanceof Error ? e.stack : e)
+					
+					session.send(confirmMessage
+						? new ReasonedConfirmResponseMessage(confirmMessage, false, message)
+						: new ErrorMessage(message)
+					)
 				}
 			})
 		})

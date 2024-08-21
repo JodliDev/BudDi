@@ -9,4 +9,8 @@ export class ConfirmMessage extends BaseMessage {
 		if(!this.confirmId)
 			this.confirmId = ++ConfirmMessage.idCounter
 	}
+	
+	public static isConfirmMessage(message: BaseMessage): message is ConfirmMessage {
+		return (message as ConfirmMessage).confirmId != undefined
+	}
 }
