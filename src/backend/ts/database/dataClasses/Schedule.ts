@@ -5,6 +5,7 @@ import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
 import {WaitingEntry} from "./WaitingEntry";
 import {DailyScheduleManager} from "../../DailyScheduleManager";
+import {column} from "../column";
 
 export class Schedule extends PubSchedule {
 	getSettings(): TableSettings<this> {
@@ -33,6 +34,7 @@ export class Schedule extends PubSchedule {
 		})
 		
 		settings.setOnBeforeEdit((data, _, userId) => setNextLoop(data))
+		settings.setListFilter(userId => `${column(Schedule, "userId")} = ${userId}`)
 		
 		return settings
 	}

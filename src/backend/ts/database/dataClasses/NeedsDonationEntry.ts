@@ -2,6 +2,7 @@ import {DonationEntry} from "./DonationEntry";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubNeedsDonationEntry} from "../../../../shared/public/PubNeedsDonationEntry";
+import {column} from "../column";
 
 export class NeedsDonationEntry extends PubNeedsDonationEntry {
 	getSettings(): TableSettings<this> {
@@ -20,6 +21,7 @@ export class NeedsDonationEntry extends PubNeedsDonationEntry {
 			on_delete: "CASCADE"
 		})
 		
+		settings.setListFilter(userId => `${column(NeedsDonationEntry, "userId")} = ${userId}`)
 		settings.setFloatValues("amount")
 		
 		settings.setOnBeforeAdd((data, db, userId) => {

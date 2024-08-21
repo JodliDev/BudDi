@@ -2,6 +2,7 @@ import {DonationEntry} from "./DonationEntry";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
+import {column} from "../column";
 
 export class WaitingEntry extends PubWaitingEntry {
 	getSettings(): TableSettings<this> {
@@ -23,6 +24,9 @@ export class WaitingEntry extends PubWaitingEntry {
 		settings.setOnBeforeAdd((data, db, userId) => {
 			data.userId = userId
 		})
+		
+		settings.setListFilter(userId => `${column(WaitingEntry, "userId")} = ${userId}`)
+		
 		
 		return settings
 	}
