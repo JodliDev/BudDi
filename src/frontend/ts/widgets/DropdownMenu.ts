@@ -147,6 +147,7 @@ class DropdownComponent implements Component<DropdownComponentOptions, unknown> 
 					impl.view.style.top = `${y}px`
 					impl.view.style.left = `${x}px`
 					impl.view.style.right = "unset"
+					impl.view.style.bottom = "unset"
 					impl.validatePosition()
 				}
 			}
