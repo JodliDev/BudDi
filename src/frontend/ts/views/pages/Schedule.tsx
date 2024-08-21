@@ -12,11 +12,13 @@ import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {AddMessage} from "../../../../shared/messages/AddMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
+import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 
 export class Schedule extends BasePage {
 	private scheduleEnabled: boolean = false
 	private schedule: PubSchedule = new PubSchedule()
 	private isLoading: boolean = false
+	private feedback: FeedbackCallBack = {}
 	
 	
 	private async saveSchedule() {
@@ -34,6 +36,8 @@ export class Schedule extends BasePage {
 			this.site.errorManager.error(Lang.get("errorUnknown"))
 		else
 			this.schedule = response.entry.item
+		
+		this.feedback.feedback!(response.success)
 		this.isLoading = false
 		m.redraw()
 	}
@@ -56,6 +60,7 @@ export class Schedule extends BasePage {
 	
 	async load(): Promise<void> {
 		await super.load()
+		await this.site.waitForLogin
 			
 		const response = await this.site.socket.sendAndReceive(
 			new ListMessage(PubSchedule, 0, 1)
@@ -77,43 +82,44 @@ export class Schedule extends BasePage {
 					await this.saveScheduleActivation()
 				}) }/>
 			</label>
-			{ LoadingSpinner(this.isLoading) }
-			{ !this.isLoading && this.scheduleEnabled &&
+			{ this.scheduleEnabled &&
 				<form class="surface vertical vAlignStart" onsubmit={this.saveSchedule.bind(this)}>
+					<h3>{Lang.get("Schedule")}</h3>
 					{ schedule.lastLoop != 0 &&
-						<div class="labelLike subSurface">
+						<div class="labelLike">
 							<small>{Lang.get("lastScheduleLoop")}</small>
-							<span>{(new Date(schedule.lastLoop)).toLocaleDateString()}</span>
+							<span class="subSurface">{(new Date(schedule.lastLoop)).toLocaleDateString()}</span>
 						</div>
 					}
 					{ schedule.nextLoop != 0 &&
-						<div class="labelLike subSurface">
+						<div class="labelLike">
 							<small>{Lang.get("nextScheduleLoop")}</small>
-							<span>{(new Date(schedule.nextLoop)).toLocaleDateString()}</span>
+							<span class="subSurface">{(new Date(schedule.nextLoop)).toLocaleDateString()}</span>
 						</div>
 					}
-					<label class="subSurface">
+					<label>
 						<small>{Lang.get("daysBetween")}</small>
-						<input type="number" min="1"
-							   max="31" {...BindValueToInput(() => schedule.repeatDays, value => schedule.repeatDays = value)}/>
+						<input type="number" min="1" max="31" {...BindValueToInput(() => schedule.repeatDays, value => schedule.repeatDays = value)}/>
 						<small>{Lang.get("minimalNumberOfDaysBetweenRepeats")}</small>
 					</label>
 					
-					<label class="subSurface">
+					<label>
+						<small>{Lang.get("dayOfMonth")}</small>
+						<div class="horizontal">
+							<input type="checkbox" {...BindValueToInput(() => schedule.fixedDayOfMonth != 0, value => schedule.fixedDayOfMonth = value ? 1 : 0)}/>
+							
+							{ schedule.fixedDayOfMonth != 0 &&
+								<input type="number" min="1" max="31"
+									{...BindValueToInput(() => schedule.fixedDayOfMonth, value => schedule.fixedDayOfMonth = value)}/>
+							}
+						</div>
 						<small>{Lang.get("atSpecificDayOfMonth")}</small>
-						<input
-							type="checkbox" {...BindValueToInput(() => schedule.fixedDayOfMonth != 0, value => schedule.fixedDayOfMonth = value ? 1 : 0)}/>
 					</label>
-					
-					{schedule.fixedDayOfMonth != 0 &&
-						<label class="subSurface">
-							<small>{Lang.get("dayOfMonth")}</small>
-							<input type="number" min="1"
-								   max="31" {...BindValueToInput(() => schedule.fixedDayOfMonth, value => schedule.fixedDayOfMonth = value)}/>
-						</label>
-					}
-					
-					<input type="submit" value={Lang.get("save")}/>
+					<div class="horizontal hAlignEnd vAlignCenter">
+						{ LoadingSpinner(this.isLoading, true) }
+						{ FeedbackIcon(this.feedback, true) }
+						<input type="submit" value={Lang.get("save")} disabled={this.isLoading}/>
+					</div>
 				</form>
 			}
 		</div>;
