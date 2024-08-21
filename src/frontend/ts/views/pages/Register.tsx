@@ -3,9 +3,7 @@ import m, { Vnode } from "mithril";
 import { LoadingSpinner } from "../../widgets/LoadingSpinner";
 import {RegisterMessage} from "../../../../shared/messages/RegisterMessage";
 import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/ReasonedConfirmResponseMessage";
-
-const USERNAME_MIN_LENGTH = 3
-const PASSWORD_MIN_LENGTH = 3
+import {PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH} from "../../Constants";
 
 export class Register extends BasePage {
 	private isLoading: boolean = false;
@@ -41,8 +39,8 @@ export class Register extends BasePage {
 		const password = (form.password as HTMLInputElement).value
         const passwordRepeat = (form.passwordRepeat as HTMLInputElement).value
 		
-        this.formIsValid = username.length > USERNAME_MIN_LENGTH
-			&& password.length > PASSWORD_MIN_LENGTH
+        this.formIsValid = username.length >= USERNAME_MIN_LENGTH
+			&& password.length >= PASSWORD_MIN_LENGTH
 			&& password == passwordRepeat
 		m.redraw()
 	}
