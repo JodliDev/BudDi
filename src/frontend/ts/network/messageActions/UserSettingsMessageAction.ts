@@ -6,5 +6,4 @@ export class UserSettingsMessageAction extends BaseFrontendMessageAction<UserSet
 	exec(site: Site): void {
 		site.setUserSettings(this.data.userSettings)
 	}
-	
 }
