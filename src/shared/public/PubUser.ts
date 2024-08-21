@@ -11,6 +11,7 @@ export class PubUser extends BasePublicTable {
 	}
 	
 	public userId: number | bigint = 0
+	public username: string = ""
 	public donationAmountType: number = DonationAmountType.PerEntry
 	public donationAmount: number = 1
 	

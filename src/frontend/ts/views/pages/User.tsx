@@ -110,6 +110,12 @@ export class User extends BasePage {
 					<small>{ Lang.get("infoDonationCalculation") }</small>
 				</label>
 				
+				<label>
+					<small>{ Lang.get("username") }</small>
+					<input type="text" {...BindValueToInput(() => this.user.username, value => this.user.username = value)}/>
+				</label>
+				
+				
 				<div class="horizontal hAlignEnd vAlignCenter">
 					{ LoadingSpinner(this.settingsSaving, true) }
 					{ FeedbackIcon(this.settingsFeedback, true) }
@@ -124,7 +130,7 @@ export class User extends BasePage {
 					<input type="text" {...BindValueToInput(() => this.newPassword, value => this.newPassword = value)}/>
 				</label>
 				<label>
-					<small>{ Lang.get("newPasswordRepeated") }</small>
+					<small>{ Lang.get("passwordRepeated") }</small>
 					<input type="text" {...BindValueToInput(() => this.newPasswordRepeat, value => this.newPasswordRepeat = value)}/>
 				</label>
 				

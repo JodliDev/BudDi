@@ -6,20 +6,17 @@ import {User} from "../../database/dataClasses/User";
 import bcrypt from "bcrypt";
 import {column} from "../../database/column";
 import {Lang} from "../../../../shared/Lang";
-import {ConfirmMessage} from "../../../../shared/messages/ConfirmMessage";
-import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/ReasonedConfirmResponseMessage";
+import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
 
 
 export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [existingUser] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
-		if(existingUser) {
-			session.send(new ReasonedConfirmResponseMessage(this.data, false, Lang.get("errorUserAlreadyExists")))
-			return
-		}
+		if(existingUser)
+			throw new UsernameAlreadyExistsException()
 		
 		const salt = await bcrypt.genSalt()
 		const hash = await bcrypt.hash(this.data.password, salt)
