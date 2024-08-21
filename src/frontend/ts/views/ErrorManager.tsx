@@ -54,7 +54,7 @@ export class ErrorManager {
 		})
 	}
 	public getView(): Vnode {
-		if(this.entries.length == 0)
+		if(this.entries.length == 0 && this.recentEntries.length == 0)
 			return <div></div>
 		
 		return <div class="errorBox">
