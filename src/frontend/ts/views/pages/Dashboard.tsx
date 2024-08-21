@@ -1,4 +1,3 @@
-import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {Lang} from "../../../../shared/Lang";
@@ -6,7 +5,6 @@ import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
 import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
 import {BtnWidget} from "../../widgets/BtnWidget";
 import {PubNeedsDonationEntry} from "../../../../shared/public/PubNeedsDonationEntry";
-import {AddToDonationMessage} from "../../../../shared/messages/AddToDonationMessage";
 import {ChooseDonationMessage} from "../../../../shared/messages/ChooseDonationMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
@@ -19,13 +17,14 @@ import {
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
+import {LoggedInBasePage} from "../LoggedInBasePage";
 
 interface NeedsDonationEntryInformation {
 	donationEntry: PubDonationEntry
 	needsDonationEntry: PubNeedsDonationEntry
 }
 
-export class Dashboard extends BasePage {
+export class Dashboard extends LoggedInBasePage {
 	private needsDonationEntries: NeedsDonationEntryInformation[] = []
 	private notDonatedListCallback: ListWidgetCallback = {}
 	private dropdownOptions: DropdownOptions = {
@@ -129,7 +128,6 @@ export class Dashboard extends BasePage {
 	async load(): Promise<void> {
 		await super.load()
 		await this.loadNeededDonations()
-		await this.site.waitForLogin
 		
 		const response = await this.site.socket.sendAndReceive(
 			new ListMessage(PubUser, 0, 1)

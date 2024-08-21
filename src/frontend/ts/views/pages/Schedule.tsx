@@ -1,20 +1,18 @@
-import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
-import {ScheduleRepeatOptions} from "../../../../shared/ScheduleRepeatOptions";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {LoadingSpinner} from "../../widgets/LoadingSpinner";
-import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {AddMessage} from "../../../../shared/messages/AddMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
+import {LoggedInBasePage} from "../LoggedInBasePage";
 
-export class Schedule extends BasePage {
+export class Schedule extends LoggedInBasePage {
 	private scheduleEnabled: boolean = false
 	private schedule: PubSchedule = new PubSchedule()
 	private isLoading: boolean = false
@@ -60,8 +58,7 @@ export class Schedule extends BasePage {
 	
 	async load(): Promise<void> {
 		await super.load()
-		await this.site.waitForLogin
-			
+		
 		const response = await this.site.socket.sendAndReceive(
 			new ListMessage(PubSchedule, 0, 1)
 		) as ListResponseMessage<PubSchedule>

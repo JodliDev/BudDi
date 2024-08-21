@@ -1,4 +1,3 @@
-import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
@@ -12,8 +11,9 @@ import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {DonationAmountType, PubUser} from "../../../../shared/public/PubUser";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
+import {LoggedInBasePage} from "../LoggedInBasePage";
 
-export class User extends BasePage {
+export class User extends LoggedInBasePage {
 	private user = new PubUser()
 	private settingsSaving: boolean = false
 	private settingsFeedback: FeedbackCallBack = {}
@@ -77,7 +77,6 @@ export class User extends BasePage {
 	
 	async load(): Promise<void> {
 		await super.load();
-		await this.site.waitForLogin
 		const response = await this.site.socket.sendAndReceive(
 			new ListMessage(PubUser, 0, 1)
 		) as ListResponseMessage<PubUser>
