@@ -9,7 +9,7 @@ import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {PASSWORD_MIN_LENGTH} from "../../Constants";
 import {DeleteAccountMessage} from "../../../../shared/messages/DeleteAccountMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
-import {PubUser} from "../../../../shared/public/PubUser";
+import {DonationAmountType, PubUser} from "../../../../shared/public/PubUser";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 
@@ -89,9 +89,25 @@ export class User extends BasePage {
 	getView(): Vnode {
 		return <div class="vertical hAlignCenter">
 			<form class="surface vertical vAlignStart" onsubmit={this.saveUserSettings.bind(this)}>
+				<h3>{ Lang.get("settings") }</h3>
+				
 				<label>
 					<small>{ Lang.get("currency") }</small>
 					<input type="text" {...BindValueToInput(() => this.user.currency, value => this.user.currency = value)}/>
+				</label>
+				
+				<label>
+					<small>{ Lang.get("donationAmount") }</small>
+					<input type="number" {...BindValueToInput(() => this.user.donationAmount, value => this.user.donationAmount = value)}/>
+				</label>
+				
+				<label>
+					<small>{ Lang.get("donationCalculation") }</small>
+					<select {...BindValueToInput(() => this.user.donationAmountType, value => this.user.donationAmountType = value)}>
+						<option value={DonationAmountType.PerEntry}>{Lang.get("perEntry")}</option>
+						<option value={DonationAmountType.Fixed}>{Lang.get("fixed")}</option>
+					</select>
+					<small>{ Lang.get("infoDonationCalculation") }</small>
 				</label>
 				
 				<div class="horizontal hAlignEnd vAlignCenter">
