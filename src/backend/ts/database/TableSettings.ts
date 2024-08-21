@@ -8,7 +8,7 @@ export class TableSettings<TableT> {
 	public hasForeignKeys: boolean = false
 	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
-	public onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
+	public onBeforeEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void = () => { }
 	private listFilter?: (userId: number | bigint) => string = undefined
 	
 	public getWhere(userId: number | bigint, where?: string): string | undefined {
@@ -22,6 +22,10 @@ export class TableSettings<TableT> {
 	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }
 		this.hasForeignKeys = true
+	}
+	
+	setOnBeforeEdit(onEdit: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {
+		this.onBeforeEdit = onEdit
 	}
 	
 	setOnBeforeAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {

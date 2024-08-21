@@ -23,10 +23,12 @@ export class DailyScheduleManager {
 	private scheduleLoop(): void {
 		const date = new Date()
 		const now = date.getTime()
-		date.setHours(24, 0, 0, 0)
+		date.setHours(24, 30, 0, 0)
 		const midnight = date.getTime()
+		const loopMs = midnight - now
 		
-		setTimeout(this.loop.bind(this), midnight - now)
+		console.log(`Next schedule loop will run in ${Math.floor(loopMs / 1000 / 60)} min`)
+		setTimeout(this.loop.bind(this), loopMs)
 	}
 	
 	public loop(): void {
@@ -37,39 +39,42 @@ export class DailyScheduleManager {
 		for(const schedule of schedules) {
 			ChooseDonationMessageAction.saveChoice(this.db, schedule.userId)
 			
-			const newTimestamp = this.considerOptions(schedule, now)
-			this.db.update(Schedule, { "=": { nextLoop: newTimestamp } }, `${column(Schedule, "scheduleId")} = ${schedule.scheduleId}`)
+			const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)
+			this.db.update(
+				Schedule,
+				{ "=": { nextLoop: newTimestamp, lastLoop: now } },
+				`${column(Schedule, "scheduleId")} = ${schedule.scheduleId}`
+			)
 		}
 		
 		for(const entry of this.scheduleEntries) {
 			if(entry.nextRun <= now) {
 				entry.callback()
-				entry.nextRun = this.considerOptions(entry, now)
+				entry.nextRun = DailyScheduleManager.considerOptions(entry, now)
 			}
 		}
 		
 		this.scheduleLoop()
 	}
 	
-	private considerOptions(options: ScheduleRepeatOptions, timestamp: number): number {
+	public static considerOptions(options: ScheduleRepeatOptions, timestamp: number): number {
 		timestamp += oneDay * options.repeatDays
+		const date = new Date(timestamp)
+		date.setHours(0, 0, 0, 0)
 		
 		if(options.fixedDayOfMonth) {
-			const date = new Date(timestamp)
 			date.setDate(options.fixedDayOfMonth)
 			if(date.getTime() < timestamp)
 				date.setMonth(date.getMonth() + 1, options.fixedDayOfMonth)
-			
-			timestamp = date.getTime()
-			
 		}
+		timestamp = date.getTime()
 		return timestamp
 	}
 	
 	public addSchedule(options: ScheduleRepeatOptions, callback: () => void): void {
 		this.scheduleEntries.push({
 			callback: callback,
-			nextRun: this.considerOptions(options, Date.now()),
+			nextRun: DailyScheduleManager.considerOptions(options, Date.now()),
 			...options
 		})
 	}
