@@ -18,7 +18,7 @@ export class DeleteMessageAction extends AuthorisedMessageAction<DeleteMessage> 
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
 		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
-		const response = db.delete(tableClass, settings?.getWhere(session.userId!, where) ?? where, 1)
+		const response = db.delete(tableClass, settings?.getWhere(session, where) ?? where, 1)
 		
 		session.send(new ConfirmResponseMessage(this.data, response == 1))
 	}

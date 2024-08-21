@@ -25,7 +25,7 @@ export class ListMessageAction extends AuthorisedMessageAction<ListMessage> {
 			tableClass,
 			publicObj.getColumnNames(),
 			settings,
-			settings?.getWhere(session.userId!),
+			settings?.getWhere(session),
 			this.data.limit,
 			this.data.from
 		)

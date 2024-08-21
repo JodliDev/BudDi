@@ -21,11 +21,11 @@ export class NeedsDonationEntry extends PubNeedsDonationEntry {
 			on_delete: "CASCADE"
 		})
 		
-		settings.setListFilter(userId => `${column(NeedsDonationEntry, "userId")} = ${userId}`)
+		settings.setListFilter(session => `${column(NeedsDonationEntry, "userId")} = ${session.userId}`)
 		settings.setFloatValues("amount")
 		
-		settings.setOnBeforeAdd((data, db, userId) => {
-			data.userId = userId
+		settings.setOnBeforeAdd((data, db, session) => {
+			data.userId = session.userId
 		})
 		
 		return settings

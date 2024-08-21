@@ -17,7 +17,7 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		settings?.onBeforeEdit(this.data.values, db, session.userId!)
+		settings?.onBeforeEdit(this.data.values, db, session)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
 		let count = 0
@@ -25,13 +25,13 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 			++count
 		}
 		
-		const response = count == 0 ? 1 : db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session.userId!, where) ?? where, 1)
+		const response = count == 0 ? 1 : db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session, where) ?? where, 1)
 		
 		const joinedResponse = await db.joinedSelectForPublicTable(
 			tableClass,
 			publicObj.getColumnNames(),
 			settings,
-			settings?.getWhere(session.userId!, where) ?? where,
+			settings?.getWhere(session, where) ?? where,
 			1
 		)
 		session.send(new ListEntryResponseMessage<BasePublicTable>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))

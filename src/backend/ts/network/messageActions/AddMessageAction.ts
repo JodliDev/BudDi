@@ -17,7 +17,7 @@ export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 		ListMessageAction.checkValues(this.data.values, publicObj)
 		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		settings?.onBeforeAdd(this.data.values, db, session.userId!)
+		settings?.onBeforeAdd(this.data.values, db, session)
 		
 		const response = db.insert(listClass, this.data.values)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
@@ -30,7 +30,7 @@ export class AddMessageAction extends AuthorisedMessageAction<AddMessage> {
 			listClass,
 			publicObj.getColumnNames(),
 			settings,
-			settings?.getWhere(session.userId!, where) ?? where,
+			settings?.getWhere(session, where) ?? where,
 			1
 		)
 		session.send(new ListEntryResponseMessage<BasePublicTable>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))

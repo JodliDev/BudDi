@@ -17,21 +17,22 @@ export class Header {
 		return <div class="siteHeader">
 			{ this.site.errorManager.getView() }
 			<div class="navigation">
-				{
-					this.site.isLoggedIn()
-						? [
-							this.getLine(currentPage, "Dashboard"),
-							this.getLine(currentPage, "Schedule"),
-							this.getLine(currentPage, "User"),
-						] 
-						: [
-							this.getLine(currentPage, "Login"),
-							this.getLine(currentPage, "Register"),
-						]
-					
+				{ this.site.isLoggedIn()
+					? [
+						this.getLine(currentPage, "Dashboard"),
+						this.getLine(currentPage, "Schedule"),
+						this.getLine(currentPage, "User"),
+					] 
+					: [
+						this.getLine(currentPage, "Login"),
+						this.getLine(currentPage, "Register"),
+					]
+				}
+				{ this.site.isAdmin &&
+					this.getLine(currentPage, "Admin")
 				}
 			</div>
-			{this.site.isLoggedIn() && 
+			{ this.site.isLoggedIn() && 
 				<span class="clickable logoutBtn" onclick={this.site.logout.bind(this.site)}>{Lang.get("Logout")}</span>
 			}
 		</div>

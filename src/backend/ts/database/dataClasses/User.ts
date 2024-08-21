@@ -12,17 +12,17 @@ export class User extends PubUser {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		
-		settings.setOnBeforeEdit((data, db, userId) => {
+		settings.setOnBeforeEdit((data, db, session) => {
 			if(Object.prototype.hasOwnProperty.call(data, "username")) {
 				const [existingUser] = db.tableSelect(User, `${column(User, "username")} = '${data.username}'`, 1)
-				if(existingUser && existingUser.userId != userId)
+				if(existingUser && existingUser.userId != session.userId)
 					throw new UsernameAlreadyExistsException()
 			}
 		})
 		settings.setOnBeforeAdd(() => {
 			throw new NoPermissionException()
 		})
-		settings.setListFilter(userId => `${column(User, "userId")} = ${userId}`)
+		settings.setListFilter(session => `${column(User, "userId")} = ${session.userId}`)
 		settings.setFloatValues("donationAmount")
 		return settings
 	}

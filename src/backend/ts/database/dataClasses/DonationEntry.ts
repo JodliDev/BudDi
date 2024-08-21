@@ -14,14 +14,14 @@ export class DonationEntry extends PubDonationEntry {
 			on_delete: "CASCADE"
 		})
 		
-		settings.setOnBeforeAdd((data, db, userId) => {
-			data.userId = userId
+		settings.setOnBeforeAdd((data, db, session) => {
+			data.userId = session.userId
 		})
 		settings.setOnAfterAdd((data, db, addedId) => {
 			db.insert(WaitingEntry, { donationEntryId: addedId, userId: data.userId })
 		})
 		
-		settings.setListFilter(userId => `${column(DonationEntry, "userId")} = ${userId}`)
+		settings.setListFilter(session => `${column(DonationEntry, "userId")} = ${session.userId}`)
 		settings.setFloatValues("donationsSum")
 
 		return settings

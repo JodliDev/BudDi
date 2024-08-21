@@ -21,11 +21,11 @@ export class WaitingEntry extends PubWaitingEntry {
 			on_delete: "CASCADE"
 		})
 		
-		settings.setOnBeforeAdd((data, db, userId) => {
-			data.userId = userId
+		settings.setOnBeforeAdd((data, db, session) => {
+			data.userId = session.userId
 		})
 		
-		settings.setListFilter(userId => `${column(WaitingEntry, "userId")} = ${userId}`)
+		settings.setListFilter(session => `${column(WaitingEntry, "userId")} = ${session.userId}`)
 		
 		
 		return settings

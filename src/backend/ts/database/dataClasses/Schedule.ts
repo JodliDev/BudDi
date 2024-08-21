@@ -28,13 +28,13 @@ export class Schedule extends PubSchedule {
 			)
 		}
 		
-		settings.setOnBeforeAdd((data, _, userId) => {
-			data.userId = userId
+		settings.setOnBeforeAdd((data, _, session) => {
+			data.userId = session.userId
 			setNextLoop(data)
 		})
 		
-		settings.setOnBeforeEdit((data, _, userId) => setNextLoop(data))
-		settings.setListFilter(userId => `${column(Schedule, "userId")} = ${userId}`)
+		settings.setOnBeforeEdit((data) => setNextLoop(data))
+		settings.setListFilter(session => `${column(Schedule, "userId")} = ${session.userId}`)
 		
 		return settings
 	}
