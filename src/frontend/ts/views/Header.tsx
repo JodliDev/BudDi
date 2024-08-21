@@ -22,6 +22,7 @@ export class Header {
 						? [
 							this.getLine(currentPage, "Dashboard"),
 							this.getLine(currentPage, "Schedule"),
+							this.getLine(currentPage, "User"),
 						] 
 						: [
 							this.getLine(currentPage, "Login"),
