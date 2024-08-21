@@ -4,6 +4,7 @@ import { LoadingSpinner } from "../../widgets/LoadingSpinner";
 import {RegisterMessage} from "../../../../shared/messages/RegisterMessage";
 import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/ReasonedConfirmResponseMessage";
 import {PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH} from "../../Constants";
+import {Lang} from "../../../../shared/Lang";
 
 export class Register extends BasePage {
 	private isLoading: boolean = false;
@@ -50,15 +51,15 @@ export class Register extends BasePage {
 			<form name="registerForm" onsubmit={ this.onSubmit.bind(this) } class="surface vertical">
 				
 				<label>
-					<small>Username:</small>
+					<small>{Lang.get("username")}</small>
 					<input type="text" name="username" onkeyup={this.validateForm.bind(this)}/>
 				</label>
 				<label>
-					<small>Password:</small>
+					<small>{Lang.get("password")}</small>
 					<input type="password" name="password"/>
 				</label>
 				<label>
-					<small>Repeat password:</small>
+					<small>{Lang.get("passwordRepeated")}</small>
 					<input type="password" name="passwordRepeat" onkeyup={this.validateForm.bind(this)}/>
 				</label>
 				<div class="entry horizontal vAlignCenter fullLine">
