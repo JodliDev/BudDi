@@ -2,6 +2,7 @@ import {TableSettings} from "../TableSettings";
 import {PubUser} from "../../../../shared/public/PubUser";
 import {column} from "../column";
 import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
+import {NoPermissionException} from "../../exceptions/NoPermissionException";
 
 
 export class User extends PubUser {
@@ -17,6 +18,9 @@ export class User extends PubUser {
 				if(existingUser && existingUser.userId != userId)
 					throw new UsernameAlreadyExistsException()
 			}
+		})
+		settings.setOnBeforeAdd(() => {
+			throw new NoPermissionException()
 		})
 		settings.setListFilter(userId => `${column(User, "userId")} = ${userId}`)
 		settings.setFloatValues("donationAmount")
