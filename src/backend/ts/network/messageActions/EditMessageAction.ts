@@ -20,9 +20,12 @@ export class EditMessageAction extends AuthorisedMessageAction<EditMessage> {
 		settings?.onBeforeEdit(this.data.values, db, session.userId!)
 		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
 		
-		const response = db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session.userId!, where) ?? where, 1)
+		let count = 0
+		for(const _ in this.data.values) {
+			++count
+		}
 		
-		
+		const response = count == 0 ? 1 : db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session.userId!, where) ?? where, 1)
 		
 		const joinedResponse = await db.joinedSelectForPublicTable(
 			tableClass,
