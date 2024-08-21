@@ -54,6 +54,8 @@ export class ErrorManager {
 		})
 	}
 	public getView(): Vnode {
+		if(this.entries.length == 0)
+			return <div></div>
 		
 		return <div class="errorBox">
 			<div class={`opener clickable ${this.isOpened ? "opened" : ""}`} onclick={ this.onToggleOpen.bind(this) }>{ Lang.get("Logs") }</div>
