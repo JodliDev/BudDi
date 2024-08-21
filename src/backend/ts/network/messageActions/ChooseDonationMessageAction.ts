@@ -1,14 +1,7 @@
-import {LoginMessage} from "../../../../shared/messages/LoginMessage";
-import {BaseBackendMessageAction} from "../BaseBackendMessageAction";
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
-import {ConfirmMessage} from "../../../../shared/messages/ConfirmMessage";
 import {DonationAmountType, User} from "../../database/dataClasses/User";
 import {column} from "../../database/column";
-import bcrypt from "bcrypt";
-import {LoginSession} from "../../database/dataClasses/LoginSession";
-import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMessage";
-import {NoPermissionException} from "../../exceptions/NoPermissionException";
 import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
 import {AddToDonationMessage} from "../../../../shared/messages/AddToDonationMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
@@ -37,12 +30,27 @@ export class ChooseDonationMessageAction extends AuthorisedMessageAction<AddToDo
 		
 		const amount = this.getDonationAmount(db, userId)
 		
-		db.insert(NeedsDonationEntry, {
-			donationEntryId: waitingEntry.donationEntryId,
-			userId: userId,
-			addedAt: Date.now(),
-			amount: amount
-		})
+		const [needsDonationEntry] = db.tableSelect(
+			NeedsDonationEntry,
+			`${column(NeedsDonationEntry, "donationEntryId")} = ${waitingEntry.donationEntryId}`,
+			1
+		)
+		
+		if(needsDonationEntry) {
+			db.update(
+				NeedsDonationEntry, 
+				{"+=": {amount: amount}}, 
+				`${column(NeedsDonationEntry, "donationEntryId")} = ${waitingEntry.donationEntryId}`
+			)
+		}
+		else {
+			db.insert(NeedsDonationEntry, {
+				donationEntryId: waitingEntry.donationEntryId,
+				userId: userId,
+				addedAt: Date.now(),
+				amount: amount
+			})
+		}
 		db.delete(WaitingEntry, `${column(WaitingEntry, "waitingEntryId")} = ${waitingEntry.waitingEntryId}`)
 		const entriesLeft = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
 		
