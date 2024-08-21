@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, {Vnode} from "mithril";
 import { FrontendWebSocketHelper } from "../network/FrontendWebSocketHelper";
 import { Login } from "./pages/Login";
 import "../../style.css"
@@ -19,11 +19,16 @@ export class Site {
 	public readonly socket: FrontendWebSocketHelper
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
-	private isLoggedInState: boolean = false
 	public userSettings?: UserSettings
+	private isLoggedInState: boolean = false
+	public readonly waitForLogin: Promise<void>
+	private confirmFullLogin: () => void = () => {}
 	
 	constructor() {
 		this.view = document.getElementById("site")!
+		this.waitForLogin = new Promise<void>((resolve) => {
+			this.confirmFullLogin = resolve
+		})
 		this.socket = new FrontendWebSocketHelper(this)
 		this.socket.connect()
 		
@@ -87,11 +92,14 @@ export class Site {
 	
 	public setUserSettings(userSettings: UserSettings) {
 		this.userSettings = userSettings
+		this.confirmFullLogin()
+		m.redraw()
 	}
 	
 	public login(userId: number | bigint, sessionHash: string) {
 		setCookie("userId", userId.toString())
 		setCookie("sessionHash", sessionHash)
+		//we are not calling confirmFullLogin() yet because we are still waiting for userSettings
 		this.isLoggedInState = true
 		m.redraw()
 	}
@@ -120,12 +128,17 @@ export class Site {
 	private renderSite() {
 		const site = {
 			view: () => {
-				const pageView = this.currentPage.getView()
-				pageView.attrs.className += ` page fullLine ${this.currentPage.constructor.name}`
+				let pageView: Vnode<any, any>
+				if(this.currentPage.isLoaded) {
+					pageView = this.currentPage.getView()
+					pageView.attrs.className += ` page fullLine ${this.currentPage.constructor.name}`
+				}
+				else
+					pageView = <div class="vertical hAlignCenter vAlignCenter page fullLine"> { LoadingSpinner() }</div>
 				
 				return <div class="siteContent">
 					{ this.header.getView(this.currentPage.constructor.name) }
-					{ this.currentPage.isLoaded ? pageView : <div class="vertical hAlignCenter vAlignCenter page fullLine"> { LoadingSpinner() }</div> }
+					{ pageView }
 				</div>
 			}
 		}

@@ -71,7 +71,7 @@ export class Dashboard extends BasePage {
 				{ clickElement }
 			</div>,
 			() => <div class="surface vertical">
-				<h3 class="subSurface textCentered">{ entry.donationName }</h3>
+				<h3 class="textCentered">{ entry.donationName }</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("numberOfDonations")}</small>
 					<span>{entry.donationTimes}</span>
@@ -127,81 +127,80 @@ export class Dashboard extends BasePage {
 	async load(): Promise<void> {
 		await super.load()
 		await this.loadNeededDonations()
+		await this.site.waitForLogin
 	}
 	
 	getView(): Vnode {
 		return <div class="vertical">
-				<div class="horizontal vAlignStretched hAlignCenter wraps">
-					{
-						this.needsDonationEntries.map(info => 
-							<div class="vertical surface needsDonationEntry hAlignStretched">
-								<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.site.userSettings?.currency}</div>
-								{
-									this.donationDropdown(
-										<div class="textCentered">{info.donationEntry.donationName}</div>,
-										info.donationEntry,
-										info.needsDonationEntry.addedAt
-									)
-								}
-								<div class="fillSpace"></div>
-								<div class="horizontal subSurface">
-									{ info.donationEntry.homepage.length != 0 &&
-										<a href={ info.donationEntry.homepage } target="_blank">
-											{ BtnWidget.Home() }
-										</a>
-									}
-									{ info.donationEntry.donationUrl.length != 0 &&
-										<a href={ info.donationEntry.donationUrl } target="_blank">
-											{ BtnWidget.Donate() }
-										</a>
-									}
-									<div class="fillSpace"></div>
-									{ BtnWidget.CheckCircle(this.setAsPaid.bind(this, info)) }
-								</div>
-							</div>
-						)
-					}
-					<div class="horizontal vAlignCenter">
-						{ BtnWidget.Luck(this.chooseDonation.bind(this))}
+			<div class="horizontal vAlignStretched hAlignCenter wraps">
+				{ this.needsDonationEntries.map(info => 
+					<div class="vertical surface needsDonationEntry hAlignStretched">
+						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.site.userSettings?.currency}</div>
+						{
+							this.donationDropdown(
+								<div class="textCentered">{info.donationEntry.donationName}</div>,
+								info.donationEntry,
+								info.needsDonationEntry.addedAt
+							)
+						}
+						<div class="fillSpace"></div>
+						<div class="horizontal subSurface">
+							{ info.donationEntry.homepage.length != 0 &&
+								<a href={ info.donationEntry.homepage } target="_blank">
+									{ BtnWidget.Home() }
+								</a>
+							}
+							{ info.donationEntry.donationUrl.length != 0 &&
+								<a href={ info.donationEntry.donationUrl } target="_blank">
+									{ BtnWidget.Donate() }
+								</a>
+							}
+							<div class="fillSpace"></div>
+							{ BtnWidget.CheckCircle(this.setAsPaid.bind(this, info)) }
+						</div>
 					</div>
-				</div>
-				<div class="horizontal hAlignCenter">
-					{
-						ListWidget({
-							title: Lang.get("notDonatedYet"),
-							tableClass: PubWaitingEntry,
-							site: this.site,
-							hideRefresh: true,
-							deleteOptions: {},
-							callback: this.notDonatedListCallback,
-							getEntryView: entry => 
-								this.donationLineView(entry.joined.DonationEntry as PubDonationEntry, entry.item.addedAt)
-						})
-					}
-					
-					{
-						ListWidget({
-							title: Lang.get("allEntries"),
-							tableClass: PubDonationEntry,
-							site: this.site,
-							hideRefresh: true,
-							addOptions: {
-								columns: ["donationName", "homepage", "donationUrl"],
-								onAdded: async () => {
-									this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
-								}
-							},
-							editOptions: {columns: ["donationName", "homepage", "donationUrl", "enabled"] },
-							deleteOptions: {
-								onDeleted: async () => {
-									this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
-									await this.loadNeededDonations()
-								} 
-							},
-							getEntryView: entry => this.donationLineView(entry.item)
-						})
-					}
+				)}
+				<div class="horizontal vAlignCenter">
+					{ BtnWidget.Luck(this.chooseDonation.bind(this))}
 				</div>
 			</div>
+			<div class="horizontal hAlignCenter wraps">
+				{
+					ListWidget({
+						title: Lang.get("notDonatedYet"),
+						tableClass: PubWaitingEntry,
+						site: this.site,
+						hideRefresh: true,
+						deleteOptions: {},
+						callback: this.notDonatedListCallback,
+						getEntryView: entry => 
+							this.donationLineView(entry.joined.DonationEntry as PubDonationEntry, entry.item.addedAt)
+					})
+				}
+				
+				{
+					ListWidget({
+						title: Lang.get("allEntries"),
+						tableClass: PubDonationEntry,
+						site: this.site,
+						hideRefresh: true,
+						addOptions: {
+							columns: ["donationName", "homepage", "donationUrl"],
+							onAdded: async () => {
+								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+							}
+						},
+						editOptions: {columns: ["donationName", "homepage", "donationUrl", "enabled"] },
+						deleteOptions: {
+							onDeleted: async () => {
+								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+								await this.loadNeededDonations()
+							} 
+						},
+						getEntryView: entry => this.donationLineView(entry.item)
+					})
+				}
+			</div>
+		</div>
 	}
 }
