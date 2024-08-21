@@ -48,8 +48,12 @@ label, .labelLike {
 	input[type="number"] {
 		min-width: 100px
 	}
-	input[type="checkbox"], input[type="radio"], span {
-		margin: 20px 0 10px 5px;
+	input[type="checkbox"], input[type="radio"] {
+		margin: 20px 0 15px 5px;
+	}
+	span, span.subSurface {
+		padding: 13px 10px 12px 10px;
+		margin: 5px;
 	}
 }
 
@@ -69,7 +73,7 @@ form {
 			border-color: var(--color-accent-dark);
 			color: var(--color-accent-dark);
 		}
-		&[type=submit] {
+		&[type=submit], &[type=button] {
 			align-self: end;
 			font-weight: bold;
 			cursor: pointer;
@@ -184,6 +188,7 @@ form {
 
 
 .surface {
+	min-width: 250px;
 	background: var(--color-surface);
 	border: 1px solid var(--color-surface-border);
 	border-radius: var(--radius);
@@ -197,6 +202,15 @@ form {
 		background-color: var(--color-inside-surface);
 		border: 1px solid var(--color-surface-border);
 		padding: 3px 5px;
-		margin: 1px -1px; /* margin from above minus padding and border*/
+		margin: 1px;
+	}
+	
+	h3 {
+		padding: 10px 5px;
+		margin: 1px 1px 10px 1px;
+		border-radius: var(--radius);
+		background-color: var(--color-inside-surface);
+		border: 1px solid var(--color-surface-border);
+		text-align: center;
 	}
 }

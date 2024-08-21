@@ -1,5 +1,6 @@
 .needsDonationEntry {
 	width: 150px;
+	min-width:150px;
 	height: 150px;
 	overflow: hidden;
 	margin: 5px;

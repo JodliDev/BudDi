@@ -49,7 +49,8 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 	view(vNode: Vnode<ListEditComponentOptions<EntryT>, unknown>): Vnode {
 		const obj = new vNode.attrs.tableClass()
 
-		return <form onsubmit={ async () => {
+		return <form onsubmit={ async (e: SubmitEvent) => {
+			e.preventDefault()
 			this.isLoading = true
 			m.redraw()
 			await vNode.attrs.onFinish(this.data)
@@ -183,7 +184,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {
 		const options = vNode.attrs
 		return <div class="listWidget surface vertical">
-			<div class="header subSurface horizontal hAlignCenter vAlignCenter">
+			<h3 class="header horizontal hAlignCenter vAlignCenter">
 				<b class="fillSpace horizontal hAlignCenter">{ options.title }</b>
 					{ this.isLoading
 						? LoadingSpinner(this.isLoading)
@@ -200,7 +201,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 						})
 					)
 				}
-			</div>
+			</h3>
 			<div class={ `${this.isLoading ? "opacity" : ""} fillSpace subSurface vertical hAlignStretched overflowY textCentered` }>
 				{ this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
