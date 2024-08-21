@@ -3,14 +3,18 @@ import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {LoadingSpinner} from "../../widgets/LoadingSpinner";
-import {UpdateUserSettingsMessage} from "../../../../shared/messages/UpdateUserSettingsMessage";
 import {ChangePasswordMessage} from "../../../../shared/messages/ChangePasswordMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {PASSWORD_MIN_LENGTH} from "../../Constants";
 import {DeleteAccountMessage} from "../../../../shared/messages/DeleteAccountMessage";
+import {ListMessage} from "../../../../shared/messages/ListMessage";
+import {PubUser} from "../../../../shared/public/PubUser";
+import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
+import {EditMessage} from "../../../../shared/messages/EditMessage";
 
 export class User extends BasePage {
+	private user = new PubUser()
 	private settingsSaving: boolean = false
 	private settingsFeedback: FeedbackCallBack = {}
 	private passwordSaving: boolean = false
@@ -26,7 +30,7 @@ export class User extends BasePage {
 		m.redraw()
 		
 		const response = await this.site.socket.sendAndReceive(
-			new UpdateUserSettingsMessage(this.site.userSettings!)
+			new EditMessage(PubUser, this.site.userId, this.user)
 		) as ConfirmResponseMessage
 		
 		if(!response.success)
@@ -74,16 +78,20 @@ export class User extends BasePage {
 	async load(): Promise<void> {
 		await super.load();
 		await this.site.waitForLogin
+		const response = await this.site.socket.sendAndReceive(
+			new ListMessage(PubUser, 0, 1)
+		) as ListResponseMessage<PubUser>
+		
+		if(response.success && response.list.length != 0)
+			this.user = response.list[0].item
 	}
 	
 	getView(): Vnode {
-		const userSettings = this.site.userSettings!
-		
 		return <div class="vertical hAlignCenter">
 			<form class="surface vertical vAlignStart" onsubmit={this.saveUserSettings.bind(this)}>
 				<label>
 					<small>{ Lang.get("currency") }</small>
-					<input type="text" {...BindValueToInput(() => userSettings.currency, value => userSettings.currency = value)}/>
+					<input type="text" {...BindValueToInput(() => this.user.currency, value => this.user.currency = value)}/>
 				</label>
 				
 				<div class="horizontal hAlignEnd vAlignCenter">

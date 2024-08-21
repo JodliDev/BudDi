@@ -10,7 +10,6 @@ import {deleteCookie, setCookie} from "../Convenience";
 import {Lang, LangKey} from "../../../shared/Lang";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
-import {UserSettings} from "../../../shared/UserSettings";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -19,8 +18,8 @@ export class Site {
 	public readonly socket: FrontendWebSocketHelper
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
-	public userSettings?: UserSettings
 	private isLoggedInState: boolean = false
+	public userId: number | bigint = 0
 	public readonly waitForLogin: Promise<void>
 	private confirmFullLogin: () => void = () => {}
 	
@@ -90,17 +89,12 @@ export class Site {
 		}
 	}
 	
-	public setUserSettings(userSettings: UserSettings) {
-		this.userSettings = userSettings
-		this.confirmFullLogin()
-		m.redraw()
-	}
-	
 	public login(userId: number | bigint, sessionHash: string) {
 		setCookie("userId", userId.toString())
 		setCookie("sessionHash", sessionHash)
-		//we are not calling confirmFullLogin() yet because we are still waiting for userSettings
+		this.userId = userId
 		this.isLoggedInState = true
+		this.confirmFullLogin()
 		m.redraw()
 	}
 	

@@ -1,12 +1,8 @@
-import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {TableSettings} from "../TableSettings";
+import {PubUser} from "../../../../shared/public/PubUser";
 
-export enum DonationAmountType {
-	Fixed,
-	PerEntry
-}
 
-export class User extends BasePublicTable {
+export class User extends PubUser {
 	getPrimaryKey(): keyof this {
 		return "userId"
 	}
@@ -20,8 +16,4 @@ export class User extends BasePublicTable {
 	public username: string = ""
 	public isAdmin: boolean = false
 	public hashedPassword: string = ""
-	public donationAmountType: number = DonationAmountType.PerEntry
-	public donationAmount: number = 1
-	
-	public currency: string = "€"
 }

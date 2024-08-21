@@ -1,7 +1,5 @@
 import {WebSocket} from "ws";
 import {BaseMessage} from "../../../shared/BaseMessage";
-import {LoginResponseMessage} from "../../../shared/messages/LoginResponseMessage";
-import {UserSettingsMessage} from "../../../shared/messages/UserSettingsMessage";
 
 export class WebSocketSession {
 	public isLoggedIn: boolean = false;
@@ -18,11 +16,6 @@ export class WebSocketSession {
 	public login(userId: number | bigint, currency: string) {
 		this.isLoggedIn = true
         this.userId = userId
-		
-		
-		this.send(new UserSettingsMessage({
-			currency: currency
-		}))
 	}
 	public logout() {
 		this.isLoggedIn = false

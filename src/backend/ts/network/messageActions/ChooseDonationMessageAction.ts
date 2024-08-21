@@ -1,6 +1,6 @@
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
-import {DonationAmountType, User} from "../../database/dataClasses/User";
+import {User} from "../../database/dataClasses/User";
 import {column} from "../../database/column";
 import {AuthorisedMessageAction} from "../AuthorisedMessageAction";
 import {AddToDonationMessage} from "../../../../shared/messages/AddToDonationMessage";
@@ -9,6 +9,7 @@ import {DonationEntry} from "../../database/dataClasses/DonationEntry";
 import {NeedsDonationEntry} from "../../database/dataClasses/NeedsDonationEntry";
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 import {AddToDonationMessageAction} from "./AddToDonationMessageAction";
+import {DonationAmountType} from "../../../../shared/public/PubUser";
 
 export class ChooseDonationMessageAction extends AuthorisedMessageAction<AddToDonationMessage> {
 	

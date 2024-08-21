@@ -18,6 +18,7 @@ import {
 } from "../../widgets/DropdownMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
+import {PubUser} from "../../../../shared/public/PubUser";
 
 interface NeedsDonationEntryInformation {
 	donationEntry: PubDonationEntry
@@ -32,6 +33,7 @@ export class Dashboard extends BasePage {
 		eventName: "mouseenter",
 		disableMenuPointerEvents: true
 	}
+	private user = new PubUser()
 	
 	
 	private positionDonationInfo(event: MouseEvent) {
@@ -78,7 +80,7 @@ export class Dashboard extends BasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("totalDonations")}</small>
-					<span>{entry.donationsSum}{this.site.userSettings?.currency}</span>
+					<span>{entry.donationsSum}{this.user.currency}</span>
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastDonation")}</small>
@@ -128,6 +130,13 @@ export class Dashboard extends BasePage {
 		await super.load()
 		await this.loadNeededDonations()
 		await this.site.waitForLogin
+		
+		const response = await this.site.socket.sendAndReceive(
+			new ListMessage(PubUser, 0, 1)
+		) as ListResponseMessage<PubUser>
+		
+		if(response.success && response.list.length != 0)
+			this.user = response.list[0].item
 	}
 	
 	getView(): Vnode {
@@ -135,7 +144,7 @@ export class Dashboard extends BasePage {
 			<div class="horizontal vAlignStretched hAlignCenter wraps">
 				{ this.needsDonationEntries.map(info => 
 					<div class="vertical surface needsDonationEntry hAlignStretched">
-						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.site.userSettings?.currency}</div>
+						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.user?.currency}</div>
 						{
 							this.donationDropdown(
 								<div class="textCentered">{info.donationEntry.donationName}</div>,
