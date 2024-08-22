@@ -12,7 +12,7 @@ import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
 import {
 	closeDropdown,
 	DropdownMenu,
-	DropdownOptions,
+	DropdownOptions, MouseOverDropdownMenu,
 } from "../../widgets/DropdownMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
@@ -29,7 +29,6 @@ export class Dashboard extends LoggedInBasePage {
 	private notDonatedListCallback: ListWidgetCallback = {}
 	private dropdownOptions: DropdownOptions = {
 		manualPositioning: true,
-		eventName: "mouseenter",
 		disableMenuPointerEvents: true
 	}
 	private user = new PubUser()
@@ -66,9 +65,9 @@ export class Dashboard extends LoggedInBasePage {
 		</div>
 	}
 	private donationDropdown(clickElement: Vnode, entry: PubDonationEntry, addedAt?: number): Vnode<any, unknown> {
-		return DropdownMenu(
+		return MouseOverDropdownMenu(
 			"donationEntry",
-			<div onmousemove={this.positionDonationInfo.bind(this)} onmouseleave={closeDropdown.bind(this, "donationEntry")}>
+			<div onmousemove={this.positionDonationInfo.bind(this)}>
 				{ clickElement }
 			</div>,
 			() => <div class="surface vertical">
@@ -163,12 +162,24 @@ export class Dashboard extends LoggedInBasePage {
 								</a>
 							}
 							<div class="fillSpace"></div>
-							{ BtnWidget.CheckCircle(this.setAsPaid.bind(this, info)) }
+							{
+								MouseOverDropdownMenu(
+									"setAsPaid",
+									BtnWidget.CheckCircle(this.setAsPaid.bind(this, info)),
+									() => <div class="textCentered">{Lang.get("setAsPaid")}</div>,
+								)
+							}
 						</div>
 					</div>
 				)}
 				<div class="horizontal vAlignCenter">
-					{ BtnWidget.Luck(this.chooseDonation.bind(this))}
+					{
+						MouseOverDropdownMenu(
+							"chooseDonation",
+							BtnWidget.Luck(this.chooseDonation.bind(this)),
+							() => <div class="textCentered">{Lang.get("selectRandomDonationNow")}</div>,
+						)
+					}
 				</div>
 			</div>
 			<div class="horizontal hAlignCenter wraps">

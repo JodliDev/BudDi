@@ -197,6 +197,26 @@ export function DropdownMenu(
 		options: options
 	})
 }
+export function MouseOverDropdownMenu(
+	id: string,
+	clickElement: Vnode<any, any>,
+	menuContent: (close: () => void) => Vnode<any, any>,
+	options?: DropdownOptions
+): Vnode<DropdownComponentOptions, unknown> {
+	clickElement.attrs.onmouseleave = () => {
+		closeDropdown(id)
+	}
+	if(options)
+		options.eventName = "mouseenter"
+	else
+		options = { eventName: "mouseenter" }
+	return m(DropdownComponent, {
+		id: id,
+		clickElement: clickElement,
+		menuContent: menuContent,
+		options: options
+	})
+}
 
 export function NativeDropdownMenu(
 	id: string,
