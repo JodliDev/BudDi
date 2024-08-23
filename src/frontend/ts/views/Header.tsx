@@ -9,8 +9,8 @@ export class Header {
 	}
 	
 	
-	private getLine(currentPage: string, target: LangKey): Vnode {
-		return <a class={currentPage == target ? "selected" : ""} href={ `#${target}` }>{Lang.get(target)}</a>
+	private getLine(currentPage: string, target: string, title: LangKey): Vnode {
+		return <a class={currentPage == target ? "selected" : ""} href={ `#${target}` }>{Lang.get(title)}</a>
 	}
 	
 	public getView(currentPage: string): Vnode {
@@ -19,21 +19,21 @@ export class Header {
 			<div class="navigation">
 				{ this.site.isLoggedIn()
 					? [
-						this.getLine(currentPage, "Dashboard"),
-						this.getLine(currentPage, "Schedule"),
-						this.getLine(currentPage, "User"),
+						this.getLine(currentPage, "Dashboard", "dashboard"),
+						this.getLine(currentPage, "Schedule", "schedule"),
+						this.getLine(currentPage, "User", "user"),
 					] 
 					: [
-						this.getLine(currentPage, "Login"),
-						this.site.serverSettings.registrationAllowed && this.getLine(currentPage, "Register"),
+						this.getLine(currentPage, "Login", "login"),
+						this.site.serverSettings.registrationAllowed && this.getLine(currentPage, "Register", "register"),
 					]
 				}
 				{ this.site.isAdmin &&
-					this.getLine(currentPage, "Admin")
+					this.getLine(currentPage, "Admin", "admin")
 				}
 			</div>
 			{ this.site.isLoggedIn() && 
-				<span class="clickable logoutBtn" onclick={this.site.logout.bind(this.site)}>{Lang.get("Logout")}</span>
+				<span class="clickable logoutBtn" onclick={this.site.logout.bind(this.site)}>{Lang.get("logout")}</span>
 			}
 		</div>
 	}

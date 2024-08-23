@@ -31,7 +31,7 @@ export class Admin extends LoggedInBasePage {
 		return <div class="vertical hAlignCenter">
 			{
 				ListWidget({
-					title: Lang.get("User"),
+					title: Lang.get("user"),
 					tableClass: PubUser,
 					site: this.site,
 					deleteOptions: {},

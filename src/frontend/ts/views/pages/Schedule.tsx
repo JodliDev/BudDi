@@ -81,7 +81,7 @@ export class Schedule extends LoggedInBasePage {
 			</label>
 			{ this.scheduleEnabled &&
 				<form class="surface vertical vAlignStart" onsubmit={this.saveSchedule.bind(this)}>
-					<h3>{Lang.get("Schedule")}</h3>
+					<h3>{Lang.get("schedule")}</h3>
 					{ schedule.lastLoop != 0 &&
 						<div class="labelLike">
 							<small>{Lang.get("lastScheduleLoop")}</small>

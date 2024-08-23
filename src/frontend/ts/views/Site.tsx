@@ -7,7 +7,7 @@ import { ErrorManager } from "./ErrorManager";
 import { Header } from "./Header";
 import "./site.css"
 import {deleteCookie, setCookie} from "../Convenience";
-import {Lang, LangKey} from "../../../shared/Lang";
+import {Lang} from "../../../shared/Lang";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
 import {ServerSettings} from "../../../shared/ServerSettings";
@@ -116,7 +116,7 @@ export class Site {
 			.then()
 	}
 	
-	public goto(pageName: LangKey): void {
+	public goto(pageName: string): void {
 		window.location.hash = `#${pageName}`
 	}
 	

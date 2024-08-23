@@ -6,9 +6,6 @@ import {NoPermissionException} from "../../exceptions/NoPermissionException";
 
 
 export class User extends PubUser {
-	getPrimaryKey(): keyof this {
-		return "userId"
-	}
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		
