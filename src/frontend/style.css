@@ -161,7 +161,7 @@ form {
 		justify-content: center;
 	}
 	
-	&.wraps {
+	&.wrapContent {
 		flex-wrap: wrap;
 	}
 }
@@ -196,7 +196,7 @@ form {
 		justify-content: flex-end;
 	}
 	
-	&.wraps {
+	&.wrapContent {
 		flex-wrap: wrap;
 	}
 }

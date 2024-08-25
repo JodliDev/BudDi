@@ -140,7 +140,7 @@ export class Dashboard extends LoggedInBasePage {
 	
 	getView(): Vnode {
 		return <div class="vertical">
-			<div class="horizontal vAlignStretched hAlignCenter wraps needsDonationBox">
+			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsDonationBox">
 				{ this.needsDonationEntries.map(info => 
 					<div class="vertical surface needsDonationEntry hAlignStretched">
 						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.user?.currency}</div>
@@ -184,7 +184,7 @@ export class Dashboard extends LoggedInBasePage {
 					}
 				</div>
 			</div>
-			<div class="horizontal hAlignCenter wraps">
+			<div class="horizontal hAlignCenter wrapContent">
 				{
 					ListWidget({
 						title: Lang.get("notDonatedYet"),

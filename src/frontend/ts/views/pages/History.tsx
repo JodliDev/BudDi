@@ -1,13 +1,9 @@
 import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
-import {PubUser} from "../../../../shared/public/PubUser";
 import {ListWidget} from "../../widgets/ListWidget";
-import {BindValueToInput} from "../../widgets/BindValueToInput";
-import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {SetServerSettingsMessage} from "../../../../shared/messages/SetServerSettingsMessage";
-import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {PubDonationHistory} from "../../../../shared/public/PubDonationHistory";
+import "./history.css"
 
 export class History extends LoggedInBasePage {
 	getView(): Vnode {
