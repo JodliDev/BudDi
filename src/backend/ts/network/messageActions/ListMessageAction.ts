@@ -36,7 +36,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 			true,
 			joinedResponse,
 			publicObj.getPrimaryKey().toString(),
-			db.getCount(tableClass)
+			db.getCount(tableClass, settings.getWhere(session))
 		))
 	}
 	
