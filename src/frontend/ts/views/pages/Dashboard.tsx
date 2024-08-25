@@ -38,7 +38,7 @@ export class Dashboard extends LoggedInBasePage {
 		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
 	}
 	private donationLineView(entry: PubDonationEntry, addedAt?: number): Vnode {
-		return <div class="horizontal fillSpace">
+		return <div class="horizontal fillSpace donationEntry">
 			{ entry.homepage.length != 0
 				? <a href={ entry.homepage } target="_blank">
 					{ BtnWidget.Home() }
@@ -67,10 +67,10 @@ export class Dashboard extends LoggedInBasePage {
 	private donationDropdown(clickElement: Vnode, entry: PubDonationEntry, addedAt?: number): Vnode<any, unknown> {
 		return MouseOverDropdownMenu(
 			"donationEntry",
-			<div onmousemove={this.positionDonationInfo.bind(this)}>
+			<div onmousemove={this.positionDonationInfo.bind(this)} class="donationDropdownClicker">
 				{ clickElement }
 			</div>,
-			() => <div class="surface vertical">
+			() => <div class="surface vertical donationDropdownContent">
 				<h3 class="textCentered">{ entry.donationName }</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("numberOfDonations")}</small>
@@ -122,6 +122,8 @@ export class Dashboard extends LoggedInBasePage {
 			await this.loadNeededDonations()
 			this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
 		}
+		else
+			this.site.errorManager.error(Lang.get("errorUnknown"))
 	}
 	
 	async load(): Promise<void> {
@@ -138,7 +140,7 @@ export class Dashboard extends LoggedInBasePage {
 	
 	getView(): Vnode {
 		return <div class="vertical">
-			<div class="horizontal vAlignStretched hAlignCenter wraps">
+			<div class="horizontal vAlignStretched hAlignCenter wraps needsDonationBox">
 				{ this.needsDonationEntries.map(info => 
 					<div class="vertical surface needsDonationEntry hAlignStretched">
 						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.user?.currency}</div>
@@ -172,7 +174,7 @@ export class Dashboard extends LoggedInBasePage {
 						</div>
 					</div>
 				)}
-				<div class="horizontal vAlignCenter">
+				<div class="horizontal vAlignCenter chooseDonationBtn">
 					{
 						MouseOverDropdownMenu(
 							"chooseDonation",

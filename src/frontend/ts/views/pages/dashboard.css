@@ -1,3 +1,17 @@
+.needsDonationBox {
+	margin: 0 29px;
+	
+	.donationDropdownClicker {
+		overflow: hidden;
+	}
+	.chooseDonationBtn {
+		margin-right: -29px;
+	}
+}
+.donationDropdownContent {
+	max-width: 250px
+}
+
 .needsDonationEntry {
 	width: 150px;
 	min-width:150px;
@@ -12,6 +26,12 @@
 	}
 }
 
+.donationEntry {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .page.Dashboard .listWidget {
-	min-width: 400px;
+	min-width: 40vw;
+	max-width: 100vw;
 }
