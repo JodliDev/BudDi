@@ -7,6 +7,9 @@
 	.chooseDonationBtn {
 		margin-right: -29px;
 	}
+	.chooseDonationBtn:first-child {
+		margin-right: 0;
+	}
 }
 .donationDropdownContent {
 	max-width: 250px
