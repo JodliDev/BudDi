@@ -9,11 +9,7 @@ import {ChooseDonationMessage} from "../../../../shared/messages/ChooseDonationM
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {
-	closeDropdown,
-	DropdownMenu,
-	DropdownOptions, MouseOverDropdownMenu,
-} from "../../widgets/DropdownMenu";
+import {DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
@@ -26,7 +22,7 @@ interface NeedsDonationEntryInformation {
 
 export class Dashboard extends LoggedInBasePage {
 	private needsDonationEntries: NeedsDonationEntryInformation[] = []
-	private notDonatedListCallback: ListWidgetCallback = {}
+	private notDonatedListCallback: ListWidgetCallback = new ListWidgetCallback()
 	private dropdownOptions: DropdownOptions = {
 		manualPositioning: true,
 		disableMenuPointerEvents: true
@@ -102,7 +98,7 @@ export class Dashboard extends LoggedInBasePage {
 			return
 		}
 		await this.loadNeededDonations()
-		this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+		await this.notDonatedListCallback.reload()
 	}
 	
 	private async loadNeededDonations(): Promise<void> {
@@ -120,7 +116,7 @@ export class Dashboard extends LoggedInBasePage {
 		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsDonationEntry)) as ConfirmResponseMessage
 		if(response.success) {
 			await this.loadNeededDonations()
-			this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+			await this.notDonatedListCallback.reload()
 		}
 		else
 			this.site.errorManager.error(Lang.get("errorUnknown"))
@@ -174,15 +170,17 @@ export class Dashboard extends LoggedInBasePage {
 						</div>
 					</div>
 				)}
-				<div class="horizontal vAlignCenter chooseDonationBtn">
-					{
-						MouseOverDropdownMenu(
-							"chooseDonation",
-							BtnWidget.Luck(this.chooseDonation.bind(this)),
-							() => <div class="textCentered">{Lang.get("selectRandomDonationNow")}</div>,
-						)
-					}
-				</div>
+				{ !this.notDonatedListCallback.isEmpty() &&
+					<div class="horizontal vAlignCenter chooseDonationBtn">
+						{
+							MouseOverDropdownMenu(
+								"chooseDonation",
+								BtnWidget.Luck(this.chooseDonation.bind(this)),
+								() => <div class="textCentered">{Lang.get("selectRandomDonationNow")}</div>,
+							)
+						}
+					</div>
+				}
 			</div>
 			<div class="horizontal hAlignCenter wrapContent">
 				{
@@ -213,7 +211,7 @@ export class Dashboard extends LoggedInBasePage {
 						editOptions: {columns: ["donationName", "homepage", "donationUrl", "enabled"] },
 						deleteOptions: {
 							onDeleted: async () => {
-								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+								await this.notDonatedListCallback.reload()
 								await this.loadNeededDonations()
 							} 
 						},

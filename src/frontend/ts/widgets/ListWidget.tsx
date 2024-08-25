@@ -70,8 +70,9 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 	
 }
 
-export interface ListWidgetCallback {
-	reload?: () => Promise<void>
+export class ListWidgetCallback {
+	reload: () => Promise<void> = () => Promise.resolve()
+	isEmpty: () => boolean = () => true
 }
 
 interface ListOptions<EntryT extends BasePublicTable> {
@@ -179,8 +180,10 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	
 	public async oncreate(vNode: VnodeDOM<ListOptions<EntryT>, unknown>): Promise<void> {
 		this.options = vNode.attrs
-		if(this.options.callback)
+		if(this.options.callback) {
 			this.options.callback.reload = this.loadPage.bind(this)
+			this.options.callback.isEmpty = this.pagesHelper.isEmpty.bind(this.pagesHelper)
+		}
 		await this.loadPage()
 	}
 	
