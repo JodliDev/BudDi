@@ -93,8 +93,8 @@ export class Site {
 	}
 	
 	public login(userId: number | bigint, sessionHash: string) {
-		setCookie("userId", userId.toString())
-		setCookie("sessionHash", sessionHash)
+		setCookie("userId", userId.toString(), 1000 * 60 * 60 * 24 * 90)
+		setCookie("sessionHash", sessionHash, 1000 * 60 * 60 * 24 * 90)
 		this.userId = userId
 		this.isLoggedInState = true
 		this.confirmFullLogin()

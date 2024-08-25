@@ -8,7 +8,7 @@ export function getCookie(name: keyof typeof Cookies): string | undefined {
 		return parts.pop()?.split(';').shift()
 }
 export function setCookie(name: keyof typeof Cookies, value: string, expires?: number): void {
-	const expiresString = expires ? `expires=${new Date(expires).toUTCString()}; ` : ""
+	const expiresString = expires ? `expires=${new Date(Date.now() + expires).toUTCString()}; ` : ""
 	document.cookie = `${name}=${value}; ${expiresString}path=./; SameSite=Strict`;
 }
 export function deleteCookie(name: keyof typeof Cookies): void {
