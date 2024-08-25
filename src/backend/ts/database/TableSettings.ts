@@ -10,6 +10,7 @@ export class TableSettings<TableT> {
 	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
 	public onBeforeEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public onBeforeDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	private listFilter?: (session: WebSocketSession) => string = undefined
 	
 	public getWhere(session: WebSocketSession, where?: string): string | undefined {
@@ -25,6 +26,9 @@ export class TableSettings<TableT> {
 		this.hasForeignKeys = true
 	}
 	
+	setOnBeforeDelete(onDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void): void {
+		this.onBeforeDelete = onDelete
+	}
 	setOnBeforeEdit(onEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void): void {
 		this.onBeforeEdit = onEdit
 	}

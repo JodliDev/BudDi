@@ -84,6 +84,8 @@ interface ListOptions<EntryT extends BasePublicTable> {
 	addOptions?: { columns: (keyof EntryT)[], onAdded?: () => void }
 	editOptions?: { columns: (keyof EntryT)[], onChanged?: () => void },
 	pageSize?: number
+	order?: keyof EntryT,
+	orderType?: "ASC" | "DESC"
 	callback?: ListWidgetCallback
 }
 
@@ -96,12 +98,13 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 	
 	
 	private async loadPage(pageNumber: number = this.pagesHelper.getCurrentPage()): Promise<void> {
+		const options = this.options!
 		this.isLoading = true
 		m.redraw()
 		
 		const pageSize = PAGE_SIZE
 		const response = await this.options!.site.socket.sendAndReceive(
-			new ListMessage(this.options!.tableClass, pageNumber * pageSize, pageSize)
+			new ListMessage(options.tableClass, pageNumber * pageSize, pageSize, options.order ? options.order.toString() : undefined, options.orderType)
 		)
 		const listMessage = response as ListResponseMessage<EntryT>
 		if(!listMessage.success) {

@@ -1,8 +1,8 @@
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {WebSocketSession} from "../WebSocketSession";
-import {DatabaseManager, JoinedData, JoinedResponseEntry} from "../../database/DatabaseManager";
+import {DatabaseManager, JoinedData} from "../../database/DatabaseManager";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
-import {ListResponseEntry, ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
+import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {Convenience} from "../../Convenience";
 import {BaseListMessage} from "../../../../shared/BaseListMessage";
@@ -18,16 +18,17 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 		const tableClass = await ListMessageAction.getTableClass(publicTableClass)
 		const obj = new tableClass
 		
-		const tableName = BasePublicTable.getName(publicTableClass)
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
 		
-		const joinedResponse = await db.joinedSelectForPublicTable(
+		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			tableClass,
 			publicObj.getColumnNames(),
 			settings,
 			settings?.getWhere(session),
 			this.data.limit,
-			this.data.from
+			this.data.from,
+			this.data.order as keyof BasePublicTable,
+			this.data.orderType
 		)
 		
 		session.send(new ListResponseMessage(
@@ -39,7 +40,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 		))
 	}
 	
-	public static async getJoinArray<T extends BasePublicTable>(
+	public static async getPublicJoinArray<T extends BasePublicTable>(
 		listClass: Class<T>,
 		settings: TableSettings<T>
 	): Promise<JoinedData<BasePublicTable>[]> {
@@ -50,15 +51,30 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 			if(!foreignKey.isPublic)
 				continue
 			
-			const joinedPublicClass = await ListMessageAction.getPublicTableClass(BasePublicTable.getName(foreignKey.table))
-			const joinedObj = new joinedPublicClass
-			joinArray.push({
-				joinedTable: foreignKey.table,
-				select: joinedObj.getColumnNames(),
-				on: `${column(listClass, foreignKey.from as keyof T)} = ${column(foreignKey.table, foreignKey.to.toString())}`
-			})
+			joinArray.push(await this.getJoinArray(
+				listClass,
+				foreignKey.table,
+				foreignKey.from as keyof T,
+				foreignKey.to
+			))
 		}
 		return joinArray
+	}
+	
+	public static async getJoinArray<T extends BasePublicTable, ForeignKeyT extends BasePublicTable>(
+		listClass: Class<T>,
+		foreignKeyTable: Class<ForeignKeyT>,
+		on: keyof T,
+		to: keyof ForeignKeyT
+	): Promise<JoinedData<BasePublicTable>> {
+		const joinedPublicClass = await ListMessageAction.getPublicTableClass(BasePublicTable.getName(foreignKeyTable))
+		const joinedObj = new joinedPublicClass
+		
+		return {
+			joinedTable: foreignKeyTable,
+			select: joinedObj.getColumnNames(),
+			on: `${column(listClass, on)} = ${column(foreignKeyTable, to)}`
+		}
 	}
 	
 	

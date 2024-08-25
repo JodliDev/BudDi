@@ -10,6 +10,8 @@ export class ListMessage extends ConfirmMessage implements BaseListMessage{
 		tableClass: Class<BasePublicTable>,
 		public readonly from: number,
 		public readonly limit: number,
+		public readonly order?: string,
+		public readonly orderType?: "ASC" | "DESC"
 	) {
 		super()
 		this.listName = BasePublicTable.getName(tableClass)

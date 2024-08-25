@@ -7,9 +7,10 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import BetterSqlite3 from "better-sqlite3";
 import {NeedsDonationEntry} from "./dataClasses/NeedsDonationEntry";
 import {Schedule} from "./dataClasses/Schedule";
+import {DonationHistory} from "./dataClasses/DonationHistory";
 
 export class DatabaseInstructions {
-	public version: number = 1
+	public version: number = 2
 	
 	public tables: Class<BasePublicTable>[] = [
 		DonationEntry,
@@ -17,7 +18,8 @@ export class DatabaseInstructions {
 		User,
 		WaitingEntry,
 		NeedsDonationEntry,
-		Schedule
+		Schedule,
+		DonationHistory
 	]
 	
 	public preMigration(db: BetterSqlite3.Database, recreateTables: (tableName: string[]) => void, fromVersion: number, toVersion: number): Record<number, unknown> {

@@ -157,6 +157,7 @@ export class SqlQueryGenerator {
 		limit?: number,
 		from?: number,
 		order?: string,
+		orderType: "ASC" | "DESC" = "ASC",
 		joinArray?: { joinedTableName: string, on: string }[]
 	): string {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
@@ -167,7 +168,7 @@ export class SqlQueryGenerator {
 		if(where)
 			query += ` WHERE ${where}`
 		if(order)
-			query += ` ORDER BY ${order}`
+			query += ` ORDER BY ${order} ${orderType}`
 		if(from)
 			query += ` FROM ${from}`
 		if(limit)

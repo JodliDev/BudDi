@@ -8,7 +8,7 @@ import {LoggedInMessageAction} from "../LoggedInMessageAction";
 export class LogoutMessageAction extends LoggedInMessageAction<LogoutMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [loginSession] = db.tableSelect(LoginSession, `${column(LoginSession, "userId")} = '${session.userId}'`, 1)
+		const [loginSession] = db.selectTable(LoginSession, `${column(LoginSession, "userId")} = '${session.userId}'`, 1)
 
 		if(!loginSession)
 			return

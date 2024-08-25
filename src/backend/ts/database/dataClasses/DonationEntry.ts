@@ -3,6 +3,7 @@ import {TableSettings} from "../TableSettings";
 import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
 import {column} from "../column";
 import {WaitingEntry} from "./WaitingEntry";
+import {DonationHistory} from "./DonationHistory";
 
 export class DonationEntry extends PubDonationEntry {
 	getSettings(): TableSettings<this> {
@@ -19,6 +20,10 @@ export class DonationEntry extends PubDonationEntry {
 		})
 		settings.setOnAfterAdd((data, db, addedId) => {
 			db.insert(WaitingEntry, { donationEntryId: addedId, userId: data.userId })
+			DonationHistory.addHistory(db, data.userId!, "historyAddDonation", [data.donationName, addedId])
+		})
+		settings.setOnBeforeDelete((id, db, session) => {
+			DonationHistory.addHistory(db, session.userId!, "historyDeleteDonation", [id])
 		})
 		
 		settings.setListFilter(session => `${column(DonationEntry, "userId")} = ${session.userId}`)

@@ -16,7 +16,7 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		if(!Options.serverSettings.registrationAllowed)
 			throw new NoPermissionException()
-		const [existingUser] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
+		const [existingUser] = db.selectTable(User, `${column(User, "username")} = '${this.data.username}'`, 1)
 		if(existingUser)
 			throw new UsernameAlreadyExistsException()
 		
@@ -26,11 +26,11 @@ export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage
 		const userData = {
 			username: this.data.username,
 			hashedPassword: hash,
-			isAdmin: db.tableSelect(User, undefined, 1).length == 0
+			isAdmin: db.selectTable(User, undefined, 1).length == 0
 		} as Partial<User>
 		
 		const userId = db.insert(User, userData)
-		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${userId}`)
+		const [user] = db.selectTable(User, `${column(User, "userId")} = ${userId}`)
 		const success = userId != 0
 		session.login(userId, user.isAdmin)
 		session.send(new ConfirmResponseMessage(this.data, success))

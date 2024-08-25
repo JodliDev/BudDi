@@ -27,7 +27,7 @@ export class EditMessageAction extends LoggedInMessageAction<EditMessage> {
 		
 		const response = count == 0 ? 1 : db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session, where) ?? where, 1)
 		
-		const joinedResponse = await db.joinedSelectForPublicTable(
+		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			tableClass,
 			publicObj.getColumnNames(),
 			settings,

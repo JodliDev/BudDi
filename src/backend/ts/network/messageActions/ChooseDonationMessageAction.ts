@@ -1,5 +1,5 @@
 import {WebSocketSession} from "../WebSocketSession";
-import {DatabaseManager} from "../../database/DatabaseManager";
+import {DatabaseManager, JoinedData} from "../../database/DatabaseManager";
 import {User} from "../../database/dataClasses/User";
 import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
@@ -10,6 +10,7 @@ import {NeedsDonationEntry} from "../../database/dataClasses/NeedsDonationEntry"
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 import {AddToDonationMessageAction} from "./AddToDonationMessageAction";
 import {DonationAmountType} from "../../../../shared/public/PubUser";
+import {DonationHistory} from "../../database/dataClasses/DonationHistory";
 
 export class ChooseDonationMessageAction extends LoggedInMessageAction<AddToDonationMessage> {
 	
@@ -19,19 +20,30 @@ export class ChooseDonationMessageAction extends LoggedInMessageAction<AddToDona
 	}
 	
 	public static saveChoice(db: DatabaseManager, userId: number | bigint): boolean {
-		const [waitingEntry] = db.tableSelect(
+		const [data] = db.selectJoinedTable(
 			WaitingEntry,
+			["donationEntryId", "waitingEntryId"],
+			[
+				{
+					joinedTable: DonationEntry,
+					select: ["donationName"],
+					on: `${column(WaitingEntry, "donationEntryId")} = ${column(DonationEntry, "donationEntryId")}`,
+				}
+			],
 			`${column(WaitingEntry, "userId")} = ${userId}`,
 			1,
 			undefined,
 			"RANDOM()"
 		)
+		const waitingEntry = data.item
+		const donationEntry = data.joined["DonationEntry"] as DonationEntry
+		
 		if(!waitingEntry)
 			return false
 		
 		const amount = this.getDonationAmount(db, userId)
 		
-		const [needsDonationEntry] = db.tableSelect(
+		const [needsDonationEntry] = db.selectTable(
 			NeedsDonationEntry,
 			`${column(NeedsDonationEntry, "donationEntryId")} = ${waitingEntry.donationEntryId}`,
 			1
@@ -55,14 +67,17 @@ export class ChooseDonationMessageAction extends LoggedInMessageAction<AddToDona
 		db.delete(WaitingEntry, `${column(WaitingEntry, "waitingEntryId")} = ${waitingEntry.waitingEntryId}`)
 		const entriesLeft = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
 		
-		if(entriesLeft == 0)
+		DonationHistory.addHistory(db, userId, "historyChooseDonation", [donationEntry.donationName])
+		if(entriesLeft == 0) {
 			this.refillWaitingEntries(db, userId!)
+			DonationHistory.addHistory(db, userId, "historyRefillList", [])
+		}
 		
 		return true
 	}
 	
 	private static getDonationAmount(db: DatabaseManager, userId: number | bigint) {
-		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${userId}`, 1)
+		const [user] = db.selectTable(User, `${column(User, "userId")} = ${userId}`, 1)
 		switch(user.donationAmountType) {
 			case DonationAmountType.PerEntry:
 				const count = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
@@ -75,7 +90,7 @@ export class ChooseDonationMessageAction extends LoggedInMessageAction<AddToDona
 	}
 	
 	private static refillWaitingEntries(db: DatabaseManager, userId: number | bigint) {
-		const donationEntries = db.tableSelect(
+		const donationEntries = db.selectTable(
 			DonationEntry,
 			`${column(DonationEntry, "userId")} = ${userId} AND ${column(DonationEntry, "enabled")} = 1`
 		)

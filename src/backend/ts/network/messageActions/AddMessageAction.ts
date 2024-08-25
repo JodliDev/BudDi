@@ -26,7 +26,7 @@ export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
 			settings?.onAfterAdd(this.data.values, db, response)
 		
 		
-		const joinedResponse = await db.joinedSelectForPublicTable(
+		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			listClass,
 			publicObj.getColumnNames(),
 			settings,

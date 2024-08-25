@@ -10,7 +10,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = `${column(LoginSession, "userId")} = '${this.data.userId}' AND ${column(LoginSession, "sessionHash")} = '${this.data.sessionHash}'`
-		const [loginSession] = db.tableSelect(LoginSession, sqlConstraint, 1)
+		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)
 
 		if(!loginSession)
 			return
@@ -18,7 +18,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		const newSession = LoginSession.getNewSession(this.data.userId, loginSession.existsSince)
 		db.update(LoginSession, { "=": newSession }, sqlConstraint, 1)
 		
-		const [user] = db.tableSelect(User, `${column(User, "userId")} = ${this.data.userId}`, 1)
+		const [user] = db.selectTable(User, `${column(User, "userId")} = ${this.data.userId}`, 1)
 		
 		session.login(user.userId, user.isAdmin)
 		session.send(new SessionLoginMessage(this.data.userId, newSession.sessionHash))

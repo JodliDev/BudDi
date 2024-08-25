@@ -11,7 +11,7 @@ import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMes
 export class LoginMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [user] = db.tableSelect(User, `${column(User, "username")} = '${this.data.username}'`, 1)
+		const [user] = db.selectTable(User, `${column(User, "username")} = '${this.data.username}'`, 1)
 		if(!user) {
 			session.send(new LoginResponseMessage(this.data, false))
 			return

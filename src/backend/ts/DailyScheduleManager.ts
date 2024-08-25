@@ -33,7 +33,7 @@ export class DailyScheduleManager {
 	
 	public loop(): void {
 		const now = Date.now()
-		const schedules = this.db.tableSelect(Schedule, `${column(Schedule, "enabled")} = 1 AND ${column(Schedule, "nextLoop")} <= ${now}`)
+		const schedules = this.db.selectTable(Schedule, `${column(Schedule, "enabled")} = 1 AND ${column(Schedule, "nextLoop")} <= ${now}`)
 		console.log(`Found ${schedules.length} Schedules that will run now`)
 		
 		for(const schedule of schedules) {

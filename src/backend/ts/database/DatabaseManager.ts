@@ -86,38 +86,40 @@ export class DatabaseManager {
 		return this.correctValues(table, values, value => SqlQueryGenerator.booleanToSqlValue(value))
 	}
 	
-	public tableSelect<T extends BasePublicTable>(
+	public selectTable<T extends BasePublicTable>(
 		table: Class<T>,
 		where?: string,
 		limit?: number,
 		from?: number,
-		order?: keyof T | "RANDOM()"
+		order?: keyof T | "RANDOM()",
+		orderType: "ASC" | "DESC" = "ASC"
 	): T[] {
-		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from, order?.toString()) as Partial<T>[]) as T[]
+		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from, order?.toString(), orderType) as Partial<T>[]) as T[]
 	}
 	
-	
-	public async joinedSelectForPublicTable<T extends BasePublicTable>(
+	public async selectFullyJoinedPublicTable<T extends BasePublicTable>(
 		table: Class<T>,
-		select: (keyof BasePublicTable)[],
+		select: (keyof T)[],
 		settings?: TableSettings<T>,
 		where?: string,
 		limit?: number,
 		from?: number,
-		order?: keyof T | "RANDOM()"
+		order?: keyof T | "RANDOM()",
+		orderType: "ASC" | "DESC" = "ASC"
 	): Promise<ListResponseEntry<T>[]> {
-		const joinArray = settings ? await ListMessageAction.getJoinArray(table, settings) : []
-		return this.joinedSelect(table, select, joinArray, where, limit, from, order) as ListResponseEntry<T>[]
+		const joinArray = settings ? await ListMessageAction.getPublicJoinArray(table, settings) : []
+		return this.selectJoinedTable(table, select, joinArray, where, limit, from, order, orderType) as ListResponseEntry<T>[]
 	}
 	
-	public joinedSelect<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
+	public selectJoinedTable<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
 		table: Class<T>,
 		select: (keyof T)[],
 		joinArray: MapToJoinedDataArray<JoinedT>,
 		where?: string,
 		limit?: number,
 		from?: number,
-		order?: keyof T | "RANDOM()"
+		order?: keyof T | "RANDOM()",
+		orderType: "ASC" | "DESC" = "ASC"
 	): JoinedResponseEntry<T>[] {
 		let selectWithTable = select.map(entry => column(table, entry))
 		const joinSqlArray = []
@@ -133,6 +135,7 @@ export class DatabaseManager {
 			limit,
 			from,
 			order?.toString(),
+			orderType,
 			joinSqlArray
 		) as Record<string, unknown>[]
 		
@@ -168,9 +171,10 @@ export class DatabaseManager {
 		limit?: number,
 		from?: number,
 		order?: string,
+		orderType: "ASC" | "DESC" = "ASC",
 		join?: { joinedTableName: string, on: string }[]
 	) {
-		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, order, join)
+		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, order, orderType, join)
 		const statement = this.db.prepare(query)
 		return statement.all()
 	}
