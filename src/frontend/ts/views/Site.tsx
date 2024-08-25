@@ -126,17 +126,11 @@ export class Site {
 	private renderSite() {
 		const site = {
 			view: () => {
-				let pageView: Vnode<any, any>
-				if(this.currentPage.isLoaded) {
-					pageView = this.currentPage.getView()
-					pageView.attrs.className += ` page fullLine ${this.currentPage.constructor.name}`
-				}
-				else
-					pageView = <div class="vertical hAlignCenter vAlignCenter page fullLine"> { LoadingSpinner() }</div>
-				
 				return <div class="siteContent">
 					{ this.header.getView(this.currentPage.constructor.name) }
-					{ pageView }
+					{ this.currentPage.isLoaded
+						? this.currentPage.getFullView()
+						: this.currentPage.getLoadingView() }
 				</div>
 			}
 		}
