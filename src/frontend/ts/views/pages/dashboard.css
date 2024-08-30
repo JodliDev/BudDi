@@ -29,12 +29,21 @@
 	}
 }
 
+@media (width <= 800px) {
+	.page.Dashboard .listWidget {
+		width: 90vw;
+	}
+}
+@media (width > 800px) {
+	.page.Dashboard .listWidget {
+		width: 45vw;
+	}
+}
 .donationEntry {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .page.Dashboard .listWidget {
-	min-width: 40vw;
-	max-width: 100vw;
+	max-width: 90vw;
 }
