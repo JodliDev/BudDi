@@ -215,7 +215,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 				{ options.addOptions &&
 					DropdownMenu(
 						`Add~${BasePublicTable.getName(options.tableClass)}`,
-						BtnWidget.DefaultBtn("add"),
+						BtnWidget.PopoverBtn("add", Lang.get("addEntry")),
 						() => m(ListEditComponent<EntryT>, {
 							tableClass: options.tableClass,
 							columns: options.addOptions!.columns,

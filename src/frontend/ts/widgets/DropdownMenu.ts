@@ -186,7 +186,7 @@ export function openDropdown(id: string, openerView: Element, menuContent: (clos
 
 export function DropdownMenu(
 	id: string,
-	clickElement: Vnode,
+	clickElement: Vnode<any, unknown>,
 	menuContent: (close: () => void) => Vnode<any, any>,
 	options?: DropdownOptions
 ): Vnode<DropdownComponentOptions, unknown> {

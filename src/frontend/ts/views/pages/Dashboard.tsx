@@ -37,13 +37,13 @@ export class Dashboard extends LoggedInBasePage {
 		return <div class="horizontal fillSpace donationEntry">
 			{ entry.homepage.length != 0
 				? <a href={ entry.homepage } target="_blank">
-					{ BtnWidget.DefaultBtn("home") }
+					{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 				</a>
 				: BtnWidget.Empty()
 			}
 			{ entry.donationUrl.length != 0
 				? <a href={ entry.donationUrl } target="_blank">
-					{ BtnWidget.DefaultBtn("donate") }
+					{ BtnWidget.PopoverBtn("donate", Lang.get("donationUrl")) }
 				</a>
 				: BtnWidget.Empty()
 			}
@@ -151,12 +151,12 @@ export class Dashboard extends LoggedInBasePage {
 						<div class="horizontal subSurface">
 							{ info.donationEntry.homepage.length != 0 &&
 								<a href={ info.donationEntry.homepage } target="_blank">
-									{ BtnWidget.DefaultBtn("home") }
+									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 								</a>
 							}
 							{ info.donationEntry.donationUrl.length != 0 &&
 								<a href={ info.donationEntry.donationUrl } target="_blank">
-									{ BtnWidget.DefaultBtn("donate") }
+									{ BtnWidget.PopoverBtn("donate", Lang.get("donationUrl")) }
 								</a>
 							}
 							<div class="fillSpace"></div>

@@ -13,6 +13,6 @@
 		"jsxFactory": "m",
 		"resolveJsonModule": true,
 		"rootDir": "./src",
-		"outDir": "./dist"
+		"outDir": "./dist/backend"
 	}
 }
