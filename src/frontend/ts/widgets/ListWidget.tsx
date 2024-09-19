@@ -120,6 +120,10 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		m.redraw()
 	}
 	
+	private needsReset(oldOptions: ListOptions<EntryT>, newOptions: ListOptions<EntryT>): boolean {
+		return oldOptions.tableClass != newOptions.tableClass || oldOptions.order != newOptions.order || oldOptions.orderType != newOptions.orderType
+	}
+	
 	private getId(entry: EntryT): number {
 		const idColumn = this.idColumn
 		if(!idColumn)
@@ -178,13 +182,25 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 			this.options!.site.errorManager.error(Lang.get("errorAdd"))
 	}
 	
-	public async oncreate(vNode: VnodeDOM<ListOptions<EntryT>, unknown>): Promise<void> {
+	private setOptions(vNode: Vnode<ListOptions<EntryT>, unknown>): void {
 		this.options = vNode.attrs
 		if(this.options.callback) {
 			this.options.callback.reload = this.loadPage.bind(this)
 			this.options.callback.isEmpty = this.pagesHelper.isEmpty.bind(this.pagesHelper)
 		}
+	}
+	
+	public async oncreate(vNode: Vnode<ListOptions<EntryT>, unknown>): Promise<void> {
+		this.setOptions(vNode)
 		await this.loadPage()
+	}
+	public onbeforeupdate(newNode: Vnode<ListOptions<EntryT>, unknown>, oldNode: VnodeDOM<ListOptions<EntryT>, unknown>): void {
+		this.setOptions(newNode)
+		if(this.needsReset(oldNode.attrs, newNode.attrs)) {
+			this.pagesHelper.reset()
+			this.items = []
+			this.loadPage()
+		}
 	}
 	
 	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {

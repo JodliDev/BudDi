@@ -1,8 +1,6 @@
 import m, { Vnode } from "mithril"
 import "./pagesHelper.css"
 import { BtnWidget } from "./BtnWidget";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { Lang } from "../../../shared/Lang";
 
 
 export class PagesHelper {
@@ -37,6 +35,11 @@ export class PagesHelper {
 	
 	public load(): Promise<void> {
 		return this.onPageChange(this.currentPage)
+	}
+	
+	public reset(): void {
+		this.currentPage = 0
+		this.totalCount = 0
 	}
 	
 	public getView(): Vnode {
