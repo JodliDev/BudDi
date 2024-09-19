@@ -30,7 +30,7 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 	private isLoading: boolean = false
 	private data: Partial<EntryT> = {}
 	
-	getTypedInputView(data: Partial<EntryT>, type: string, obj: EntryT, column: keyof EntryT) {
+	getTypedInputView(data: Partial<EntryT>, obj: EntryT, column: keyof EntryT) {
 		const entry = data[column] ?? obj[column]
 		let inputType: string
 		switch(typeof entry) {
@@ -59,8 +59,8 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 		}} class="vertical">
 			{
 				vNode.attrs.columns.map((column) => <label>
-					<small>{Lang.getGrouped(BasePublicTable.getName(vNode.attrs.tableClass), column.toString())}</small>
-					{ this.getTypedInputView(this.data, typeof obj[column], vNode.attrs.defaults ?? obj, column) }
+					<small>{ Lang.get(obj.getTranslation(column as keyof EntryT)) }</small>
+					{ this.getTypedInputView(this.data, vNode.attrs.defaults ?? obj, column) }
 				</label>)
 			}
 			{ LoadingSpinner(this.isLoading) }

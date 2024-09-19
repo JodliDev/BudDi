@@ -1,4 +1,5 @@
 import {Class} from "./Class";
+import {LangKey} from "./Lang";
 
 export abstract class BasePublicTable {
 	public getColumnNames<T extends this>(): (keyof T)[] {
@@ -12,6 +13,10 @@ export abstract class BasePublicTable {
 	abstract getPrimaryKey(): keyof any
 	getSettings(): unknown {
 		return undefined
+	}
+	
+	getTranslation(key: keyof this): LangKey {
+		return key as LangKey
 	}
 	
 	public static getName(table: Class<BasePublicTable>): string {

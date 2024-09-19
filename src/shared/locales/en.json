@@ -59,8 +59,8 @@
 	"totalDonations": "Total donations",
 	"username": "Username",
 	"user": "User",
-	"DonationEntry~donationName": "Name",
-	"DonationEntry~enabled": "Enabled",
-	"DonationEntry~homepage": "Homepage",
-	"DonationEntry~donationUrl": "Url for donation"
+	"name": "Name",
+	"enabled": "Enabled",
+	"homepage": "Homepage",
+	"donationUrl": "Url for donation"
 }

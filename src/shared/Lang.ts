@@ -54,8 +54,5 @@ export const Lang = {
 	},
 	getWithColon: function(key: LangKey, ... replacers: Array<string | number>): string {
 		return Lang.get("colon", Lang.get(key, ...replacers))
-	},
-	getGrouped: function(group: string, key: string, ... replacers: Array<string | number>): string {
-		return Lang.get(`${group}~${key}` as LangKey, ...replacers)
 	}
 }
