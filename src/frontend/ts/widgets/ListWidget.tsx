@@ -210,12 +210,12 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 				<b class="fillSpace horizontal hAlignCenter">{ options.title }</b>
 					{ this.isLoading
 						? LoadingSpinner(this.isLoading)
-						: (options.hideRefresh ? "" : BtnWidget.Reload(this.loadPage.bind(this, this.pagesHelper.getCurrentPage())))
+						: (options.hideRefresh ? "" : BtnWidget.DefaultBtn("reload", this.loadPage.bind(this, this.pagesHelper.getCurrentPage())))
 					}
 				{ options.addOptions &&
 					DropdownMenu(
 						`Add~${BasePublicTable.getName(options.tableClass)}`,
-						BtnWidget.Add(),
+						BtnWidget.DefaultBtn("add"),
 						() => m(ListEditComponent<EntryT>, {
 							tableClass: options.tableClass,
 							columns: options.addOptions!.columns,
@@ -233,7 +233,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 							{ options.editOptions &&
 								DropdownMenu(
 									`Edit~${BasePublicTable.getName(options.tableClass)}`,
-									BtnWidget.Edit(),
+									BtnWidget.DefaultBtn("edit"),
 									() => m(ListEditComponent<EntryT>, {
 										editMode: true,
 										tableClass: options.tableClass,
@@ -244,7 +244,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 								)
 							
 							}
-							{ options.deleteOptions && BtnWidget.Delete(() => this.deleteItem(entry.item)) }
+							{ options.deleteOptions && BtnWidget.DefaultBtn("delete", () => this.deleteItem(entry.item)) }
 						</div>
 					})
 				}

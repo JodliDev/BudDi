@@ -45,22 +45,22 @@ export class PagesHelper {
 	public getView(): Vnode {
 		return <div class="horizontal hAlignCenter vAlignCenter subSurface pagesHelper">
 				{ this.currentPage > 1
-					? BtnWidget.ToStart(() => this.onPageChange(0))
+					? BtnWidget.DefaultBtn("toStart", () => this.onPageChange(0))
 					: BtnWidget.Empty()
 				}
 				{ this.currentPage > 0
-					? BtnWidget.Prev(() => this.onPageChange(this.currentPage - 1))
+					? BtnWidget.DefaultBtn("prev", () => this.onPageChange(this.currentPage - 1))
 					: BtnWidget.Empty()
 				}
 				
 				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.maxPages + 1}</span>
 				
 				{ this.currentPage < this.maxPages
-					? BtnWidget.Next(() => this.onPageChange(this.currentPage + 1))
+					? BtnWidget.DefaultBtn("next", () => this.onPageChange(this.currentPage + 1))
 					: BtnWidget.Empty()
 				}
 				{ this.currentPage + 1 < this.maxPages
-					? BtnWidget.ToEnd(() => this.onPageChange(this.maxPages))
+					? BtnWidget.DefaultBtn("toEnd", () => this.onPageChange(this.maxPages))
 					: BtnWidget.Empty()
 				}
 			</div>

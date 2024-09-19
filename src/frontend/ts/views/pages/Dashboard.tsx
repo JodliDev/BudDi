@@ -37,13 +37,13 @@ export class Dashboard extends LoggedInBasePage {
 		return <div class="horizontal fillSpace donationEntry">
 			{ entry.homepage.length != 0
 				? <a href={ entry.homepage } target="_blank">
-					{ BtnWidget.Home() }
+					{ BtnWidget.DefaultBtn("home") }
 				</a>
 				: BtnWidget.Empty()
 			}
 			{ entry.donationUrl.length != 0
 				? <a href={ entry.donationUrl } target="_blank">
-					{ BtnWidget.Donate() }
+					{ BtnWidget.DefaultBtn("donate") }
 				</a>
 				: BtnWidget.Empty()
 			}
@@ -151,21 +151,17 @@ export class Dashboard extends LoggedInBasePage {
 						<div class="horizontal subSurface">
 							{ info.donationEntry.homepage.length != 0 &&
 								<a href={ info.donationEntry.homepage } target="_blank">
-									{ BtnWidget.Home() }
+									{ BtnWidget.DefaultBtn("home") }
 								</a>
 							}
 							{ info.donationEntry.donationUrl.length != 0 &&
 								<a href={ info.donationEntry.donationUrl } target="_blank">
-									{ BtnWidget.Donate() }
+									{ BtnWidget.DefaultBtn("donate") }
 								</a>
 							}
 							<div class="fillSpace"></div>
 							{
-								MouseOverDropdownMenu(
-									"setAsPaid",
-									BtnWidget.CheckCircle(this.setAsPaid.bind(this, info)),
-									() => <div class="textCentered">{Lang.get("setAsPaid")}</div>,
-								)
+								BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), this.setAsPaid.bind(this, info))
 							}
 						</div>
 					</div>
@@ -173,11 +169,7 @@ export class Dashboard extends LoggedInBasePage {
 				{ !this.notDonatedListCallback.isEmpty() &&
 					<div class="horizontal vAlignCenter chooseDonationBtn">
 						{
-							MouseOverDropdownMenu(
-								"chooseDonation",
-								BtnWidget.Luck(this.chooseDonation.bind(this)),
-								() => <div class="textCentered">{Lang.get("selectRandomDonationNow")}</div>,
-							)
+							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomDonationNow"), this.chooseDonation.bind(this))
 						}
 					</div>
 				}

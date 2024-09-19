@@ -123,7 +123,7 @@ function createDropdown(id: string, openerView: Element, options?: DropdownOptio
 	return dropDownMenuImpl
 }
 
-interface DropdownComponentOptions {
+export interface DropdownComponentOptions {
 	id: string
 	clickElement: Vnode<any, unknown>
 	menuContent: (close: () => void) => Vnode

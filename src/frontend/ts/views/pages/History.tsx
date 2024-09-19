@@ -22,7 +22,7 @@ export class History extends LoggedInBasePage {
 							{ (new Date(entry.item.historyTime)).toLocaleTimeString() }
 							
 						</small>
-						<span>{ Lang.get.call(Lang, entry.item.langKey, ... JSON.parse(entry.item.langValues)) }</span>
+						<span>{ Lang.get(entry.item.langKey, ... JSON.parse(entry.item.langValues)) }</span>
 					</div>
 				})
 			}
