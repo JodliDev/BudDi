@@ -1,0 +1,12 @@
+services:
+  budget-spender:
+    build:
+      context: .
+    environment:
+      portHttp: 1304
+      portWs: 13040
+    volumes:
+        -   ./config:/budgetSpender/dist/config
+    ports:
+      - "1304:1304"
+      - "13040:13040"
