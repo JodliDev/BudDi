@@ -2,10 +2,10 @@ import m, { Vnode } from "mithril";
 import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {Lang} from "../../../../shared/Lang";
 import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
-import {PubDonationEntry} from "../../../../shared/public/PubDonationEntry";
+import {PubPossibleSpendingEntry} from "../../../../shared/public/PubPossibleSpendingEntry";
 import {BtnWidget} from "../../widgets/BtnWidget";
-import {PubNeedsDonationEntry} from "../../../../shared/public/PubNeedsDonationEntry";
-import {ChooseDonationMessage} from "../../../../shared/messages/ChooseDonationMessage";
+import {PubNeedsSpendingEntry} from "../../../../shared/public/PubNeedsSpendingEntry";
+import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
@@ -15,13 +15,13 @@ import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 
-interface NeedsDonationEntryInformation {
-	donationEntry: PubDonationEntry
-	needsDonationEntry: PubNeedsDonationEntry
+interface NeedsSpendingEntryInformation {
+	possibleSpendingEntry: PubPossibleSpendingEntry
+	needsSpendingEntry: PubNeedsSpendingEntry
 }
 
 export class Dashboard extends LoggedInBasePage {
-	private needsDonationEntries: NeedsDonationEntryInformation[] = []
+	private needsSpendingEntries: NeedsSpendingEntryInformation[] = []
 	private notDonatedListCallback: ListWidgetCallback = new ListWidgetCallback()
 	private dropdownOptions: DropdownOptions = {
 		manualPositioning: true,
@@ -30,28 +30,28 @@ export class Dashboard extends LoggedInBasePage {
 	private user = new PubUser()
 	
 	
-	private positionDonationInfo(event: MouseEvent) {
+	private positionPossibleSpendingInfo(event: MouseEvent) {
 		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
 	}
-	private donationLineView(entry: PubDonationEntry, addedAt?: number): Vnode {
-		return <div class="horizontal fillSpace donationEntry">
+	private possibleSpendingLineView(entry: PubPossibleSpendingEntry, addedAt?: number): Vnode {
+		return <div class="horizontal fillSpace possibleSpendingEntry">
 			{ entry.homepage.length != 0
 				? <a href={ entry.homepage } target="_blank">
 					{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 				</a>
 				: BtnWidget.Empty()
 			}
-			{ entry.donationUrl.length != 0
-				? <a href={ entry.donationUrl } target="_blank">
-					{ BtnWidget.PopoverBtn("donate", Lang.get("donationUrl")) }
+			{ entry.spendingUrl.length != 0
+				? <a href={ entry.spendingUrl } target="_blank">
+					{ BtnWidget.PopoverBtn("donate", Lang.get("spendingUrl")) }
 				</a>
 				: BtnWidget.Empty()
 			}
 			{
 				<div class="fillSpace">
 					{
-						this.donationDropdown(
-						<span>{ entry.donationName }</span>,
+						this.possibleSpendingDropdown(
+						<span>{ entry.spendingName }</span>,
 						entry,
 						addedAt
 					)
@@ -60,25 +60,25 @@ export class Dashboard extends LoggedInBasePage {
 			}
 		</div>
 	}
-	private donationDropdown(clickElement: Vnode, entry: PubDonationEntry, addedAt?: number): Vnode<any, unknown> {
+	private possibleSpendingDropdown(clickElement: Vnode, entry: PubPossibleSpendingEntry, addedAt?: number): Vnode<any, unknown> {
 		return MouseOverDropdownMenu(
-			"donationEntry",
-			<div onmousemove={this.positionDonationInfo.bind(this)} class="donationDropdownClicker">
+			"possibleSpendingEntry",
+			<div onmousemove={this.positionPossibleSpendingInfo.bind(this)} class="possibleSpendingDropdownClicker">
 				{ clickElement }
 			</div>,
-			() => <div class="surface vertical donationDropdownContent">
-				<h3 class="textCentered">{ entry.donationName }</h3>
+			() => <div class="surface vertical possibleSpendingDropdownContent">
+				<h3 class="textCentered">{ entry.spendingName }</h3>
 				<div class="subSurface labelLike">
-					<small>{Lang.get("numberOfDonations")}</small>
-					<span>{entry.donationTimes}</span>
+					<small>{Lang.get("spendingCount")}</small>
+					<span>{entry.spendingTimes}</span>
 				</div>
 				<div class="subSurface labelLike">
-					<small>{Lang.get("totalDonations")}</small>
-					<span>{entry.donationsSum}{this.user.currency}</span>
+					<small>{Lang.get("totalSpending")}</small>
+					<span>{entry.spendingSum}{this.user.currency}</span>
 				</div>
 				<div class="subSurface labelLike">
-					<small>{Lang.get("lastDonation")}</small>
-					<span>{entry.lastDonation ? (new Date(entry.lastDonation)).toLocaleDateString() : Lang.get("notDonatedYet")}</span>
+					<small>{Lang.get("lastSpending")}</small>
+					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("notDonatedYet")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
@@ -91,31 +91,31 @@ export class Dashboard extends LoggedInBasePage {
 		)
 	}
 	
-	private async chooseDonation(): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new ChooseDonationMessage())
+	private async chooseForSpending(): Promise<void> {
+		const response = await this.site.socket.sendAndReceive(new ChooseForSpendingMessage())
 		if(!response.success) {
 			this.site.errorManager.error(Lang.get("errorUnknown"))
 			return
 		}
-		await this.loadNeededDonations()
+		await this.loadNeededSpending()
 		await this.notDonatedListCallback.reload()
 	}
 	
-	private async loadNeededDonations(): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsDonationEntry, 0, 100)) as ListResponseMessage<PubNeedsDonationEntry>
+	private async loadNeededSpending(): Promise<void> {
+		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsSpendingEntry, 0, 100)) as ListResponseMessage<PubNeedsSpendingEntry>
 		if(response.success)
-			this.needsDonationEntries = response.list.map(entry => {
+			this.needsSpendingEntries = response.list.map(entry => {
 				return {
-					donationEntry: entry.joined["DonationEntry"] as PubDonationEntry,
-					needsDonationEntry: entry.item
+					possibleSpendingEntry: entry.joined["PossibleSpendingEntry"] as PubPossibleSpendingEntry,
+					needsSpendingEntry: entry.item
 				}
 			})
 	}
 	
-	private async setAsPaid(info: NeedsDonationEntryInformation) {
-		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsDonationEntry)) as ConfirmResponseMessage
+	private async setAsPaid(info: NeedsSpendingEntryInformation) {
+		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsSpendingEntry)) as ConfirmResponseMessage
 		if(response.success) {
-			await this.loadNeededDonations()
+			await this.loadNeededSpending()
 			await this.notDonatedListCallback.reload()
 		}
 		else
@@ -124,7 +124,7 @@ export class Dashboard extends LoggedInBasePage {
 	
 	async load(): Promise<void> {
 		await super.load()
-		await this.loadNeededDonations()
+		await this.loadNeededSpending()
 		
 		const response = await this.site.socket.sendAndReceive(
 			new ListMessage(PubUser, 0, 1)
@@ -136,27 +136,27 @@ export class Dashboard extends LoggedInBasePage {
 	
 	getView(): Vnode {
 		return <div class="vertical">
-			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsDonationBox">
-				{ this.needsDonationEntries.map(info => 
-					<div class="vertical surface needsDonationEntry hAlignStretched">
-						<div class="subSurface textCentered donationHeader">{info.needsDonationEntry.amount}{this.user?.currency}</div>
+			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsSpendingBox">
+				{ this.needsSpendingEntries.map(info => 
+					<div class="vertical surface needsSpendingEntry hAlignStretched">
+						<div class="subSurface textCentered spendingHeader">{info.needsSpendingEntry.amount}{this.user?.currency}</div>
 						{
-							this.donationDropdown(
-								<div class="textCentered">{info.donationEntry.donationName}</div>,
-								info.donationEntry,
-								info.needsDonationEntry.addedAt
+							this.possibleSpendingDropdown(
+								<div class="textCentered">{info.possibleSpendingEntry.spendingName}</div>,
+								info.possibleSpendingEntry,
+								info.needsSpendingEntry.addedAt
 							)
 						}
 						<div class="fillSpace"></div>
 						<div class="horizontal subSurface">
-							{ info.donationEntry.homepage.length != 0 &&
-								<a href={ info.donationEntry.homepage } target="_blank">
+							{ info.possibleSpendingEntry.homepage.length != 0 &&
+								<a href={ info.possibleSpendingEntry.homepage } target="_blank">
 									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 								</a>
 							}
-							{ info.donationEntry.donationUrl.length != 0 &&
-								<a href={ info.donationEntry.donationUrl } target="_blank">
-									{ BtnWidget.PopoverBtn("donate", Lang.get("donationUrl")) }
+							{ info.possibleSpendingEntry.spendingUrl.length != 0 &&
+								<a href={ info.possibleSpendingEntry.spendingUrl } target="_blank">
+									{ BtnWidget.PopoverBtn("donate", Lang.get("spendingUrl")) }
 								</a>
 							}
 							<div class="fillSpace"></div>
@@ -167,9 +167,9 @@ export class Dashboard extends LoggedInBasePage {
 					</div>
 				)}
 				{ !this.notDonatedListCallback.isEmpty() &&
-					<div class="horizontal vAlignCenter chooseDonationBtn">
+					<div class="horizontal vAlignCenter chooseSpendingBtn">
 						{
-							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomDonationNow"), this.chooseDonation.bind(this))
+							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this))
 						}
 					</div>
 				}
@@ -183,31 +183,31 @@ export class Dashboard extends LoggedInBasePage {
 						hideRefresh: true,
 						deleteOptions: {},
 						callback: this.notDonatedListCallback,
-						getEntryView: entry => 
-							this.donationLineView(entry.joined.DonationEntry as PubDonationEntry, entry.item.addedAt)
+						getEntryView: entry =>
+							this.possibleSpendingLineView(entry.joined.PossibleSpendingEntry as PubPossibleSpendingEntry, entry.item.addedAt)
 					})
 				}
 				
 				{
 					ListWidget({
 						title: Lang.get("allEntries"),
-						tableClass: PubDonationEntry,
+						tableClass: PubPossibleSpendingEntry,
 						site: this.site,
 						hideRefresh: true,
 						addOptions: {
-							columns: ["donationName", "homepage", "donationUrl"],
+							columns: ["spendingName", "homepage", "spendingUrl"],
 							onAdded: async () => {
 								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
 							}
 						},
-						editOptions: {columns: ["donationName", "homepage", "donationUrl", "enabled"] },
+						editOptions: {columns: ["spendingName", "homepage", "spendingUrl", "enabled"] },
 						deleteOptions: {
 							onDeleted: async () => {
 								await this.notDonatedListCallback.reload()
-								await this.loadNeededDonations()
+								await this.loadNeededSpending()
 							} 
 						},
-						getEntryView: entry => this.donationLineView(entry.item)
+						getEntryView: entry => this.possibleSpendingLineView(entry.item)
 					})
 				}
 			</div>

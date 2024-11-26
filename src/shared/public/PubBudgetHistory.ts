@@ -2,7 +2,7 @@ import {BasePublicTable} from "../BasePublicTable";
 import {LangKey} from "../Lang";
 
 
-export class PubDonationHistory extends BasePublicTable {
+export class PubBudgetHistory extends BasePublicTable {
 	getPrimaryKey(): keyof this {
 		return "historyId"
 	}

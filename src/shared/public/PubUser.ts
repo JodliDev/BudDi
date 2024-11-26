@@ -1,6 +1,6 @@
 import {BasePublicTable} from "../BasePublicTable";
 
-export enum DonationAmountType {
+export enum SpendingAmountType {
 	Fixed,
 	PerEntry
 }
@@ -12,8 +12,8 @@ export class PubUser extends BasePublicTable {
 	
 	public userId: number | bigint = 0
 	public username: string = ""
-	public donationAmountType: number = DonationAmountType.PerEntry
-	public donationAmount: number = 1
+	public spendingAmountType: number = SpendingAmountType.PerEntry
+	public spendingAmount: number = 1
 	
 	public currency: string = "€"
 }

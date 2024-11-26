@@ -2,7 +2,7 @@ import {ScheduleRepeatOptions} from "../../shared/ScheduleRepeatOptions";
 import {DatabaseManager} from "./database/DatabaseManager";
 import {Schedule} from "./database/dataClasses/Schedule";
 import {column} from "./database/column";
-import {ChooseDonationMessageAction} from "./network/messageActions/ChooseDonationMessageAction";
+import {ChooseForSpendingMessageAction} from "./network/messageActions/ChooseForSpendingMessageAction";
 
 interface ScheduleEntry extends ScheduleRepeatOptions {
 	nextRun: number
@@ -37,7 +37,7 @@ export class DailyScheduleManager {
 		console.log(`Found ${schedules.length} Schedules that will run now`)
 		
 		for(const schedule of schedules) {
-			ChooseDonationMessageAction.saveChoice(this.db, schedule.userId)
+			ChooseForSpendingMessageAction.saveChoice(this.db, schedule.userId)
 			
 			const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)
 			this.db.update(

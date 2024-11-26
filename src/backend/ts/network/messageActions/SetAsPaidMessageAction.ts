@@ -3,48 +3,48 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {DonationEntry} from "../../database/dataClasses/DonationEntry";
-import {NeedsDonationEntry} from "../../database/dataClasses/NeedsDonationEntry";
+import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
+import {NeedsSpendingEntry} from "../../database/dataClasses/NeedsSpendingEntry";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {DonationHistory} from "../../database/dataClasses/DonationHistory";
+import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
 
 export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [data] = db.selectJoinedTable(
-			NeedsDonationEntry,
-			["donationEntryId", "needsDonationEntryId"],
+			NeedsSpendingEntry,
+			["possibleSpendingEntryId", "needsSpendingEntryId"],
 			[
 				{
-					joinedTable: DonationEntry,
-					select: ["donationName"],
-					on: `${column(NeedsDonationEntry, "donationEntryId")} = ${column(DonationEntry, "donationEntryId")}`,
+					joinedTable: PossibleSpendingEntry,
+					select: ["spendingName"],
+					on: `${column(NeedsSpendingEntry, "possibleSpendingEntryId")} = ${column(PossibleSpendingEntry, "possibleSpendingEntryId")}`,
 				}
 			],
-			`${column(NeedsDonationEntry, "userId")} = ${session.userId} AND ${column(NeedsDonationEntry, "needsDonationEntryId")} = ${this.data.needsDonationEntry}`,
+			`${column(NeedsSpendingEntry, "userId")} = ${session.userId} AND ${column(NeedsSpendingEntry, "needsSpendingEntryId")} = ${this.data.needsSpendingEntry}`,
 			1,
 		)
-		const needsDonationEntry = data.item
-		const donationEntry = data.joined["DonationEntry"] as DonationEntry
+		const needsSpendingEntry = data.item
+		const spendingEntry = data.joined["PossibleSpendingEntry"] as PossibleSpendingEntry
 		
-		if(!needsDonationEntry) {
+		if(!needsSpendingEntry) {
 			session.send(new ConfirmResponseMessage(this.data, false))
 			return
 		}
 		
-		db.delete(NeedsDonationEntry, `${column(NeedsDonationEntry, "needsDonationEntryId")} = ${needsDonationEntry.needsDonationEntryId}`)
+		db.delete(NeedsSpendingEntry, `${column(NeedsSpendingEntry, "needsSpendingEntryId")} = ${needsSpendingEntry.needsSpendingEntryId}`)
 		db.update(
-			DonationEntry, 
+			PossibleSpendingEntry, 
 			{
 				"+=": {
-					lastDonation: Date.now(),
-					donationsSum: needsDonationEntry.amount,
-					donationTimes: 1
+					lastSpending: Date.now(),
+					spendingSum: needsSpendingEntry.amount,
+					spendingTimes: 1
 				}
 			},
-			`${column(DonationEntry, "donationEntryId")} = ${needsDonationEntry.donationEntryId}`
+			`${column(PossibleSpendingEntry, "possibleSpendingEntryId")} = ${needsSpendingEntry.possibleSpendingEntryId}`
 		)
-		DonationHistory.addHistory(db, session.userId!, "historySetAsPaid", [donationEntry.donationName])
+		BudgetHistory.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.spendingName])
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }

@@ -37,7 +37,38 @@ export class DatabaseInstructions {
 	): PreMigrationData {
 		const output: PreMigrationData = {}
 		
-		//do something
+		if(fromVersion == 2) {
+			output.migrationTableOrder = ["PossibleSpendingEntry", "NeedsSpendingEntry"]
+			
+			output.tablesForRenaming = {
+				BudgetHistory: "DonationHistory",
+				NeedsSpendingEntry: "NeedsDonationEntry",
+				PossibleSpendingEntry: "DonationEntry"
+			}
+			
+			output.columnsForRenaming = {
+				NeedsSpendingEntry: {
+					"possibleSpendingEntryId": "donationEntryId",
+					"needsSpendingEntryId": "needsDonationEntryId"
+				},
+				PossibleSpendingEntry: {
+					"needsSpendingEntryId": "needsDonationEntryId",
+					"possibleSpendingEntryId": "donationEntryId",
+					"spendingName": "donationName",
+					"spendingUrl": "donationUrl",
+					"spendingSum": "donationsSum",
+					"spendingTimes": "donationTimes",
+					"lastSpending": "lastDonation"
+				},
+				User: {
+					"spendingAmountType": "donationAmountType",
+					"spendingAmount": "donationAmount"
+				},
+				WaitingEntry: {
+					"possibleSpendingEntryId": "donationEntryId"
+				}
+			}
+		}
 		
 		return output
 	}

@@ -8,7 +8,7 @@ import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {PASSWORD_MIN_LENGTH} from "../../Constants";
 import {DeleteAccountMessage} from "../../../../shared/messages/DeleteAccountMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
-import {DonationAmountType, PubUser} from "../../../../shared/public/PubUser";
+import {SpendingAmountType, PubUser} from "../../../../shared/public/PubUser";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {LoggedInBasePage} from "../LoggedInBasePage";
@@ -96,17 +96,17 @@ export class User extends LoggedInBasePage {
 				</label>
 				
 				<label>
-					<small>{ Lang.get("donationAmount") }</small>
-					<input type="number" {...BindValueToInput(() => this.user.donationAmount, value => this.user.donationAmount = value)}/>
+					<small>{ Lang.get("spendingAmount") }</small>
+					<input type="number" {...BindValueToInput(() => this.user.spendingAmount, value => this.user.spendingAmount = value)}/>
 				</label>
 				
 				<label>
-					<small>{ Lang.get("donationCalculation") }</small>
-					<select {...BindValueToInput(() => this.user.donationAmountType, value => this.user.donationAmountType = value)}>
-						<option value={DonationAmountType.PerEntry}>{Lang.get("perEntry")}</option>
-						<option value={DonationAmountType.Fixed}>{Lang.get("fixed")}</option>
+					<small>{ Lang.get("spendingCalculation") }</small>
+					<select {...BindValueToInput(() => this.user.spendingAmountType, value => this.user.spendingAmountType = value)}>
+						<option value={SpendingAmountType.PerEntry}>{Lang.get("perEntry")}</option>
+						<option value={SpendingAmountType.Fixed}>{Lang.get("fixed")}</option>
 					</select>
-					<small>{ Lang.get("infoDonationCalculation") }</small>
+					<small>{ Lang.get("infoSpendingCalculation") }</small>
 				</label>
 				
 				<label>

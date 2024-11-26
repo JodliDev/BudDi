@@ -2,7 +2,7 @@ import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {ListWidget} from "../../widgets/ListWidget";
 import {LoggedInBasePage} from "../LoggedInBasePage";
-import {PubDonationHistory} from "../../../../shared/public/PubDonationHistory";
+import {PubBudgetHistory} from "../../../../shared/public/PubBudgetHistory";
 import "./history.css"
 
 export class History extends LoggedInBasePage {
@@ -11,7 +11,7 @@ export class History extends LoggedInBasePage {
 			{
 				ListWidget({
 					title: Lang.get("history"),
-					tableClass: PubDonationHistory,
+					tableClass: PubBudgetHistory,
 					order: "historyTime",
 					orderType: "DESC",
 					site: this.site,

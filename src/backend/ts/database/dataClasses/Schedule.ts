@@ -1,9 +1,6 @@
-import {DonationEntry} from "./DonationEntry";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
-import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
-import {WaitingEntry} from "./WaitingEntry";
 import {DailyScheduleManager} from "../../DailyScheduleManager";
 import {column} from "../column";
 

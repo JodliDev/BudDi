@@ -20,8 +20,9 @@ Lang.init(options.lang).then(
 	}
 )
 
-const optionsFile = `${options.root}/${options.frontend}/options.js`;
-writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encoding: 'utf-8' });
+const optionsFile = `${options.root}/${options.frontend}/options.js`
+console.log(`Write options to ${optionsFile}`)
+writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encoding: 'utf-8' })
 
 DatabaseManager.access(new DatabaseInstructions(), options)
 	.then((dbManager) => {

@@ -1,28 +1,28 @@
-.needsDonationBox {
+.needsSpendingBox {
 	margin: 0 29px;
 	
-	.donationDropdownClicker {
+	.possibleSpendingDropdownClicker {
 		overflow: hidden;
 	}
-	.chooseDonationBtn {
+	.chooseSpendingBtn {
 		margin-right: -29px;
 	}
-	.chooseDonationBtn:first-child {
+	.chooseSpendingBtn:first-child {
 		margin-right: 0;
 	}
 }
-.donationDropdownContent {
+.possibleSpendingDropdownContent {
 	max-width: 250px
 }
 
-.needsDonationEntry {
+.needsSpendingEntry {
 	width: 150px;
 	min-width:150px;
 	height: 150px;
 	overflow: hidden;
 	margin: 5px;
 	
-	.donationHeader {
+	.spendingHeader {
 		font-weight: bold;
 		font-size: x-large;
 		padding: 10px;
@@ -39,7 +39,7 @@
 		width: 45vw;
 	}
 }
-.donationEntry {
+.spendingEntry {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
