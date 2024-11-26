@@ -48,7 +48,7 @@ export class DatabaseManager {
 			const backupDb = new BetterSqlite3(backupPath)
 			
 			const migrationManager = new DatabaseMigrationManager(db, backupDb)
-			migrationManager.migrateTable(version, dbInstructions)
+			migrationManager.migrateTables(version, dbInstructions)
 		}
 		
 		return manager
