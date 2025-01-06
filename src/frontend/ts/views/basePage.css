@@ -1,0 +1,6 @@
+.page.isLoaded {
+	animation: fade-in 300ms ease-in;
+}
+.page.isLoading {
+	opacity: 0;
+}

@@ -1,5 +1,5 @@
 import m, { Vnode } from "mithril";
-import "./errorBox.css"
+import "./errorManager.css"
 import { Lang } from "../../../shared/Lang";
 
 interface Entry {

@@ -1,8 +1,3 @@
-@keyframes fade-out {
-	0% { opacity: 1; }
-	100% { opacity: 0; }
-}
-
 .feedbackIcon {
 	display: inline-block;
 	animation: fade-out 2s ease-in-out;

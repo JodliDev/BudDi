@@ -1,4 +1,5 @@
 import m, {Vnode} from "mithril";
+import "./basePage.css"
 import { Site } from "./Site";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 
@@ -38,11 +39,11 @@ export abstract class BasePage {
 	}
 	
 	public getLoadingView(): Vnode<any, unknown> {
-		return <div class="vertical hAlignCenter vAlignCenter page fullLine"> { LoadingSpinner() }</div>
+		return <div class="vertical hAlignCenter vAlignCenter page fullLine isLoading"> { LoadingSpinner() }</div>
 	}
 	public getFullView(): Vnode<any, unknown> {
 		const pageView = this.getView()
-		pageView.attrs.className += ` page fullLine ${this.constructor.name}`
+		pageView.attrs.className += ` page fullLine ${this.constructor.name} isLoaded`
 		return pageView
 	}
 	
