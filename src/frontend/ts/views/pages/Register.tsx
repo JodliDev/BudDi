@@ -65,7 +65,7 @@ export class Register extends BasePage {
 				<div class="entry horizontal vAlignCenter fullLine">
 					<div class="fillSpace"></div>
 					{ LoadingSpinner(this.isLoading) }
-					<input type="submit" value="Login" disabled={ this.isLoading || !this.formIsValid }/>
+					<input type="submit" value={Lang.get("register")} disabled={ this.isLoading || !this.formIsValid }/>
 				</div>
 			</form>
 		</div>

@@ -46,7 +46,7 @@ export class Login extends BasePage {
 				<div class="entry horizontal vAlignCenter fullLine">
 					<div class="fillSpace"></div>
 					{ LoadingSpinner(this.isLoading) }
-					<input type="submit" value="Login" disabled={ this.isLoading }/>
+					<input type="submit" value={Lang.get("login")} disabled={ this.isLoading }/>
 				</div>
 			</form>
 		</div>
