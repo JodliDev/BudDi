@@ -109,7 +109,7 @@ form {
 	text-align: center;
 }
 .warn {
-	color: red;
+	color: red !important;
 }
 
 .opacity {

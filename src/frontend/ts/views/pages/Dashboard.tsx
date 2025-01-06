@@ -189,7 +189,7 @@ export class Dashboard extends LoggedInBasePage {
 				}
 				
 				{
-					ListWidget({
+					ListWidget<PubPossibleSpendingEntry>({
 						title: Lang.get("allEntries"),
 						tableClass: PubPossibleSpendingEntry,
 						site: this.site,
@@ -198,6 +198,14 @@ export class Dashboard extends LoggedInBasePage {
 							columns: ["spendingName", "homepage", "spendingUrl"],
 							onAdded: async () => {
 								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+							},
+							getValueError: (key, value) => {
+								switch(key) {
+									case "spendingName":
+										return (value as string).length < PubPossibleSpendingEntry.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : null
+									default:
+										return null
+								}
 							}
 						},
 						editOptions: {columns: ["spendingName", "homepage", "spendingUrl", "enabled"] },

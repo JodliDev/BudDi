@@ -2,6 +2,8 @@ import {BasePublicTable} from "../BasePublicTable";
 import {LangKey} from "../Lang";
 
 export class PubPossibleSpendingEntry extends BasePublicTable {
+	public static readonly SPENDING_NAME_MIN_LENGTH = 3
+	
 	getTranslation(key: keyof PubPossibleSpendingEntry): LangKey {
 		switch(key) {
 			case "spendingName":

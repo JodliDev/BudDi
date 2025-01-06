@@ -23,14 +23,16 @@ interface ListEditComponentOptions<EntryT> {
 	tableClass: Class<EntryT>
 	columns: (keyof EntryT)[]
 	onFinish: (data: Partial<any>) => Promise<void>,
+	getValueError?: (key: keyof EntryT, value: unknown) => string | null
 	defaults?: EntryT
 }
 
 class ListEditComponent<EntryT extends BasePublicTable> implements Component<ListEditComponentOptions<EntryT>, unknown> {
 	private isLoading: boolean = false
+	private invalidColumns: Record<string, string> = {}
 	private data: Partial<EntryT> = {}
 	
-	getTypedInputView(data: Partial<EntryT>, obj: EntryT, column: keyof EntryT) {
+	getTypedInputView(data: Partial<EntryT>, obj: EntryT, column: keyof EntryT, getValueError?: (key: keyof EntryT, value: unknown) => string | null) {
 		const entry = data[column] ?? obj[column]
 		let inputType: string
 		switch(typeof entry) {
@@ -43,9 +45,23 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 			default:
 				inputType = "text"
 		}
-		return <input type={inputType} { ...BindValueToInput(() => entry, value => data[column] = value) }/>
+		return <input type={inputType} { ...BindValueToInput(() => entry, value => {
+			const errorMsg = getValueError && getValueError(column, value)
+			if(errorMsg)
+				this.invalidColumns[column.toString()] = errorMsg
+			else if(this.invalidColumns.hasOwnProperty(column))
+				delete this.invalidColumns[column.toString()]
+			data[column] = value
+		}) }/>
 	}
 	
+	
+	private hasInvalidColumns(): boolean {
+		for(const _ in this.invalidColumns) {
+			return true
+		}
+		return false
+	}
 	view(vNode: Vnode<ListEditComponentOptions<EntryT>, unknown>): Vnode {
 		const obj = new vNode.attrs.tableClass()
 
@@ -60,14 +76,14 @@ class ListEditComponent<EntryT extends BasePublicTable> implements Component<Lis
 			{
 				vNode.attrs.columns.map((column) => <label>
 					<small>{ Lang.get(obj.getTranslation(column as keyof EntryT)) }</small>
-					{ this.getTypedInputView(this.data, vNode.attrs.defaults ?? obj, column) }
+					{ this.getTypedInputView(this.data, vNode.attrs.defaults ?? obj, column, vNode.attrs.getValueError) }
+					{<small class="warn">{ this.invalidColumns.hasOwnProperty(column) ? this.invalidColumns[column.toString()] : m.trust("&nbsp;") }</small>}
 				</label>)
 			}
 			{ LoadingSpinner(this.isLoading) }
-			<input disabled={this.isLoading} type="submit" value={Lang.get(vNode.attrs.editMode ? "change" : "add")}/>
+			<input disabled={this.hasInvalidColumns() || this.isLoading} type="submit" value={Lang.get(vNode.attrs.editMode ? "change" : "add")}/>
 		</form>;
 	}
-	
 }
 
 export class ListWidgetCallback {
@@ -82,8 +98,16 @@ interface ListOptions<EntryT extends BasePublicTable> {
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
 	hideRefresh?: boolean
 	deleteOptions?: { onDeleted?: () => void },
-	addOptions?: { columns: (keyof EntryT)[], onAdded?: () => void }
-	editOptions?: { columns: (keyof EntryT)[], onChanged?: () => void },
+	addOptions?: {
+		columns: (keyof EntryT)[],
+		onAdded?: () => void,
+		getValueError?: (key: keyof EntryT, value: unknown) => string | null
+	}
+	editOptions?: {
+		columns: (keyof EntryT)[],
+		onChanged?: () => void,
+		getValueError?: (key: keyof EntryT, value: unknown) => string | null
+	},
 	pageSize?: number
 	order?: keyof EntryT,
 	orderType?: "ASC" | "DESC"
@@ -220,6 +244,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 							tableClass: options.tableClass,
 							columns: options.addOptions!.columns,
 							onFinish: this.addItem.bind(this),
+							getValueError: options.addOptions!.getValueError
 						})
 					)
 				}
@@ -239,6 +264,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 										tableClass: options.tableClass,
 										columns: options.editOptions!.columns,
 										onFinish: this.editItem.bind(this, this.getId(entry.item)),
+										getValueError: options.addOptions!.getValueError,
 										defaults: entry.item
 									})
 								)
