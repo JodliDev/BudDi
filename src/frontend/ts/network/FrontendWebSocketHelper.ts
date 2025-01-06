@@ -5,25 +5,24 @@ import {BaseFrontendMessageAction} from "./BaseFrontendMessageAction";
 import {Site} from "../views/Site";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
+import {IPublicOptions} from "../../../shared/IPublicOptions";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
-	private static readonly PORT = 13040
 	
 	private socket?: WebSocket
 	private confirmBox: ConfirmManager = new ConfirmManager()
 	private expectedResponseManager: ExpectedResponseManager = new ExpectedResponseManager()
 	private waitPromise?: Promise<void>
 	
-	constructor(private site: Site) {
+	constructor(private site: Site, private options: IPublicOptions) {
 		
 	}
 	
 	
 	private createSocket(): WebSocket {
 		const protocol = location.protocol === "http:" ? "ws" : "wss"
-		const port = FrontendWebSocketHelper.PORT
-		const socket = new WebSocket(`${ protocol }://${ document.location.hostname }:${ port }/${ FrontendWebSocketHelper.PATH }`)
+		const socket = new WebSocket(`${ protocol }://${ document.location.hostname }:${ this.options.portWs }/${ FrontendWebSocketHelper.PATH }`)
 		this.socket = socket
 		this.waitPromise = new Promise<void>((resolve, reject) => {
 			socket.addEventListener("open", () => resolve())

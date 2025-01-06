@@ -1,4 +1,5 @@
 import {ServerSettings} from "../../shared/ServerSettings";
+import {IPublicOptions} from "../../shared/IPublicOptions";
 
 export class Options {
 	public static serverSettings = new ServerSettings()
@@ -42,5 +43,13 @@ export class Options {
 				}
 			}
 		}
+	}
+}
+
+
+export class PublicOptions implements IPublicOptions {
+	public readonly portWs: number
+	constructor(options: Options) {
+		this.portWs = options.portWs; 
 	}
 }

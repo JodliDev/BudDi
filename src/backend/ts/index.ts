@@ -3,10 +3,11 @@ import {DatabaseInstructions} from "./database/DatabaseInstructions";
 import {WebSocketHelper} from "./network/WebSocketHelper";
 import express from 'express';
 import {Lang} from "../../shared/Lang";
-import {Options} from "./Options";
+import {Options, PublicOptions} from "./Options";
 import {DailyScheduleManager} from "./DailyScheduleManager";
 import {LoginSession} from "./database/dataClasses/LoginSession";
 import {column} from "./database/column";
+import {writeFileSync} from "node:fs";
 
 const LOGIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90
 
@@ -18,6 +19,9 @@ Lang.init(options.lang).then(
 		console.log(`Server language is ${options.lang}`)
 	}
 )
+
+const optionsFile = `${options.root}/${options.frontend}/options.js`;
+writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encoding: 'utf-8' });
 
 DatabaseManager.access(new DatabaseInstructions(), options)
 	.then((dbManager) => {

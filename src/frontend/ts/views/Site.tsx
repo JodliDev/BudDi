@@ -8,9 +8,9 @@ import { Header } from "./Header";
 import "./site.css"
 import {deleteCookie, setCookie} from "../Convenience";
 import {Lang} from "../../../shared/Lang";
-import {LoadingSpinner} from "../widgets/LoadingSpinner";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
 import {ServerSettings} from "../../../shared/ServerSettings";
+import {IPublicOptions} from "../../../shared/IPublicOptions";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -26,12 +26,12 @@ export class Site {
 	public readonly waitForLogin: Promise<void>
 	private confirmFullLogin: () => void = () => {}
 	
-	constructor() {
+	constructor(options: IPublicOptions) {
 		this.view = document.getElementById("site")!
 		this.waitForLogin = new Promise<void>((resolve) => {
 			this.confirmFullLogin = resolve
 		})
-		this.socket = new FrontendWebSocketHelper(this)
+		this.socket = new FrontendWebSocketHelper(this, options)
 		this.socket.connect()
 		
 		window.onhashchange = async (e) => {
