@@ -10,6 +10,7 @@ export class Options {
 	public readonly portHttp: number = 1304
 	public readonly pathHttp: string = "/"
 	public readonly pathWs: string = "/websocket"
+	public readonly keepAliveTimeoutMs: number = 1000*50
 	
 	constructor() {
 		const keys = Object.keys(this)
@@ -48,7 +49,10 @@ export class Options {
 
 export class PublicOptions implements IPublicOptions {
 	public readonly lang: string
+	public readonly keepAliveTimeoutMs: number
+	
 	constructor(options: Options) {
 		this.lang = options.lang; 
+		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs; 
 	}
 }

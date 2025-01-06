@@ -48,15 +48,15 @@ export class WebSocketHelper {
 					const className = `${message.name}Action`
 					const messageClass = await require(`./messageActions/${className}`);
 					
-					if(messageClass) {
+					if(messageClass && messageClass.hasOwnProperty(className)) {
 						const messageAction = new messageClass[className](message) as BaseBackendMessageAction<BaseMessage>;
 						await onMessage(messageAction, session)
 					}
 					confirmMessage = null
 				}
 				catch(e: unknown) {
-					const message = (e as Error)?.message ?? Lang.get("errorUnknown")
-					console.trace(e instanceof Error ? e.stack : e)
+					const message = (e as Error)?.name ?? Lang.get("errorUnknown")
+					console.trace(e)
 					
 					session.send(confirmMessage
 						? new ReasonedConfirmResponseMessage(confirmMessage, false, message)

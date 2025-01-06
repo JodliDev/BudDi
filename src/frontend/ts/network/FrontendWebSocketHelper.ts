@@ -1,21 +1,26 @@
-import { ConfirmManager } from "./ConfirmManager";
 import {ExpectedResponseManager} from "./ExpectedResponseManager";
 import {BaseMessage} from "../../../shared/BaseMessage";
 import {BaseFrontendMessageAction} from "./BaseFrontendMessageAction";
 import {Site} from "../views/Site";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
+import {Lang} from "../../../shared/Lang";
+import {KeepAliveMessage} from "../../../shared/messages/KeepAliveMessage";
+import {IPublicOptions} from "../../../shared/IPublicOptions";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
+	private static readonly KEEPALIVE_TIMEOUT = 1000*60*5
 	
 	private socket?: WebSocket
-	private confirmBox: ConfirmManager = new ConfirmManager()
 	private expectedResponseManager: ExpectedResponseManager = new ExpectedResponseManager()
 	private waitPromise?: Promise<void>
+	private isReconnecting = false;
+	private keepAliveTimeoutId = 0
+	private readonly keepAliveTimeoutMs: number
 	
-	constructor(private site: Site) {
-		
+	constructor(private site: Site, options: IPublicOptions) {
+		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
 	}
 	
 	
@@ -33,6 +38,13 @@ export class FrontendWebSocketHelper {
 		return socket
 	}
 	
+	private sendKeepAlive(): void {
+		window.clearTimeout(this.keepAliveTimeoutId)
+		this.keepAliveTimeoutId = window.setTimeout(() => {
+			this.send(new KeepAliveMessage())
+		}, this.keepAliveTimeoutMs)
+	}
+	
 	async onMessage(event: MessageEvent): Promise<void> {
 		try {
 			const message = JSON.parse(event.data.toString()) as BaseMessage
@@ -47,11 +59,20 @@ export class FrontendWebSocketHelper {
 			}
 		}
 		catch(error: unknown) {
-			this.site.errorManager.error(`Could not parse message.\nData: ${event.data}\nError: ${error}`)
+			this.site.errorManager.error(Lang.get("errorCouldNotParseData", event.data, error as string))
 		}
 	}
 	private onClose(event: CloseEvent): void {
-		this.site.errorManager.error("Lost connection to server")
+		if(!event.wasClean) {
+			this.site.errorManager.error(Lang.get("errorLostConnection"))
+			console.log(event)
+			if(!this.isReconnecting) {
+				
+				this.site.errorManager.warn(Lang.get("infoReconnecting"))
+				this.connect()
+			}
+			this.isReconnecting = true
+		}
 	}
 	
 	public isConnected(): boolean {
@@ -61,6 +82,7 @@ export class FrontendWebSocketHelper {
 	public send(message: BaseMessage) {
 		const json = JSON.stringify(message)
 		this.socket?.send(json)
+		this.sendKeepAlive()
 	}
 	
 	public sendAndReceive(message: ConfirmMessage): Promise<ConfirmResponseMessage> {

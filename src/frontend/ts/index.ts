@@ -7,7 +7,7 @@ async function init() {
 	const options = await response.json() as IPublicOptions
 	
 	await Lang.init(options.lang);
-	const site = new Site()
+	const site = new Site(options)
 }
 init()
 	.then();

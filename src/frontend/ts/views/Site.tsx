@@ -26,12 +26,12 @@ export class Site {
 	public readonly waitForLogin: Promise<void>
 	private confirmFullLogin: () => void = () => {}
 	
-	constructor() {
+	constructor(options: IPublicOptions) {
 		this.view = document.getElementById("site")!
 		this.waitForLogin = new Promise<void>((resolve) => {
 			this.confirmFullLogin = resolve
 		})
-		this.socket = new FrontendWebSocketHelper(this)
+		this.socket = new FrontendWebSocketHelper(this, options)
 		this.socket.connect()
 		
 		window.onhashchange = async (e) => {
