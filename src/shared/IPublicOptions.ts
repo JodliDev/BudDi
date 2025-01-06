@@ -1,3 +1,3 @@
 export interface IPublicOptions {
-	readonly portWs: number
+	readonly lang: string
 }

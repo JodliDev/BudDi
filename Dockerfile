@@ -42,7 +42,6 @@ RUN --mount=type=bind,source=package-lock.json,target=package-lock.json \
 
 VOLUME ./dist/config/
 EXPOSE 1304
-EXPOSE 13040
 
 # Run the application.
 #CMD npm run run_production

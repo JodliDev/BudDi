@@ -9,7 +9,6 @@ export class Options {
 	public readonly sqlite: string = "dist/config"
 	public readonly portHttp: number = 1304
 	public readonly pathHttp: string = "/"
-	public readonly portWs: number = 13040
 	public readonly pathWs: string = "/websocket"
 	
 	constructor() {
@@ -48,8 +47,8 @@ export class Options {
 
 
 export class PublicOptions implements IPublicOptions {
-	public readonly portWs: number
+	public readonly lang: string
 	constructor(options: Options) {
-		this.portWs = options.portWs; 
+		this.lang = options.lang; 
 	}
 }

@@ -26,13 +26,6 @@ writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encodin
 
 DatabaseManager.access(new DatabaseInstructions(), options)
 	.then((dbManager) => {
-		const webSocket = new WebSocketHelper(
-			options,
-			async (message, session) => {
-				await message.exec(session, dbManager)
-			}
-		)
-		
 		const scheduler = new DailyScheduleManager(dbManager)
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {
@@ -45,8 +38,16 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 		webServer.use(options.pathHttp, express.static(`${options.root}/${options.frontend}`))
 		
 		
-		webServer.listen(options.portHttp, () =>
+		const httpServer = webServer.listen(options.portHttp, () =>
 			console.log(`WebServer is listening on http://localhost:${options.portHttp}${options.pathHttp}`)
 		);
 		
+		
+		const webSocket = new WebSocketHelper(
+			options,
+			httpServer,
+			async (message, session) => {
+				await message.exec(session, dbManager)
+			}
+		)
 	})

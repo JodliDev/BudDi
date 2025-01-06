@@ -11,17 +11,17 @@ import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage"
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ReasonedConfirmResponseMessage} from "../../../shared/messages/ReasonedConfirmResponseMessage";
 import {ServerSettingsMessage} from "../../../shared/messages/ServerSettingsMessage";
+import {Server} from "node:http";
 
 export class WebSocketHelper {
 	private readonly wss: WebSocketServer;
 	
-	constructor(options: Options, onMessage: (message: BaseBackendMessageAction<BaseMessage>, session: WebSocketSession) => Promise<void>) {
+	constructor(options: Options, server: Server, onMessage: (message: BaseBackendMessageAction<BaseMessage>, session: WebSocketSession) => Promise<void>) {
 		this.wss = new WebSocketServer({
-			port: options.portWs,
-			path: options.pathWs
+			server
 		})
 		
-		this.wss.on('listening', () => console.log(`WebSocket is listing on http://localhost:${options.portWs}${options.pathWs}`));
+		this.wss.on('listening', () => console.log(`WebSocket is listing on http://localhost:${options.portHttp}${options.pathWs}`));
 		
 		this.wss.on('connection', async (ws, connection) => {
 			const session = new WebSocketSession(ws)
