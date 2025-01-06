@@ -108,8 +108,9 @@ interface ListOptions<EntryT extends BasePublicTable> {
 		onChanged?: () => void,
 		getValueError?: (key: keyof EntryT, value: unknown) => string | null
 	},
+	customOptions?: Vnode<any, unknown>
 	pageSize?: number
-	order?: keyof EntryT,
+	order?: keyof EntryT
 	orderType?: "ASC" | "DESC"
 	callback?: ListWidgetCallback
 }
@@ -248,6 +249,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 						})
 					)
 				}
+				{ options.customOptions && options.customOptions }
 			</h3>
 			<div class={ `${this.isLoading ? "opacity" : ""} fillSpace subSurface vertical hAlignStretched overflowY textCentered` }>
 				{ this.pagesHelper.isEmpty()

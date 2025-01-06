@@ -4,12 +4,6 @@
 	.possibleSpendingDropdownClicker {
 		overflow: hidden;
 	}
-	.chooseSpendingBtn {
-		margin-right: -29px;
-	}
-	.chooseSpendingBtn:first-child {
-		margin-right: 0;
-	}
 }
 .possibleSpendingDropdownContent {
 	max-width: 250px

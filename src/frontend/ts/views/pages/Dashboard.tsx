@@ -78,7 +78,7 @@ export class Dashboard extends LoggedInBasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastSpending")}</small>
-					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("notDonatedYet")}</span>
+					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nothingSpentYet")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
@@ -166,22 +166,17 @@ export class Dashboard extends LoggedInBasePage {
 						</div>
 					</div>
 				)}
-				{ !this.notDonatedListCallback.isEmpty() &&
-					<div class="horizontal vAlignCenter chooseSpendingBtn">
-						{
-							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this))
-						}
-					</div>
-				}
 			</div>
 			<div class="horizontal hAlignCenter wrapContent">
 				{
 					ListWidget({
-						title: Lang.get("notDonatedYet"),
+						title: Lang.get("nothingSpentYet"),
 						tableClass: PubWaitingEntry,
 						site: this.site,
 						hideRefresh: true,
 						deleteOptions: {},
+						customOptions: this.notDonatedListCallback.isEmpty() ? undefined :
+							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
 						callback: this.notDonatedListCallback,
 						getEntryView: entry =>
 							this.possibleSpendingLineView(entry.joined.PossibleSpendingEntry as PubPossibleSpendingEntry, entry.item.addedAt)
@@ -208,7 +203,7 @@ export class Dashboard extends LoggedInBasePage {
 								}
 							}
 						},
-						editOptions: {columns: ["spendingName", "homepage", "spendingUrl", "enabled"] },
+						editOptions: { columns: ["spendingName", "homepage", "spendingUrl", "enabled"] },
 						deleteOptions: {
 							onDeleted: async () => {
 								await this.notDonatedListCallback.reload()
