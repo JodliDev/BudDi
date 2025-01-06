@@ -4,8 +4,8 @@ export class Options {
 	public static serverSettings = new ServerSettings()
 	public readonly lang: string = "en"
 	public readonly root: string = process.cwd()
-	public readonly frontend: string = "../frontend"
-	public readonly sqlite: string = "../config"
+	public readonly frontend: string = "dist/frontend"
+	public readonly sqlite: string = "dist/config"
 	public readonly portHttp: number = 1304
 	public readonly pathHttp: string = "/"
 	public readonly portWs: number = 13040
@@ -13,6 +13,16 @@ export class Options {
 	
 	constructor() {
 		const keys = Object.keys(this)
+		
+		//read environment variables:
+		
+		for(const key of keys) {
+			if(process.env[key])
+				this[key as keyof this] = process.env[key] as any
+		}
+		
+		//read console arguments:
+		
 		for(const val of process.argv) {
 			for(const key of keys) {
 				const match = val.match(`^${key}=(.+)$`)
