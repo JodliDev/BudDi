@@ -44,15 +44,31 @@ export class ErrorManager {
 		// m.redraw()
 	}
 	
-	public error(error: unknown): void {
-		console.error(error)
+	private newMessage(error: unknown, type: "error" | "warn" | "log"): void {
 		const msg = (error as Error)?.message || (error as Object)?.toString() || error as string || Lang.get("errorUnknown")
 		this.addEntry({
 			date: new Date(),
-			type: "error",
+			type: type,
 			message: msg,
 		})
 	}
+	
+	public error(error: unknown): void {
+		console.error(error)
+		this.newMessage(error, "error")
+	}
+	
+	public warn(error: unknown): void {
+		console.warn(error)
+		this.newMessage(error, "warn")
+	}
+	
+	public log(error: unknown): void {
+		console.log(error)
+		this.newMessage(error, "log")
+	}
+	
+	
 	public getView(): Vnode {
 		if(this.entries.length == 0 && this.recentEntries.length == 0)
 			return <div></div>
