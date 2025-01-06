@@ -9,6 +9,7 @@ import {column} from "./column";
 import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {ListMessageAction} from "../network/messageActions/ListMessageAction";
 import {TableSettings} from "./TableSettings";
+import {User} from "./dataClasses/User";
 
 
 const DB_NAME = "db.sqlite"
@@ -40,17 +41,15 @@ export class DatabaseManager {
 		const manager = new DatabaseManager(options)
 		const db = manager.db
 		const version = db.pragma("user_version", { simple: true }) as number
-		
 		if(dbInstructions.version != version) {
-			const backupName = `from_${version}_to_${dbInstructions.version}`
-			const backupPath = `${options.root}/${options.sqlite}/${backupName}.sqlite`
-			await db.backup(backupPath)
-			const backupDb = new BetterSqlite3(backupPath)
-			
-			const migrationManager = new DatabaseMigrationManager(db, backupDb)
-			migrationManager.migrateTables(version, dbInstructions)
+			const migrationManager = new DatabaseMigrationManager(db, dbInstructions)
+			if(version == 0)
+				migrationManager.createTables()
+			else
+				await migrationManager.migrateTables(version, options)
 		}
 		
+		Options.serverSettings.registrationAllowed = manager.selectTable(User, undefined, 1).length == 0
 		return manager
 	}
 	

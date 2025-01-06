@@ -2,9 +2,9 @@ import {DatabaseInstructions} from "./DatabaseInstructions";
 import {SqlQueryGenerator, TableStructure} from "./SqlQueryGenerator";
 import {ColumnInfo} from "./ColumnInfo";
 import BetterSqlite3 from "better-sqlite3";
-import {Class} from "../../../shared/Class";
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
+import {Options} from "../Options";
 
 interface TransferEntry {
 	backupTable: string,
@@ -62,26 +62,40 @@ export class DatabaseMigrationManager {
 	
 	private columnsToTransfer: TransferEntry[] = []
 	private droppedTables: Record<string, boolean> = {}
+	private readonly sqlGenerator: SqlQueryGenerator
 	
 	constructor(
 		private readonly db: BetterSqlite3.Database,
-		private readonly backupDb: BetterSqlite3.Database
-	) { }
+		private readonly dbInstructions: DatabaseInstructions
+	) { 
+		this.sqlGenerator = new SqlQueryGenerator(this.dbInstructions)
+	}
 	
-	public migrateTables(fromVersion: number, dbInstructions: DatabaseInstructions): void {
-		console.log(`Migrating from version ${fromVersion} to ${dbInstructions.version}`)
+	
+	public createTables(): void {
+		const tableQuery = this.sqlGenerator.createStructureSql()
+		console.log(`New table definitions:\n${tableQuery}`)
+		this.db.exec(tableQuery)
+	}
+	
+	public async migrateTables(fromVersion: number, options: Options): Promise<void> {
+		console.log(`Migrating from version ${fromVersion} to ${this.dbInstructions.version}`)
 		
 		const db = this.db
-		const sqlGenerator = new SqlQueryGenerator(dbInstructions)
 		const databaseExists = fromVersion != 0
 		
+		//Create backup:
+		const backupName = `from_${fromVersion}_to_${this.dbInstructions.version}`
+		const backupPath = `${options.root}/${options.sqlite}/${backupName}.sqlite`
+		await db.backup(backupPath)
+		const backupDb = new BetterSqlite3(backupPath)
 		
 		const transaction = db.transaction(() => {
 			//Run pre migrations:
-			const preMigrationData = dbInstructions.preMigration(
+			const preMigrationData = this.dbInstructions.preMigration(
 				db,
 				fromVersion,
-				dbInstructions.version
+				this.dbInstructions.version
 			)
 			this.renamedTables = preMigrationData.tablesForRenaming ?? {}
 			this.renamedColumns = preMigrationData.columnsForRenaming ?? {}
@@ -90,22 +104,20 @@ export class DatabaseMigrationManager {
 			//Recreate tables that have been renamed:
 			console.log(`Dropping renamed tables...`)
 			for (const newTableName in this.renamedTables) {
-				const structure = sqlGenerator.tables[newTableName]
+				const structure = this.sqlGenerator.tables[newTableName]
 				this.recreateTable(structure)
 			}
 			
 			//Find changed foreign keys:
 			if(databaseExists)
-				this.migrateForeignKeys(sqlGenerator)
+				this.migrateForeignKeys(this.sqlGenerator)
 			
 			//(re)create tables if needed:
-			const tableQuery = sqlGenerator.createStructureSql()
-			console.log(`New table definitions:\n${tableQuery}`)
-			db.exec(tableQuery)
+			this.createTables()
 			
 			//Run Table alterations:
 			if(databaseExists) {
-				const additionalQuery = this.migrateColumns(sqlGenerator)
+				const additionalQuery = this.migrateColumns(this.sqlGenerator)
 				if(additionalQuery) {
 					console.log(`Table alterations:\n${additionalQuery}`)
 					db.exec(additionalQuery)
@@ -113,13 +125,13 @@ export class DatabaseMigrationManager {
 			}
 			
 			//Recreate data:
-			this.moveDataFromBackup()
+			this.moveDataFromBackup(backupDb)
 			
 			//Run post migrations:
-			dbInstructions.postMigration(db, fromVersion, dbInstructions.version, preMigrationData.dataForPostMigration ?? {})
+			this.dbInstructions.postMigration(db, fromVersion, this.dbInstructions.version, preMigrationData.dataForPostMigration ?? {})
 			
 			//Update database version:
-			db.pragma(`user_version = ${dbInstructions.version}`)
+			db.pragma(`user_version = ${this.dbInstructions.version}`)
 		})
 		
 		transaction()
@@ -282,7 +294,7 @@ export class DatabaseMigrationManager {
 	}
 	
 	
-	private moveDataFromBackup() {
+	private moveDataFromBackup(backupDb: BetterSqlite3.Database ) {
 		this.columnsToTransfer.sort((a,b) => {
 			const posA = this.migrationTableOrder.indexOf(a.newTable)
 			const posB = this.migrationTableOrder.indexOf(b.newTable)
@@ -296,7 +308,7 @@ export class DatabaseMigrationManager {
 				entry.backupTable,
 				[entry.backupIdColumn, ...entry.backupColumns]
 			)
-			const statement = this.backupDb.prepare(selectSql)
+			const statement = backupDb.prepare(selectSql)
 			const oldData = statement.all() as any[]
 			
 			for(const data of oldData) {
