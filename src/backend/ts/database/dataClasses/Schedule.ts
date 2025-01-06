@@ -21,12 +21,13 @@ export class Schedule extends PubSchedule {
 					repeatDays: data.repeatDays ?? defaults.repeatDays,
 					fixedDayOfMonth: data.fixedDayOfMonth ?? defaults.fixedDayOfMonth
 				},
-				Date.now()
+				data.lastLoop ?? Date.now()
 			)
 		}
 		
 		settings.setOnBeforeAdd((data, _, session) => {
 			data.userId = session.userId
+			data.lastLoop = Date.now()
 			setNextLoop(data)
 		})
 		
