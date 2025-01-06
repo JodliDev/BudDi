@@ -197,9 +197,7 @@ export class Dashboard extends LoggedInBasePage {
 							getValueError: (key, value) => {
 								switch(key) {
 									case "spendingName":
-										return (value as string).length < PubPossibleSpendingEntry.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : null
-									default:
-										return null
+										return (value as string).length < PubPossibleSpendingEntry.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
 								}
 							}
 						},

@@ -22,6 +22,7 @@
 	"errorAdd": "Could not add item",
 	"errorCouldNotParseData": "Could not parse message.\nData: %s\nError: %s",
 	"errorDelete": "Failed to delete",
+	"errorEdit": "Could not change item",
 	"errorFaultyList": "Faulty list",
 	"errorPageDoesNotExist": "%s does not exist",
 	"errorTooShort": "Too short",

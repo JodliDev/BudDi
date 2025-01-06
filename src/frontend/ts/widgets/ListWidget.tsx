@@ -15,83 +15,18 @@ import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {EditMessage} from "../../../shared/messages/EditMessage";
 import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
 import {BindValueToInput} from "./BindValueToInput";
+import {ListEntryEditComponent} from "./ListEntryEditWidget";
 
 const PAGE_SIZE = 25;
 
-interface ListEditComponentOptions<EntryT> {
-	editMode?: boolean
-	tableClass: Class<EntryT>
-	columns: (keyof EntryT)[]
-	onFinish: (data: Partial<any>) => Promise<void>,
-	getValueError?: (key: keyof EntryT, value: unknown) => string | null
-	defaults?: EntryT
-}
 
-class ListEditComponent<EntryT extends BasePublicTable> implements Component<ListEditComponentOptions<EntryT>, unknown> {
-	private isLoading: boolean = false
-	private invalidColumns: Record<string, string> = {}
-	private data: Partial<EntryT> = {}
-	
-	getTypedInputView(data: Partial<EntryT>, obj: EntryT, column: keyof EntryT, getValueError?: (key: keyof EntryT, value: unknown) => string | null) {
-		const entry = data[column] ?? obj[column]
-		let inputType: string
-		switch(typeof entry) {
-			case "number":
-				inputType = "number"
-				break
-			case "boolean":
-				inputType = "checkbox"
-				break
-			default:
-				inputType = "text"
-		}
-		return <input type={inputType} { ...BindValueToInput(() => entry, value => {
-			const errorMsg = getValueError && getValueError(column, value)
-			if(errorMsg)
-				this.invalidColumns[column.toString()] = errorMsg
-			else if(this.invalidColumns.hasOwnProperty(column))
-				delete this.invalidColumns[column.toString()]
-			data[column] = value
-		}) }/>
-	}
-	
-	
-	private hasInvalidColumns(): boolean {
-		for(const _ in this.invalidColumns) {
-			return true
-		}
-		return false
-	}
-	view(vNode: Vnode<ListEditComponentOptions<EntryT>, unknown>): Vnode {
-		const obj = new vNode.attrs.tableClass()
-
-		return <form onsubmit={ async (e: SubmitEvent) => {
-			e.preventDefault()
-			this.isLoading = true
-			m.redraw()
-			await vNode.attrs.onFinish(this.data)
-			this.isLoading = false
-			m.redraw()
-		}} class="vertical">
-			{
-				vNode.attrs.columns.map((column) => <label>
-					<small>{ Lang.get(obj.getTranslation(column as keyof EntryT)) }</small>
-					{ this.getTypedInputView(this.data, vNode.attrs.defaults ?? obj, column, vNode.attrs.getValueError) }
-					{<small class="warn">{ this.invalidColumns.hasOwnProperty(column) ? this.invalidColumns[column.toString()] : m.trust("&nbsp;") }</small>}
-				</label>)
-			}
-			{ LoadingSpinner(this.isLoading) }
-			<input disabled={this.hasInvalidColumns() || this.isLoading} type="submit" value={Lang.get(vNode.attrs.editMode ? "change" : "add")}/>
-		</form>;
-	}
-}
 
 export class ListWidgetCallback {
 	reload: () => Promise<void> = () => Promise.resolve()
 	isEmpty: () => boolean = () => true
 }
 
-interface ListOptions<EntryT extends BasePublicTable> {
+interface ListComponentOptions<EntryT extends BasePublicTable> {
 	site: Site
 	tableClass: Class<EntryT>
 	title: string,
@@ -101,12 +36,12 @@ interface ListOptions<EntryT extends BasePublicTable> {
 	addOptions?: {
 		columns: (keyof EntryT)[],
 		onAdded?: () => void,
-		getValueError?: (key: keyof EntryT, value: unknown) => string | null
+		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	}
 	editOptions?: {
 		columns: (keyof EntryT)[],
 		onChanged?: () => void,
-		getValueError?: (key: keyof EntryT, value: unknown) => string | null
+		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	},
 	customOptions?: Vnode<any, unknown>
 	pageSize?: number
@@ -115,12 +50,12 @@ interface ListOptions<EntryT extends BasePublicTable> {
 	callback?: ListWidgetCallback
 }
 
-class ListComponent<EntryT extends BasePublicTable> implements Component<ListOptions<EntryT>, unknown> {
+class ListComponent<EntryT extends BasePublicTable> implements Component<ListComponentOptions<EntryT>, unknown> {
 	private items: ListResponseEntry<EntryT>[] = []
 	private pagesHelper: PagesHelper = new PagesHelper(PAGE_SIZE, this.loadPage.bind(this))
 	private idColumn?: keyof EntryT
 	private isLoading: boolean = false
-	private options?: ListOptions<EntryT>
+	private options?: ListComponentOptions<EntryT>
 	
 	
 	private async loadPage(pageNumber: number = this.pagesHelper.getCurrentPage()): Promise<void> {
@@ -145,7 +80,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		m.redraw()
 	}
 	
-	private needsReset(oldOptions: ListOptions<EntryT>, newOptions: ListOptions<EntryT>): boolean {
+	private needsReset(oldOptions: ListComponentOptions<EntryT>, newOptions: ListComponentOptions<EntryT>): boolean {
 		return oldOptions.tableClass != newOptions.tableClass || oldOptions.order != newOptions.order || oldOptions.orderType != newOptions.orderType
 	}
 	
@@ -174,40 +109,26 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 			this.options!.site.errorManager.error(Lang.get("errorDelete"))
 	}
 	
-	private async addItem(data: Partial<EntryT>) {
+	private async addItem(newData: ListResponseEntry<EntryT>) {
 		const options = this.options!
-		const response = await options.site.socket.sendAndReceive(
-			new AddMessage(options.tableClass, data)
-		) as ListEntryResponseMessage<EntryT>
 		
-		if(response.success) {
-			this.items.push(response.entry)
-			options.addOptions?.onAdded && options.addOptions?.onAdded()
-			closeDropdown(`Add~${BasePublicTable.getName(options.tableClass)}`)
-			m.redraw()
-		}
-		else
-			this.options!.site.errorManager.error(Lang.get("errorAdd"))
+		this.items.push(newData)
+		options.addOptions?.onAdded && options.addOptions?.onAdded()
+		closeDropdown(`Add~${BasePublicTable.getName(options.tableClass)}`)
+		m.redraw()
 	}
 	
-	private async editItem(id: number | bigint, data: Partial<EntryT>) {
+	private async editItem(id: number | bigint, newData: ListResponseEntry<EntryT>) {
 		const options = this.options!
-		const response = await options.site.socket.sendAndReceive(
-			new EditMessage(options.tableClass, id, data)
-		) as ListEntryResponseMessage<EntryT>
 		
-		if(response.success) {
-			const index = this.items.findIndex(entry => this.getId(entry.item) == id)
-			this.items[index] = response.entry
-			options.editOptions?.onChanged && options.editOptions?.onChanged()
-			closeDropdown(`Edit~${BasePublicTable.getName(options.tableClass)}`)
-			m.redraw()
-		}
-		else
-			this.options!.site.errorManager.error(Lang.get("errorAdd"))
+		const index = this.items.findIndex(entry => this.getId(entry.item) == id)
+		this.items[index] = newData
+		options.editOptions?.onChanged && options.editOptions?.onChanged()
+		closeDropdown(`Edit~${BasePublicTable.getName(options.tableClass)}`)
+		m.redraw()
 	}
 	
-	private setOptions(vNode: Vnode<ListOptions<EntryT>, unknown>): void {
+	private setOptions(vNode: Vnode<ListComponentOptions<EntryT>, unknown>): void {
 		this.options = vNode.attrs
 		if(this.options.callback) {
 			this.options.callback.reload = this.loadPage.bind(this)
@@ -215,11 +136,11 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		}
 	}
 	
-	public async oncreate(vNode: Vnode<ListOptions<EntryT>, unknown>): Promise<void> {
+	public async oncreate(vNode: Vnode<ListComponentOptions<EntryT>, unknown>): Promise<void> {
 		this.setOptions(vNode)
 		await this.loadPage()
 	}
-	public onbeforeupdate(newNode: Vnode<ListOptions<EntryT>, unknown>, oldNode: VnodeDOM<ListOptions<EntryT>, unknown>): void {
+	public onbeforeupdate(newNode: Vnode<ListComponentOptions<EntryT>, unknown>, oldNode: VnodeDOM<ListComponentOptions<EntryT>, unknown>): void {
 		this.setOptions(newNode)
 		if(this.needsReset(oldNode.attrs, newNode.attrs)) {
 			this.pagesHelper.reset()
@@ -228,7 +149,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 		}
 	}
 	
-	view(vNode: Vnode<ListOptions<EntryT>, unknown>): Vnode {
+	view(vNode: Vnode<ListComponentOptions<EntryT>, unknown>): Vnode {
 		const options = vNode.attrs
 		return <div class="listWidget surface vertical">
 			<h3 class="header horizontal hAlignCenter vAlignCenter">
@@ -241,7 +162,9 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 					DropdownMenu(
 						`Add~${BasePublicTable.getName(options.tableClass)}`,
 						BtnWidget.PopoverBtn("add", Lang.get("addEntry")),
-						() => m(ListEditComponent<EntryT>, {
+						() => m(ListEntryEditComponent<EntryT>, {
+							mode: "add",
+							site: options.site,
 							tableClass: options.tableClass,
 							columns: options.addOptions!.columns,
 							onFinish: this.addItem.bind(this),
@@ -255,17 +178,20 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 				{ this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
 					: this.items.map((entry) => {
+						const id = this.getId(entry.item)
 						return <div class="horizontal entry vAlignCenter">
 							{ options.getEntryView(entry) }
 							{ options.editOptions &&
 								DropdownMenu(
 									`Edit~${BasePublicTable.getName(options.tableClass)}`,
 									BtnWidget.DefaultBtn("edit"),
-									() => m(ListEditComponent<EntryT>, {
-										editMode: true,
+									() => m(ListEntryEditComponent<EntryT>, {
+										mode: "edit",
+										site: options.site,
+										editId: id,
 										tableClass: options.tableClass,
 										columns: options.editOptions!.columns,
-										onFinish: this.editItem.bind(this, this.getId(entry.item)),
+										onFinish: this.editItem.bind(this, id),
 										getValueError: options.addOptions!.getValueError,
 										defaults: entry.item
 									})
@@ -283,6 +209,6 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListOpt
 }
 
 
-export function ListWidget<EntryT extends BasePublicTable>(options: ListOptions<EntryT>): Vnode<ListOptions<EntryT>, unknown> {
+export function ListWidget<EntryT extends BasePublicTable>(options: ListComponentOptions<EntryT>): Vnode<ListComponentOptions<EntryT>, unknown> {
 	return m(ListComponent<EntryT>, options)
 }

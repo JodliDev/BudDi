@@ -19,6 +19,9 @@ export const Lang = {
 		}
 		this.isInit = true
 	},
+	has: function(key: string) {
+		return langRecord.hasOwnProperty(key) || fallbackLang.hasOwnProperty(key)
+	},
 	getDynamic: function(key: string): string {
 		return this.get(key as keyof typeof fallbackLang)
 	},
