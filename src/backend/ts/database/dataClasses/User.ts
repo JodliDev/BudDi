@@ -20,7 +20,6 @@ export class User extends PubUser {
 			throw new NoPermissionException()
 		})
 		settings.setListFilter(session => session.isAdmin ? "1" : `${column(User, "userId")} = ${session.userId}`)
-		settings.setFloatValues("spendingAmount")
 		return settings
 	}
 	

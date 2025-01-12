@@ -7,6 +7,10 @@ import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMe
 import {Lang} from "../../../shared/Lang";
 import {KeepAliveMessage} from "../../../shared/messages/KeepAliveMessage";
 import {IPublicOptions} from "../../../shared/IPublicOptions";
+import {ListMessage} from "../../../shared/messages/ListMessage";
+import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
+import {Class} from "../../../shared/Class";
+import {BasePublicTable} from "../../../shared/BasePublicTable";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
@@ -83,6 +87,17 @@ export class FrontendWebSocketHelper {
 		const json = JSON.stringify(message)
 		this.socket?.send(json)
 		this.sendKeepAlive()
+	}
+	
+	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>): Promise<T | null> {
+		const response = await this.site.socket.sendAndReceive(
+			new ListMessage(table, 0, 1)
+		) as ListResponseMessage<T>
+		
+		if(response.success && response.list.length != 0)
+			return response.list[0].item
+		
+		return null
 	}
 	
 	public sendAndReceive(message: ConfirmMessage): Promise<ConfirmResponseMessage> {

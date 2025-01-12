@@ -92,7 +92,10 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	
 	private async chooseForSpending(): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new ChooseForSpendingMessage())
+		const amount = prompt(Lang.get("promptSpendingAmount"), "1")
+		if(!amount || Number.isNaN(amount))
+			return
+		const response = await this.site.socket.sendAndReceive(new ChooseForSpendingMessage(parseFloat(amount)))
 		if(!response.success) {
 			this.site.errorManager.error(Lang.get("errorUnknown"))
 			return

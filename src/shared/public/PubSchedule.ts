@@ -12,4 +12,6 @@ export class PubSchedule extends BasePublicTable implements ScheduleRepeatOption
 	public lastLoop: number = 0
 	public repeatDays: number = 1
 	public fixedDayOfMonth: number = 1
+	public spendingAmount: number = 10
+	public spendingCount: number = 1
 }

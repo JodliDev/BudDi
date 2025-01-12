@@ -1,25 +1,23 @@
 import {WebSocketSession} from "../WebSocketSession";
-import {DatabaseManager, JoinedData} from "../../database/DatabaseManager";
-import {User} from "../../database/dataClasses/User";
+import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
-import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
 import {NeedsSpendingEntry} from "../../database/dataClasses/NeedsSpendingEntry";
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
-import {SpendingAmountType} from "../../../../shared/public/PubUser";
 import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
+import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
 
-export class ChooseForSpendingMessageAction extends LoggedInMessageAction<AddToWaitingMessage> {
+export class ChooseForSpendingMessageAction extends LoggedInMessageAction<ChooseForSpendingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const success = ChooseForSpendingMessageAction.saveChoice(db, session.userId!)
+		const success = ChooseForSpendingMessageAction.addNewChoice(db, session.userId!, this.data.spendingAmount)
 		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 	
-	public static saveChoice(db: DatabaseManager, userId: number | bigint): boolean {
+	public static addNewChoice(db: DatabaseManager, userId: number | bigint, amount: number): boolean {
 		const [data] = db.selectJoinedTable(
 			WaitingEntry,
 			["possibleSpendingEntryId", "waitingEntryId"],
@@ -40,8 +38,6 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<AddToW
 		
 		if(!waitingEntry)
 			return false
-		
-		const amount = this.getSpendingAmount(db, userId)
 		
 		const [needsSpendingEntry] = db.selectTable(
 			NeedsSpendingEntry,
@@ -74,19 +70,6 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<AddToW
 		}
 		
 		return true
-	}
-	
-	private static getSpendingAmount(db: DatabaseManager, userId: number | bigint) {
-		const [user] = db.selectTable(User, `${column(User, "userId")} = ${userId}`, 1)
-		switch(user.spendingAmountType) {
-			case SpendingAmountType.PerEntry:
-				const count = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
-				return user.spendingAmount * count
-			case SpendingAmountType.Fixed:
-			default:
-				return user.spendingAmount
-				
-		}
 	}
 	
 	private static refillWaitingEntries(db: DatabaseManager, userId: number | bigint) {

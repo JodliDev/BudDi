@@ -41,7 +41,9 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 			console.log(`Found ${schedules.length} Schedules that will run now`)
 			
 			for(const schedule of schedules) {
-				ChooseForSpendingMessageAction.saveChoice(dbManager, schedule.userId, schedule.spendingAmount)
+				for(let i = schedule.spendingCount; i > 0; --i) {
+					ChooseForSpendingMessageAction.addNewChoice(dbManager, schedule.userId, schedule.spendingAmount)
+				}
 				
 				const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)
 				dbManager.update(

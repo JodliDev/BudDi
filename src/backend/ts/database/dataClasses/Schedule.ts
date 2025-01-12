@@ -34,6 +34,8 @@ export class Schedule extends PubSchedule {
 		settings.setOnBeforeEdit((data) => setNextLoop(data))
 		settings.setListFilter(session => `${column(Schedule, "userId")} = ${session.userId}`)
 		
+		settings.setFloatValues("spendingAmount")
+		
 		return settings
 	}
 	

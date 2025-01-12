@@ -63,7 +63,7 @@ label, .labelLike {
 	align-items: start;
 	max-width: 250px;
 	
-	small:first-child {
+	> small:first-child {
 		display: block;
 		z-index: 1;
 		pointer-events: none;
@@ -74,7 +74,7 @@ label, .labelLike {
 		border-radius: 5px;
 		box-shadow: var(--color-surface) 0 0 5px 1px;
 	}
-	small:last-child {
+	> small:last-child {
 		margin: -3px 0 10px 5px;
 		font-size: x-small;
 		color: gray;
