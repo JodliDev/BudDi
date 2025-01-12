@@ -33,19 +33,6 @@ export class DailyScheduleManager {
 	
 	public loop(): void {
 		const now = Date.now()
-		const schedules = this.db.selectTable(Schedule, `${column(Schedule, "enabled")} = 1 AND ${column(Schedule, "nextLoop")} <= ${now}`)
-		console.log(`Found ${schedules.length} Schedules that will run now`)
-		
-		for(const schedule of schedules) {
-			ChooseForSpendingMessageAction.saveChoice(this.db, schedule.userId)
-			
-			const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)
-			this.db.update(
-				Schedule,
-				{ "=": { nextLoop: newTimestamp, lastLoop: now } },
-				`${column(Schedule, "scheduleId")} = ${schedule.scheduleId}`
-			)
-		}
 		
 		for(const entry of this.scheduleEntries) {
 			if(entry.nextRun <= now) {
