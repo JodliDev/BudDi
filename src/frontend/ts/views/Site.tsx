@@ -1,16 +1,16 @@
-import m, {Vnode} from "mithril";
+import m, {ComponentTypes} from "mithril";
 import { FrontendWebSocketHelper } from "../network/FrontendWebSocketHelper";
-import { Login } from "./pages/Login";
 import "../../style.css"
-import { BasePage, PageVariables } from "./BasePage";
+import { BasePage } from "./BasePage";
 import { ErrorManager } from "./ErrorManager";
 import { Header } from "./Header";
 import "./site.css"
-import {deleteCookie, setCookie} from "../Convenience";
 import {Lang} from "../../../shared/Lang";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
 import {ServerSettings} from "../../../shared/ServerSettings";
 import {IPublicOptions} from "../../../shared/IPublicOptions";
+import {Dashboard} from "./pages/Dashboard";
+import {LoginState} from "../LoginState";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -20,57 +20,43 @@ export class Site {
 	public readonly errorManager: ErrorManager = new ErrorManager()
 	public readonly header: Header = new Header(this)
 	public serverSettings: ServerSettings = new ServerSettings()
-	public isAdmin: boolean = false
-	private isLoggedInState: boolean = false
-	public userId: number | bigint = 0
-	public readonly waitForLogin: Promise<void>
-	private confirmFullLogin: () => void = () => {}
+	public readonly loginState: LoginState = new LoginState()
 	
 	constructor(options: IPublicOptions) {
 		this.view = document.getElementById("site")!
-		this.waitForLogin = new Promise<void>((resolve) => {
-			this.confirmFullLogin = resolve
-		})
+		
+		this.loginState.reactToChange(() => m.redraw())
 		this.socket = new FrontendWebSocketHelper(this, options)
 		this.socket.connect()
 		
-		window.onhashchange = async (e) => {
+		window.onhashchange = async () => {
 			await this.gotoImpl(this.getHashName())
 		}
-		this.currentPage = new Login(this)
+		this.currentPage = new Dashboard(this, "")
 		this.renderSite()
 		
-		if(this.getHashName() != Login.name)
+		if(this.getHashName() != Dashboard.name)
 			this.gotoImpl(this.getHashName())
+				.then()
 	}
 	
 	private getHashName(): string {
-		return window.location.hash.substring(1) || Login.name
-	}
-	
-	public isLoggedIn(): boolean {
-		return this.isLoggedInState;
+		return window.location.hash.substring(1) || Dashboard.name
 	}
 	
 	private async gotoImpl(pageName: string): Promise<void> {
 		const [page, variablesString] = pageName.split("/")
 		
 		try {
+			this.currentPage.unload()
+			
 			await this.socket.waitUntilReady()
 			if(this.currentPage.constructor.name != page)
 				this.currentPage = await this.importPage(page)
-			
-			if(variablesString) {
-				const variables: PageVariables = {}
-				
-				for(const entry of variablesString.split(";")) {
-					const pair = entry.split("=")
-					variables[pair[0]] = pair.length > 1 ? pair[1] : "1"
-				}
-				this.currentPage.variables = variables
-			}
-			else if(this.currentPage.variables)
-				this.currentPage.variables = undefined
+			else if(variablesString)
+				this.currentPage.setVariables(variablesString)
+			else
+				this.currentPage.setVariables(undefined)
 		}
 		catch(error: unknown) {
 			this.errorManager.error(error)
@@ -88,27 +74,17 @@ export class Site {
 		}
 		catch(error: unknown) {
 			this.errorManager.error(error)
-			return new Login(this)
+			return new Dashboard(this, "")
 		}
 	}
 	
 	public login(userId: number | bigint, sessionHash: string) {
-		setCookie("userId", userId.toString(), 1000 * 60 * 60 * 24 * 90)
-		setCookie("sessionHash", sessionHash, 1000 * 60 * 60 * 24 * 90)
-		this.userId = userId
-		this.isLoggedInState = true
-		this.confirmFullLogin()
-		m.redraw()
+		this.loginState.login(userId, sessionHash)
 	}
 	
 	public logout() {
-		deleteCookie("sessionHash")
+		this.loginState.logout()
 		this.socket.send(new LogoutMessage())
-		this.isLoggedInState = false
-		this.isAdmin = false
-		m.redraw()
-		this.goto("Login")
-		// document.location.reload()
 	}
 	
 	public refresh(): void {
@@ -124,7 +100,7 @@ export class Site {
 	 * Sets up the view structure and mounts it to the DOM.
 	 */
 	private renderSite() {
-		const site = {
+		const site: ComponentTypes = {
 			view: () => {
 				return <div class="siteContent">
 					{ this.header.getView(this.currentPage.constructor.name) }

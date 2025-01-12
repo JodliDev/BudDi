@@ -17,7 +17,7 @@ export class Header {
 		return <div class="siteHeader">
 			{ this.site.errorManager.getView() }
 			<div class="navigation">
-				{ this.site.isLoggedIn()
+				{ this.site.loginState.isLoggedIn()
 					? [
 						this.getLine(currentPage, "Dashboard", "dashboard"),
 						this.getLine(currentPage, "Schedule", "schedule"),
@@ -29,11 +29,11 @@ export class Header {
 						this.site.serverSettings.registrationAllowed && this.getLine(currentPage, "Register", "register"),
 					]
 				}
-				{ this.site.isAdmin &&
+				{ this.site.loginState.isAdmin() &&
 					this.getLine(currentPage, "Admin", "admin")
 				}
 			</div>
-			{ this.site.isLoggedIn() && 
+			{ this.site.loginState.isLoggedIn() && 
 				<span class="clickable logoutBtn" onclick={this.site.logout.bind(this.site)}>{Lang.get("logout")}</span>
 			}
 		</div>

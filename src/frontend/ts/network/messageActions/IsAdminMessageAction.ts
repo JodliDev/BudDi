@@ -4,7 +4,7 @@ import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessa
 
 export class IsAdminMessageAction extends BaseFrontendMessageAction<SessionLoginMessage> {
 	exec(site: Site): void {
-		site.isAdmin = true
+		site.loginState.setAdmin()
 	}
 	
 }

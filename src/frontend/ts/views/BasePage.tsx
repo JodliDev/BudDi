@@ -8,26 +8,31 @@ export interface PageVariables {
 }
 
 export abstract class BasePage {
-	private _variables?: PageVariables
+	private variables?: PageVariables
 	public isLoaded: boolean = false
-	public get variables(): PageVariables | undefined {
-		return this._variables
-	}
-	public set variables(value: PageVariables | undefined) {
-		this._variables = value
-		this.onVariablesChanged(value)
+	
+	constructor(protected site: Site, variablesString: string) {
+		this.setVariables(variablesString)
+		
+		this.loadPage()
 	}
 	
-	constructor(protected site: Site) {
-		try {
-			this.load().then(() => {
-				this.isLoaded = true
-				m.redraw()
-			})
+	public setVariables(variablesString?: string) {
+		if(!variablesString) {
+			this.variables = undefined
+			this.onVariablesChanged(undefined)
+			return
 		}
-		catch(error: unknown) {
-			this.site.errorManager.error(error)
+		
+		const variables: PageVariables = {}
+		
+		for(const entry of variablesString.split(";")) {
+			const pair = entry.split("=")
+			variables[pair[0]] = pair.length > 1 ? pair[1] : "1"
 		}
+		this.variables = variables
+		
+		this.onVariablesChanged(variables)
 	}
 	
 	protected goTo(url: string) {
@@ -47,8 +52,22 @@ export abstract class BasePage {
 		return pageView
 	}
 	
+	public async loadPage(): Promise<void> {
+		try {
+			await this.load()
+			this.isLoaded = true
+			m.redraw()
+		}
+		catch(error: unknown) {
+			this.site.errorManager.error(error)
+		}
+	}
+	
 	public async load(): Promise<void> {
 		return this.site.socket.waitUntilReady()
+	}
+	public unload(): void {
+		// needs overload
 	}
 	public abstract getView(): Vnode<any, unknown>
 }

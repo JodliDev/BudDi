@@ -1,24 +1,40 @@
-import m, {Vnode} from "mithril";
+import {Vnode} from "mithril";
 import {Login} from "./pages/Login";
 import {Site} from "./Site";
 import {BasePage} from "./BasePage";
 
 export abstract class LoggedInBasePage extends BasePage {
-	private loginPage: Login
+	private readonly loginPage: Login
+	private readonly observerId: number
 	
-	constructor(site: Site) {
-		super(site)
-		this.loginPage = new Login(site)
-		this.site.waitForLogin.then(() => m.redraw())
+	constructor(site: Site, variablesString: string) {
+		super(site, variablesString)
+		this.loginPage = new Login(site, variablesString)
+		
+		this.observerId = this.site.loginState.reactToChange(async (isLoggedIn) => {
+			await this.loadPage()
+		})
 	}
-	async load(): Promise<void> {
-		await super.load()
-		await this.site.waitForLogin
+	
+	public async loadPage(): Promise<void> {
+		if(this.site.loginState.isLoggedIn())
+			return super.loadPage()
+	}
+	
+	public unload() {
+		super.unload()
+		this.site.loginState.removeObserver(this.observerId)
 	}
 	
 	public getLoadingView(): Vnode<any, unknown> {
-		if(!this.site.isLoggedIn())
+		if(!this.site.loginState.isLoggedIn())
 			return this.loginPage.getFullView()
-		return super.getLoadingView();
+		return super.getLoadingView()
+	}
+	
+	public getFullView(): Vnode<any, unknown> {
+		if(!this.site.loginState.isLoggedIn())
+			return this.loginPage.getFullView()
+		return super.getFullView()
 	}
 }

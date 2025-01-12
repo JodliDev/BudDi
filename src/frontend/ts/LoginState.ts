@@ -1,0 +1,50 @@
+import {deleteCookie, setCookie} from "./Convenience";
+import m from "mithril";
+
+export class LoginState {
+	private loggedInValue: boolean = false;
+	private adminValue: boolean = false
+	private observer: Record<number, ((isLoggedIn: boolean) => void)> = {}
+	private currentId: number = 0
+	
+	private runObservers(): void {
+		for(const id in this.observer) {
+			this.observer[id](this.loggedInValue);
+		}
+	}
+	
+	public reactToChange(callback: (isLoggedIn: boolean) => void): number {
+		this.observer[++this.currentId] = callback
+		return this.currentId
+	}
+	public removeObserver(id: number): void {
+		if(this.observer.hasOwnProperty(id))
+			delete this.observer[id]
+	}
+	
+	public isLoggedIn(): boolean {
+		return this.loggedInValue
+	}
+	public isAdmin(): boolean {
+		return this.adminValue
+	}
+	
+	public setAdmin(): void {
+		this.adminValue = true
+	}
+	
+	public login(userId: number | bigint, sessionHash: string): void {
+		setCookie("userId", userId.toString(), 1000 * 60 * 60 * 24 * 90)
+		setCookie("sessionHash", sessionHash, 1000 * 60 * 60 * 24 * 90)
+		this.loggedInValue = true
+		this.runObservers()
+	}
+	
+	public logout(): void {
+		deleteCookie("sessionHash")
+		this.loggedInValue = false
+		this.adminValue = false
+		this.runObservers()
+		m.redraw()
+	}
+}

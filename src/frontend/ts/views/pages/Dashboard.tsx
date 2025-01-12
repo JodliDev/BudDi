@@ -126,6 +126,7 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	
 	async load(): Promise<void> {
+		console.log("Dashboard login")
 		await super.load()
 		await this.loadNeededSpending()
 		
