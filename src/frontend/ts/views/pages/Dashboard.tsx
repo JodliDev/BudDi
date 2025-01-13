@@ -190,7 +190,7 @@ export class Dashboard extends LoggedInBasePage {
 								BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), this.setAsPaid.bind(this, info))
 							}
 						</div>
-						{ BtnWidget.DefaultBtn("remove", this.removeFromSpending.bind(this, info.needsSpendingEntry) ) }
+						{ BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsSpendingEntry) ) }
 					</div>
 				)}
 			</div>

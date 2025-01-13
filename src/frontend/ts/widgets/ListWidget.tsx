@@ -184,7 +184,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 							{ options.editOptions &&
 								DropdownMenu(
 									`Edit~${BasePublicTable.getName(options.tableClass)}`,
-									BtnWidget.DefaultBtn("edit"),
+									BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
 									() => m(ListEntryEditComponent<EntryT>, {
 										mode: "edit",
 										site: options.site,
@@ -198,7 +198,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 								)
 							
 							}
-							{ options.deleteOptions && BtnWidget.DefaultBtn("delete", () => this.deleteItem(entry.item)) }
+							{ options.deleteOptions && BtnWidget.PopoverBtn("delete", Lang.get("deleteEntryInfo"), () => this.deleteItem(entry.item)) }
 						</div>
 					})
 				}
