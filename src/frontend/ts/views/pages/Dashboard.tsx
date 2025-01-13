@@ -15,6 +15,7 @@ import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
+import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 
 interface NeedsSpendingEntryInformation {
 	possibleSpendingEntry: PubPossibleSpendingEntry
@@ -116,6 +117,16 @@ export class Dashboard extends LoggedInBasePage {
 		await this.waitingListCallback.reload()
 	}
 	
+	private async removeFromSpending(entry: PubNeedsSpendingEntry): Promise<void> {
+		if(!confirm(Lang.get("confirmDelete")))
+			return
+		const response = await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsSpendingEntry, entry.needsSpendingEntryId))
+		if(!response.success)
+			this.site.errorManager.error(Lang.get("errorUnknown"))
+		
+		await this.loadNeededSpending()
+	}
+	
 	private async loadNeededSpending(): Promise<void> {
 		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsSpendingEntry, 0, 100)) as ListResponseMessage<PubNeedsSpendingEntry>
 		if(response.success)
@@ -179,6 +190,7 @@ export class Dashboard extends LoggedInBasePage {
 								BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), this.setAsPaid.bind(this, info))
 							}
 						</div>
+						{ BtnWidget.DefaultBtn("remove", this.removeFromSpending.bind(this, info.needsSpendingEntry) ) }
 					</div>
 				)}
 			</div>

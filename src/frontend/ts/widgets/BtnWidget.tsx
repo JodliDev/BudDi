@@ -1,6 +1,7 @@
 import m, { Vnode } from "mithril"
 import addSvg from "../../img/icons/add.svg";
 import arrowCircleLeft from "../../img/icons/arrowCircleLeft.svg";
+import cancelSvg from "../../img/icons/cancel.svg";
 import checkCircleSvg from "../../img/icons/checkCircle.svg";
 import donateSvg from "../../img/icons/donate.svg";
 import editSvg from "../../img/icons/edit.svg";
@@ -25,6 +26,7 @@ export const ButtonType = {
 	home: homeSvg,
 	next: nextSvg,
 	prev: prevSvg,
+	remove: cancelSvg,
 	luck: luckSvg,
 	reload: reloadSvg,
 	toStart: toStartSvg,
@@ -34,7 +36,7 @@ export const ButtonType = {
 export class BtnWidget {
 	public static DefaultBtn(iconKey: keyof typeof ButtonType, onClick: () => void = () => {}) : Vnode {
 		return (
-			<div class="btn clickable horizontal hAlignCenter" onclick={ onClick }>
+			<div class={`btn ${iconKey} clickable horizontal hAlignCenter`} onclick={ onClick }>
 				{ m.trust(ButtonType[iconKey]) }
 			</div>
 		)
