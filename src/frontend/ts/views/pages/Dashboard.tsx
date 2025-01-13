@@ -14,6 +14,7 @@ import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmRespons
 import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
+import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 
 interface NeedsSpendingEntryInformation {
 	possibleSpendingEntry: PubPossibleSpendingEntry
@@ -35,6 +36,9 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	private possibleSpendingLineView(entry: PubPossibleSpendingEntry, addedAt?: number): Vnode {
 		return <div class="horizontal fillSpace possibleSpendingEntry">
+			{ !addedAt &&
+				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry)) }
+			
 			{ entry.homepage.length != 0
 				? <a href={ entry.homepage } target="_blank">
 					{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
@@ -47,17 +51,15 @@ export class Dashboard extends LoggedInBasePage {
 				</a>
 				: BtnWidget.Empty()
 			}
-			{
-				<div class="fillSpace">
-					{
-						this.possibleSpendingDropdown(
+			<div class="fillSpace">
+				{
+					this.possibleSpendingDropdown(
 						<span>{ entry.spendingName }</span>,
 						entry,
 						addedAt
 					)
-					}
-				</div>
-			}
+				}
+			</div>
 		</div>
 	}
 	private possibleSpendingDropdown(clickElement: Vnode, entry: PubPossibleSpendingEntry, addedAt?: number): Vnode<any, unknown> {
@@ -89,6 +91,16 @@ export class Dashboard extends LoggedInBasePage {
 			</div>,
 			this.dropdownOptions
 		)
+	}
+	
+	private async addToWaitList(entry: PubPossibleSpendingEntry): Promise<void> {
+		const response = await this.site.socket.sendAndReceive(new AddToWaitingMessage(entry))
+		if(!response.success) {
+			this.site.errorManager.error(Lang.get("errorUnknown"))
+			return
+		}
+		
+		await this.waitingListCallback.reload()
 	}
 	
 	private async chooseForSpending(): Promise<void> {
@@ -126,7 +138,6 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	
 	async load(): Promise<void> {
-		console.log("Dashboard login")
 		await super.load()
 		await this.loadNeededSpending()
 		

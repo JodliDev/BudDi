@@ -9,6 +9,10 @@
 	max-width: 250px
 }
 
+.possibleSpendingEntry a {
+	height: var(--btnSize);
+}
+
 .needsSpendingEntry {
 	width: 150px;
 	min-width:150px;
