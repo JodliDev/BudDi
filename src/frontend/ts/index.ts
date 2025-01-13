@@ -7,6 +7,7 @@ async function init() {
 	const options = await response.json() as IPublicOptions
 	
 	await Lang.init(options.lang);
+	document.title = Lang.get("appName")
 	const site = new Site(options)
 }
 init()
