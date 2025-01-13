@@ -1,6 +1,6 @@
 .listWidget {
 	.header {
-		min-height: 24px
+		min-height: var(--btnSize)
 	}
 	
 	.entry {

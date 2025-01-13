@@ -8,8 +8,8 @@
 		display: none;
 	}
 	&.reserveSpace.hidden {
-		width: 24px;
-		height: 24px;
+		width: var(--btnSize);
+		height: var(--btnSize);
 		display: inline-block;
 		visibility: hidden;
 		animation: none;

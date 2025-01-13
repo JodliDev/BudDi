@@ -6,6 +6,7 @@
 	--color-accent-dark: #b8661f;
 	--color-accent-light: #fdd6b2;
 	--radius: 10px;
+	--btnSize: 24px;
 }
 
 @keyframes fade-in {
