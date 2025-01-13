@@ -5,7 +5,7 @@ import {WebSocketSession} from "./WebSocketSession";
 import {ErrorMessage} from "../../../shared/messages/ErrorMessage";
 import {Lang} from "../../../shared/Lang";
 import {Options} from "../Options";
-import {Cookies} from "../../../shared/Cookies";
+import {getCookie} from "../../../shared/Cookies";
 import {SessionLoginMessageAction} from "./messageActions/SessionLoginMessageAction";
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
@@ -29,9 +29,9 @@ export class WebSocketHelper {
 			
 			const cookies = connection.headers.cookie
 			if(cookies) {
-				const sessionId = this.getCookie("sessionId", cookies)
-				const sessionHash = this.getCookie("sessionHash", cookies)
-				const sessionTimestamp = this.getCookie("sessionTimestamp", cookies)
+				const sessionId = getCookie("sessionId", cookies)
+				const sessionHash = getCookie("sessionHash", cookies)
+				const sessionTimestamp = getCookie("sessionTimestamp", cookies)
 				
 				if(sessionHash && sessionId && sessionTimestamp)
 					await onMessage(new SessionLoginMessageAction(new SessionLoginMessage(parseInt(sessionId), sessionHash, parseInt(sessionTimestamp))), session)
@@ -66,13 +66,5 @@ export class WebSocketHelper {
 				}
 			})
 		})
-	}
-	
-	private getCookie(name: keyof typeof Cookies, cookieString: string): string | undefined {
-		//Thanks to: https://stackoverflow.com/questions/10730362/get-cookie-by-name
-		const value = `; ${cookieString}`
-		const parts = value.split(`; ${name}=`)
-		if(parts.length === 2)
-			return parts.pop()?.split(';').shift()
 	}
 }

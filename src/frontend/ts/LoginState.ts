@@ -1,6 +1,6 @@
-import {deleteCookie, setCookie} from "./Convenience";
 import m from "mithril";
 import {LocalStorageKeys} from "./LocalStorageKeys";
+import {deleteCookie, setCookie} from "../../shared/Cookies";
 
 export class LoginState {
 	private loggedInValue: boolean = false;

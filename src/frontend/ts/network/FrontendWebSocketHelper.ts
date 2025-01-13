@@ -11,9 +11,9 @@ import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
 import {Class} from "../../../shared/Class";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
-import {setCookie} from "../Convenience";
 import {LocalStorageKeys} from "../LocalStorageKeys";
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
+import {setCookie} from "../../../shared/Cookies";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
