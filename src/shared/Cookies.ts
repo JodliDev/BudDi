@@ -1,4 +1,5 @@
 export const Cookies = {
-	sessionHash: "sessionHash",
-	userId: "userId",
+	sessionId: "sessionId",
+	sessionTimestamp: "sessionTimestamp",
+	sessionHash: "sessionHash"
 }

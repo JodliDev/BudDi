@@ -1,5 +1,6 @@
 import {deleteCookie, setCookie} from "./Convenience";
 import m from "mithril";
+import {LocalStorageKeys} from "./LocalStorageKeys";
 
 export class LoginState {
 	private loggedInValue: boolean = false;
@@ -33,15 +34,17 @@ export class LoginState {
 		this.adminValue = true
 	}
 	
-	public login(userId: number | bigint, sessionHash: string): void {
-		setCookie("userId", userId.toString(), 1000 * 60 * 60 * 24 * 90)
-		setCookie("sessionHash", sessionHash, 1000 * 60 * 60 * 24 * 90)
+	public login(sessionId: number | bigint, sessionHash?: string): void {
+		setCookie("sessionId", sessionId.toString(), 1000 * 60 * 60 * 24 * 90)
+		if(sessionHash)
+			localStorage.setItem(LocalStorageKeys.sessionSecret, sessionHash)
 		this.loggedInValue = true
 		this.runObservers()
 	}
 	
 	public logout(): void {
-		deleteCookie("sessionHash")
+		deleteCookie("sessionId")
+		localStorage.removeItem(LocalStorageKeys.sessionSecret)
 		this.loggedInValue = false
 		this.adminValue = false
 		this.runObservers()

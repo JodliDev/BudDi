@@ -5,22 +5,26 @@ import {column} from "../../database/column";
 import {LoginSession} from "../../database/dataClasses/LoginSession";
 import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessage";
 import {User} from "../../database/dataClasses/User";
+import {IsLoggedInMessage} from "../../../../shared/messages/IsLoggedInMessage";
 
 export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionLoginMessage> {
 	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const sqlConstraint = `${column(LoginSession, "userId")} = '${this.data.userId}' AND ${column(LoginSession, "sessionHash")} = '${this.data.sessionHash}'`
+		const sqlConstraint = `${column(LoginSession, "loginSessionId")} = '${this.data.sessionId}'`
 		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)
-
-		if(!loginSession)
+		const timedHash = await SessionLoginMessage.createSessionHash(loginSession.sessionSecret, this.data.sessionTimestamp)
+		
+		if(!loginSession
+			|| this.data.sessionTimestamp < Date.now() - 1000 * 60 * 30
+			|| timedHash != this.data.sessionHash
+		)
 			return
 		
-		const newSession = LoginSession.getNewSession(this.data.userId, loginSession.existsSince)
-		db.update(LoginSession, { "=": newSession }, sqlConstraint, 1)
+		db.update(LoginSession, { "=": { lastLogin: Date.now()} }, sqlConstraint, 1)
 		
-		const [user] = db.selectTable(User, `${column(User, "userId")} = ${this.data.userId}`, 1)
+		const [user] = db.selectTable(User, `${column(User, "userId")} = ${loginSession.userId}`, 1)
 		
 		session.login(user.userId, user.isAdmin)
-		session.send(new SessionLoginMessage(this.data.userId, newSession.sessionHash))
+		session.send(new IsLoggedInMessage(loginSession.loginSessionId))
 	}
 }

@@ -1,8 +1,8 @@
 import {BaseFrontendMessageAction} from "../BaseFrontendMessageAction";
 import {Site} from "../../views/Site";
-import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessage";
+import {IsAdminMessage} from "../../../../shared/messages/IsAdminMessage";
 
-export class IsAdminMessageAction extends BaseFrontendMessageAction<SessionLoginMessage> {
+export class IsAdminMessageAction extends BaseFrontendMessageAction<IsAdminMessage> {
 	exec(site: Site): void {
 		site.loginState.setAdmin()
 	}

@@ -11,7 +11,7 @@ import {BudgetHistory} from "./dataClasses/BudgetHistory";
 import {PreMigrationData} from "./DatabaseMigrationManager";
 
 export class DatabaseInstructions {
-	public version: number = 4
+	public version: number = 5
 	
 	public tables: Class<BasePublicTable>[] = [
 		PossibleSpendingEntry,

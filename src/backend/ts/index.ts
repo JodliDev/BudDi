@@ -32,7 +32,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {
 			const oldestLoginSession = Date.now() - LOGIN_SESSION_MAX_AGE
-			dbManager.delete(LoginSession, `${column(LoginSession, "lastUpdate")} < ${oldestLoginSession}`)
+			dbManager.delete(LoginSession, `${column(LoginSession, "lastLogin")} < ${oldestLoginSession}`)
 		})
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {

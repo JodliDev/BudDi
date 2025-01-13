@@ -7,8 +7,8 @@ export class LoginResponseMessage extends ConfirmResponseMessage {
 	constructor(
 		message: LoginMessage,
 		public readonly success: boolean,
-		public readonly userId?: number | bigint,
-		public readonly sessionHash?: string,
+		public readonly sessionId?: number | bigint,
+		public readonly sessionSecret?: string,
 	) {
 		super(message, success)
 	}

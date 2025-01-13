@@ -29,11 +29,12 @@ export class WebSocketHelper {
 			
 			const cookies = connection.headers.cookie
 			if(cookies) {
+				const sessionId = this.getCookie("sessionId", cookies)
 				const sessionHash = this.getCookie("sessionHash", cookies)
-				const userId = this.getCookie("userId", cookies)
+				const sessionTimestamp = this.getCookie("sessionTimestamp", cookies)
 				
-				if(sessionHash && userId)
-					await onMessage(new SessionLoginMessageAction(new SessionLoginMessage(parseInt(userId), sessionHash)), session)
+				if(sessionHash && sessionId && sessionTimestamp)
+					await onMessage(new SessionLoginMessageAction(new SessionLoginMessage(parseInt(sessionId), sessionHash, parseInt(sessionTimestamp))), session)
 			}
 			ws.on('error', console.error)
 			

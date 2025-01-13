@@ -26,7 +26,7 @@ export class Login extends BasePage {
 			m.redraw()
 		}
 		else {
-			this.site.login(response.userId ?? 0, response.sessionHash ?? "")
+			this.site.login(response.sessionId ?? 0, response.sessionSecret)
 			this.site.goto("Dashboard")
 		}
 	}

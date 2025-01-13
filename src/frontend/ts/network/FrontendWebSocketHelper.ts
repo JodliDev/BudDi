@@ -11,10 +11,12 @@ import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
 import {Class} from "../../../shared/Class";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
+import {setCookie} from "../Convenience";
+import {LocalStorageKeys} from "../LocalStorageKeys";
+import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
-	private static readonly KEEPALIVE_TIMEOUT = 1000*60*5
 	
 	private socket?: WebSocket
 	private expectedResponseManager: ExpectedResponseManager = new ExpectedResponseManager()
@@ -27,6 +29,15 @@ export class FrontendWebSocketHelper {
 		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
 	}
 	
+	private async createSessionHash() {
+		const secret = localStorage.getItem(LocalStorageKeys.sessionSecret)
+		if(secret) {
+			const timestamp = Date.now()
+			
+			setCookie("sessionTimestamp", timestamp.toString())
+			setCookie("sessionHash", await SessionLoginMessage.createSessionHash(secret, timestamp))
+		}
+	}
 	
 	private createSocket(): WebSocket {
 		const protocol = location.protocol === "http:" ? "ws" : "wss"
@@ -117,6 +128,8 @@ export class FrontendWebSocketHelper {
 		}
 	}
 	public connect(): void {
-		this.socket = this.createSocket()
+		this.createSessionHash().then(() => {
+			this.socket = this.createSocket()
+		})
 	}
 }

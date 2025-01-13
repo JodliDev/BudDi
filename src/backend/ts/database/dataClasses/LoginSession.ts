@@ -22,17 +22,17 @@ export class LoginSession extends BasePublicTable {
 	
 	public loginSessionId: number | bigint = 0
 	public userId: number | bigint = 0
-	public sessionHash: string = ""
+	public sessionSecret: string = ""
 	public existsSince: number = 0
-	public lastUpdate: number = 0
+	public lastLogin: number = 0
 	
 	public static getNewSession(userId: number | bigint, existsSince?: number): LoginSession {
 		const now = Date.now()
 		return {
 			userId: userId,
-			lastUpdate: now,
+			lastLogin: now,
 			existsSince: existsSince ?? now,
-			sessionHash: randomBytes(20).toString('hex')
+			sessionSecret: randomBytes(20).toString('hex')
 		} as LoginSession
 	}
 }

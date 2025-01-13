@@ -78,8 +78,8 @@ export class Site {
 		}
 	}
 	
-	public login(userId: number | bigint, sessionHash: string) {
-		this.loginState.login(userId, sessionHash)
+	public login(sessionId: number | bigint, sessionHash?: string) {
+		this.loginState.login(sessionId, sessionHash)
 	}
 	
 	public logout() {
