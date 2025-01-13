@@ -1,4 +1,4 @@
-const frontend = require("./module.frontend");
+const frontend = require("../src/frontend/webpack_config/module.frontend");
 const backend = require("./module.backend");
 
 module.exports = [
