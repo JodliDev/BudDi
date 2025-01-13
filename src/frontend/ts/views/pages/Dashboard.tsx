@@ -22,7 +22,7 @@ interface NeedsSpendingEntryInformation {
 
 export class Dashboard extends LoggedInBasePage {
 	private needsSpendingEntries: NeedsSpendingEntryInformation[] = []
-	private notDonatedListCallback: ListWidgetCallback = new ListWidgetCallback()
+	private waitingListCallback: ListWidgetCallback = new ListWidgetCallback()
 	private dropdownOptions: DropdownOptions = {
 		manualPositioning: true,
 		disableMenuPointerEvents: true
@@ -78,7 +78,7 @@ export class Dashboard extends LoggedInBasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastSpending")}</small>
-					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nothingSpentYet")}</span>
+					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nextUp")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
@@ -101,7 +101,7 @@ export class Dashboard extends LoggedInBasePage {
 			return
 		}
 		await this.loadNeededSpending()
-		await this.notDonatedListCallback.reload()
+		await this.waitingListCallback.reload()
 	}
 	
 	private async loadNeededSpending(): Promise<void> {
@@ -119,7 +119,7 @@ export class Dashboard extends LoggedInBasePage {
 		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsSpendingEntry)) as ConfirmResponseMessage
 		if(response.success) {
 			await this.loadNeededSpending()
-			await this.notDonatedListCallback.reload()
+			await this.waitingListCallback.reload()
 		}
 		else
 			this.site.errorManager.error(Lang.get("errorUnknown"))
@@ -174,14 +174,14 @@ export class Dashboard extends LoggedInBasePage {
 			<div class="horizontal hAlignCenter wrapContent">
 				{
 					ListWidget({
-						title: Lang.get("nothingSpentYet"),
+						title: Lang.get("nextUp"),
 						tableClass: PubWaitingEntry,
 						site: this.site,
 						hideRefresh: true,
 						deleteOptions: {},
-						customOptions: this.notDonatedListCallback.isEmpty() ? undefined :
+						customOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
-						callback: this.notDonatedListCallback,
+						callback: this.waitingListCallback,
 						getEntryView: entry =>
 							this.possibleSpendingLineView(entry.joined.PossibleSpendingEntry as PubPossibleSpendingEntry, entry.item.addedAt)
 					})
@@ -196,7 +196,7 @@ export class Dashboard extends LoggedInBasePage {
 						addOptions: {
 							columns: ["spendingName", "homepage", "spendingUrl"],
 							onAdded: async () => {
-								this.notDonatedListCallback.reload && await this.notDonatedListCallback.reload()
+								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
 							getValueError: (key, value) => {
 								switch(key) {
@@ -205,10 +205,16 @@ export class Dashboard extends LoggedInBasePage {
 								}
 							}
 						},
-						editOptions: { columns: ["spendingName", "homepage", "spendingUrl", "enabled"] },
+						editOptions: {
+							columns: ["spendingName", "homepage", "spendingUrl", "enabled"],
+							onChanged: async () => {
+								await this.waitingListCallback.reload()
+								await this.loadNeededSpending()
+							}
+						},
 						deleteOptions: {
 							onDeleted: async () => {
-								await this.notDonatedListCallback.reload()
+								await this.waitingListCallback.reload()
 								await this.loadNeededSpending()
 							} 
 						},
