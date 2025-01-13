@@ -10,6 +10,7 @@ import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
 import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
 import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
 
+// noinspection JSUnusedGlobalSymbols
 export class ChooseForSpendingMessageAction extends LoggedInMessageAction<ChooseForSpendingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {

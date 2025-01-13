@@ -7,6 +7,7 @@ import {User} from "../../database/dataClasses/User";
 import bcrypt from "bcrypt";
 import {ChangePasswordMessage} from "../../../../shared/messages/ChangePasswordMessage";
 
+// noinspection JSUnusedGlobalSymbols
 export class ChangePasswordMessageAction extends LoggedInMessageAction<ChangePasswordMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const salt = await bcrypt.genSalt()

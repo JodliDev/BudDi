@@ -11,6 +11,7 @@ import {Class} from "../../../../shared/Class";
 import {column} from "../../database/column";
 import {TableSettings} from "../../database/TableSettings";
 
+// noinspection JSUnusedGlobalSymbols
 export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)

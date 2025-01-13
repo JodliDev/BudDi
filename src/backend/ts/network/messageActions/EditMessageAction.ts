@@ -7,6 +7,7 @@ import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryRes
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {TableSettings} from "../../database/TableSettings";
 
+// noinspection JSUnusedGlobalSymbols
 export class EditMessageAction extends LoggedInMessageAction<EditMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)

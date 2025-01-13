@@ -7,6 +7,7 @@ import {ListMessageAction} from "./ListMessageAction";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {TableSettings} from "../../database/TableSettings";
 
+// noinspection JSUnusedGlobalSymbols
 export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicListClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)

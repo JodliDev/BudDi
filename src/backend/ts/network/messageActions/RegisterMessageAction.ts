@@ -1,4 +1,3 @@
-import {LoginMessage} from "../../../../shared/messages/LoginMessage";
 import {BaseBackendMessageAction} from "../BaseBackendMessageAction";
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
@@ -9,10 +8,10 @@ import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmRespons
 import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
 import {Options} from "../../Options";
 import {NoPermissionException} from "../../exceptions/NoPermissionException";
+import {RegisterMessage} from "../../../../shared/messages/RegisterMessage";
 
-
-export class RegisterMessageAction extends BaseBackendMessageAction<LoginMessage> {
-	
+// noinspection JSUnusedGlobalSymbols
+export class RegisterMessageAction extends BaseBackendMessageAction<RegisterMessage> {
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		if(!Options.serverSettings.registrationAllowed)
 			throw new NoPermissionException()

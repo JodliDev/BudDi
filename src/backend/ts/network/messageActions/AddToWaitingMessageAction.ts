@@ -7,6 +7,7 @@ import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmRespons
 import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
 import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
 
+// noinspection JSUnusedGlobalSymbols
 export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {

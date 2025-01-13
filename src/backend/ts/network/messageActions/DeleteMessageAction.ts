@@ -7,6 +7,7 @@ import {ListMessageAction} from "./ListMessageAction";
 import {TableSettings} from "../../database/TableSettings";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 
+// noinspection JSUnusedGlobalSymbols
 export class DeleteMessageAction extends LoggedInMessageAction<DeleteMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)

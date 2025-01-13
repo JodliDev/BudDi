@@ -5,6 +5,7 @@ import {Options} from "../../Options";
 import {SetServerSettingsMessage} from "../../../../shared/messages/SetServerSettingsMessage";
 import {AdminMessageAction} from "../AdminMessageAction";
 
+// noinspection JSUnusedGlobalSymbols
 export class SetServerSettingsMessageAction extends AdminMessageAction<SetServerSettingsMessage> {
 	async authorizedExec(session: WebSocketSession, _: DatabaseManager): Promise<void> {
 		Options.serverSettings = this.data.serverSettings

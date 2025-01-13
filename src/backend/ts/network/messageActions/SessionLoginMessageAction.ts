@@ -7,8 +7,8 @@ import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessa
 import {User} from "../../database/dataClasses/User";
 import {IsLoggedInMessage} from "../../../../shared/messages/IsLoggedInMessage";
 
+// noinspection JSUnusedGlobalSymbols
 export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionLoginMessage> {
-	
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = `${column(LoginSession, "loginSessionId")} = '${this.data.sessionId}'`
 		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)

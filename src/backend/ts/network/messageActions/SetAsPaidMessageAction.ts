@@ -8,8 +8,8 @@ import {NeedsSpendingEntry} from "../../database/dataClasses/NeedsSpendingEntry"
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
 import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
 
+// noinspection JSUnusedGlobalSymbols
 export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
-	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [data] = db.selectJoinedTable(
 			NeedsSpendingEntry,
