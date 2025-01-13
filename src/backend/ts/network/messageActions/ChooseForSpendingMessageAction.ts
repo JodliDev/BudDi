@@ -62,18 +62,19 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 			})
 		}
 		db.delete(WaitingEntry, `${column(WaitingEntry, "waitingEntryId")} = ${waitingEntry.waitingEntryId}`)
-		const entriesLeft = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
 		
 		BudgetHistory.addHistory(db, userId, "historyChooseForSpending", [possibleSpendingEntry.spendingName])
-		if(entriesLeft == 0) {
-			this.refillWaitingEntries(db, userId!)
-			BudgetHistory.addHistory(db, userId, "historyRefillList", [])
-		}
+		
+		this.refillWaitingEntriesIfNeeded(db, userId)
 		
 		return true
 	}
 	
-	private static refillWaitingEntries(db: DatabaseManager, userId: number | bigint) {
+	public static refillWaitingEntriesIfNeeded(db: DatabaseManager, userId: number | bigint) {
+		const entriesLeft = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
+		if(entriesLeft != 0)
+			return
+		
 		const possibleSpendingEntries = db.selectTable(
 			PossibleSpendingEntry,
 			`${column(PossibleSpendingEntry, "userId")} = ${userId} AND ${column(PossibleSpendingEntry, "enabled")} = 1`
@@ -81,5 +82,7 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 		for(const possibleSpendingEntry of possibleSpendingEntries) {
 			AddToWaitingMessageAction.createEntry(db, userId, possibleSpendingEntry)
 		}
+		
+		BudgetHistory.addHistory(db, userId, "historyRefillList", [])
 	}
 }

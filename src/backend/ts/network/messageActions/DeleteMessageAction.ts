@@ -20,6 +20,7 @@ export class DeleteMessageAction extends LoggedInMessageAction<DeleteMessage> {
 		
 		settings?.onBeforeDelete(this.data.id, db, session)
 		const response = db.delete(tableClass, settings?.getWhere(session, where) ?? where, 1)
+		settings?.onAfterDelete(this.data.id, db, session)
 		
 		session.send(new ConfirmResponseMessage(this.data, response == 1))
 	}

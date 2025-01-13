@@ -189,7 +189,7 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubWaitingEntry,
 						site: this.site,
 						hideRefresh: true,
-						deleteOptions: {},
+						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
 						customOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
 						callback: this.waitingListCallback,

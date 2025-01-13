@@ -11,6 +11,7 @@ export class TableSettings<TableT> {
 	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
 	public onBeforeEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onBeforeDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public onAfterDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	private listFilter?: (session: WebSocketSession) => string = undefined
 	
 	public getWhere(session: WebSocketSession, where?: string): string | undefined {
@@ -28,6 +29,9 @@ export class TableSettings<TableT> {
 	
 	setOnBeforeDelete(onDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void): void {
 		this.onBeforeDelete = onDelete
+	}
+	setOnAfterDelete(onDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void): void {
+		this.onAfterDelete = onDelete
 	}
 	setOnBeforeEdit(onEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void): void {
 		this.onBeforeEdit = onEdit

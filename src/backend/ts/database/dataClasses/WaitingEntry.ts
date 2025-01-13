@@ -3,6 +3,7 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
 import {column} from "../column";
+import {ChooseForSpendingMessageAction} from "../../network/messageActions/ChooseForSpendingMessageAction";
 
 export class WaitingEntry extends PubWaitingEntry {
 	getSettings(): TableSettings<this> {
@@ -23,6 +24,9 @@ export class WaitingEntry extends PubWaitingEntry {
 		
 		settings.setOnBeforeAdd((data, db, session) => {
 			data.userId = session.userId
+		})
+		settings.setOnAfterDelete((_, db, session) => {
+			ChooseForSpendingMessageAction.refillWaitingEntriesIfNeeded(db, session.userId!)
 		})
 		
 		settings.setListFilter(session => `${column(WaitingEntry, "userId")} = ${session.userId}`)
