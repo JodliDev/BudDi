@@ -4,10 +4,10 @@ let langRecord: Record<string, string> = {}
 
 export type LangKey = keyof typeof fallbackLang
 
-export const Lang = {
-	code: "en",
-	isInit: false,
-	async init(langCode: string): Promise<void> {
+class LangClass {
+	private code = "en"
+	private isInit = false
+	public async init(langCode: string): Promise<void> {
 		this.code = langCode
 		if(langCode == "en")
 			return
@@ -18,14 +18,14 @@ export const Lang = {
 			console.error(error as string)
 		}
 		this.isInit = true
-	},
-	has: function(key: string) {
+	}
+	public has(key: string) {
 		return langRecord.hasOwnProperty(key) || fallbackLang.hasOwnProperty(key)
-	},
-	getDynamic: function(key: string): string {
+	}
+	public getDynamic(key: string): string {
 		return this.get(key as keyof typeof fallbackLang)
-	},
-	get: function(key: LangKey, ... replacers: Array<string | number>): string {
+	}
+	public get(key: LangKey, ... replacers: Array<string | number>): string {
 		let value
 		if(langRecord.hasOwnProperty(key))
 			value = langRecord[key]
@@ -54,8 +54,10 @@ export const Lang = {
 		}
 		else
 			return value
-	},
-	getWithColon: function(key: LangKey, ... replacers: Array<string | number>): string {
+	}
+	public getWithColon(key: LangKey, ... replacers: Array<string | number>): string {
 		return Lang.get("colon", Lang.get(key, ...replacers))
 	}
 }
+
+export const Lang = new LangClass()

@@ -96,12 +96,8 @@ export class Dashboard extends LoggedInBasePage {
 	
 	private async addToWaitList(entry: PubPossibleSpendingEntry): Promise<void> {
 		const response = await this.site.socket.sendAndReceive(new AddToWaitingMessage(entry))
-		if(!response.success) {
-			this.site.errorManager.error(Lang.get("errorUnknown"))
-			return
-		}
-		
-		await this.waitingListCallback.reload()
+		if(response.success)
+			await this.waitingListCallback.reload()
 	}
 	
 	private async chooseForSpending(): Promise<void> {
@@ -109,10 +105,9 @@ export class Dashboard extends LoggedInBasePage {
 		if(!amount || Number.isNaN(amount))
 			return
 		const response = await this.site.socket.sendAndReceive(new ChooseForSpendingMessage(parseFloat(amount)))
-		if(!response.success) {
-			this.site.errorManager.error(Lang.get("errorUnknown"))
+		if(!response.success)
 			return
-		}
+		
 		await this.loadNeededSpending()
 		await this.waitingListCallback.reload()
 	}
@@ -120,9 +115,7 @@ export class Dashboard extends LoggedInBasePage {
 	private async removeFromSpending(entry: PubNeedsSpendingEntry): Promise<void> {
 		if(!confirm(Lang.get("confirmDelete")))
 			return
-		const response = await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsSpendingEntry, entry.needsSpendingEntryId))
-		if(!response.success)
-			this.site.errorManager.error(Lang.get("errorUnknown"))
+		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsSpendingEntry, entry.needsSpendingEntryId))
 		
 		await this.loadNeededSpending()
 	}
@@ -144,17 +137,13 @@ export class Dashboard extends LoggedInBasePage {
 			await this.loadNeededSpending()
 			await this.waitingListCallback.reload()
 		}
-		else
-			this.site.errorManager.error(Lang.get("errorUnknown"))
 	}
 	
 	async load(): Promise<void> {
 		await super.load()
 		await this.loadNeededSpending()
 		
-		const response = await this.site.socket.sendAndReceive(
-			new ListMessage(PubUser, 0, 1)
-		) as ListResponseMessage<PubUser>
+		const response = await this.site.socket.sendAndReceive(new ListMessage(PubUser, 0, 1)) as ListResponseMessage<PubUser>
 		
 		if(response.success && response.list.length != 0)
 			this.user = response.list[0].item

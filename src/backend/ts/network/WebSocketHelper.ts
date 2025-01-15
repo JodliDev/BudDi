@@ -3,15 +3,14 @@ import {BaseMessage} from "../../../shared/BaseMessage";
 import {BaseBackendMessageAction} from "./BaseBackendMessageAction";
 import {WebSocketSession} from "./WebSocketSession";
 import {ErrorMessage} from "../../../shared/messages/ErrorMessage";
-import {Lang} from "../../../shared/Lang";
 import {Options} from "../Options";
 import {getCookie} from "../../../shared/Cookies";
 import {SessionLoginMessageAction} from "./messageActions/SessionLoginMessageAction";
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
-import {ReasonedConfirmResponseMessage} from "../../../shared/messages/ReasonedConfirmResponseMessage";
 import {ServerSettingsMessage} from "../../../shared/messages/ServerSettingsMessage";
 import {Server} from "node:http";
+import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
 
 export class WebSocketHelper {
 	private readonly wss: WebSocketServer;
@@ -56,11 +55,11 @@ export class WebSocketHelper {
 					confirmMessage = null
 				}
 				catch(e: unknown) {
-					const message = (e as Error)?.name ?? Lang.get("errorUnknown")
+					const message = (e as Error)?.name ?? "errorUnknown"
 					console.trace(e)
 					
 					session.send(confirmMessage
-						? new ReasonedConfirmResponseMessage(confirmMessage, false, message)
+						? new ConfirmResponseMessage(confirmMessage, false, message)
 						: new ErrorMessage(message)
 					)
 				}

@@ -23,10 +23,7 @@ export class Schedule extends LoggedInBasePage {
 		m.redraw()
 		
 		const data: Partial<PubSchedule> = { enabled: this.scheduleEnabled }
-		const response: ConfirmResponseMessage = await this.site.socket.sendAndReceive(new EditMessage(PubSchedule, this.schedule.scheduleId, data))
-		
-		if(!response.success)
-			this.site.errorManager.error(Lang.get("errorUnknown"))
+		await this.site.socket.sendAndReceive(new EditMessage(PubSchedule, this.schedule.scheduleId, data))
 		this.isLoading = false
 		m.redraw()
 	}

@@ -16,7 +16,7 @@ export class User extends PubUser {
 					throw new UsernameAlreadyExistsException()
 			}
 		})
-		settings.setOnBeforeAdd(() => {
+		settings.setOnBeforeAdd((_data, _db, session) => {
 			throw new NoPermissionException()
 		})
 		settings.setListFilter(session => session.isAdmin ? "1" : `${column(User, "userId")} = ${session.userId}`)

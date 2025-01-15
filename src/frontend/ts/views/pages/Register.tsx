@@ -2,9 +2,9 @@ import { BasePage } from "../BasePage";
 import m, { Vnode } from "mithril";
 import { LoadingSpinner } from "../../widgets/LoadingSpinner";
 import {RegisterMessage} from "../../../../shared/messages/RegisterMessage";
-import {ReasonedConfirmResponseMessage} from "../../../../shared/messages/ReasonedConfirmResponseMessage";
 import {PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH} from "../../Constants";
 import {Lang} from "../../../../shared/Lang";
+import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 
 export class Register extends BasePage {
 	private isLoading: boolean = false;
@@ -23,11 +23,9 @@ export class Register extends BasePage {
 		
 		const message = new RegisterMessage(username, password)
 		
-        const response = await this.site.socket.sendAndReceive(message) as ReasonedConfirmResponseMessage
-		if(!response.success) {
-			this.site.errorManager.error(response.reason)
-		}
-		else
+        const response = await this.site.socket.sendAndReceive(message) as ConfirmResponseMessage
+		
+		if(response.success)
 			this.site.goto("Login")
 		
 		this.isLoading = false

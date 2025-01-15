@@ -3,13 +3,11 @@ import {BaseMessage} from "../../../shared/BaseMessage";
 import {IsAdminMessage} from "../../../shared/messages/IsAdminMessage";
 
 export class WebSocketSession {
-	public isLoggedIn: boolean = false;
-	public isAdmin: boolean = false;
-	public userId?: number | bigint;
+	public isLoggedIn: boolean = false
+	public isAdmin: boolean = false
+	public userId?: number | bigint
 	
-	constructor(private ws: WebSocket) {
-	
-	}
+	constructor(private ws: WebSocket) { }
 	
 	public send(message: BaseMessage) {
 		this.ws.send(JSON.stringify(message))

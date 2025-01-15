@@ -24,12 +24,7 @@ export class User extends LoggedInBasePage {
 		this.passwordSaving = true
 		m.redraw()
 		
-		const response = await this.site.socket.sendAndReceive(
-			new ChangePasswordMessage(this.newPassword)
-		) as ConfirmResponseMessage
-		
-		if(!response.success)
-			this.site.errorManager.error(Lang.get("errorUnknown"))
+		const response = await this.site.socket.sendAndReceive(new ChangePasswordMessage(this.newPassword)) as ConfirmResponseMessage
 		
 		this.passwordFeedback.feedback!(response.success)
 		this.newPassword = ""

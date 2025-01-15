@@ -19,9 +19,6 @@ export class Admin extends LoggedInBasePage {
 		
 		const response: ConfirmResponseMessage = await this.site.socket.sendAndReceive(new SetServerSettingsMessage(this.site.serverSettings))
 		
-		if(!response.success)
-			this.site.errorManager.error(Lang.get("errorUnknown"))
-		
 		this.feedback.feedback!(response.success)
 		this.isLoading = false
 		m.redraw()

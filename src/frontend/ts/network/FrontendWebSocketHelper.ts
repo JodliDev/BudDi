@@ -19,14 +19,15 @@ export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
 	
 	private socket?: WebSocket
-	private expectedResponseManager: ExpectedResponseManager = new ExpectedResponseManager()
+	private expectedResponseManager: ExpectedResponseManager
 	private waitPromise?: Promise<void>
-	private isReconnecting = false;
+	private isReconnecting = false
 	private keepAliveTimeoutId = 0
 	private readonly keepAliveTimeoutMs: number
 	
 	constructor(private site: Site, options: IPublicOptions) {
 		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
+		this.expectedResponseManager = new ExpectedResponseManager(site.errorManager)
 	}
 	
 	private async createSessionHash() {
@@ -82,7 +83,6 @@ export class FrontendWebSocketHelper {
 			this.site.errorManager.error(Lang.get("errorLostConnection"))
 			console.log(event)
 			if(!this.isReconnecting) {
-				
 				this.site.errorManager.warn(Lang.get("infoReconnecting"))
 				this.connect()
 			}
@@ -101,9 +101,7 @@ export class FrontendWebSocketHelper {
 	}
 	
 	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>): Promise<T | null> {
-		const response = await this.site.socket.sendAndReceive(
-			new ListMessage(table, 0, 1)
-		) as ListResponseMessage<T>
+		const response = await this.site.socket.sendAndReceive(new ListMessage(table, 0, 1)) as ListResponseMessage<T>
 		
 		if(response.success && response.list.length != 0)
 			return response.list[0].item
@@ -111,6 +109,12 @@ export class FrontendWebSocketHelper {
 		return null
 	}
 	
+	/**
+	 * Will send and request and waits until the connected response is returned from the server.
+	 * If the server returns {success} = false with a {reason}, this message will be logged to the errorManager.
+	 * @param message The message that should be sent to the server.
+	 * @returns a promise that will be fulfilled when the server returns a response.
+	 */
 	public sendAndReceive(message: ConfirmMessage): Promise<ConfirmResponseMessage> {
 		const r = this.expectedResponseManager.createConfirmation(message)
 		this.send(message)

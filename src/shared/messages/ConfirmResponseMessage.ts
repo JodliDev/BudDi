@@ -7,6 +7,7 @@ export class ConfirmResponseMessage extends BaseMessage {
 	constructor(
 		confirmMessage: ConfirmMessage,
 		public readonly success: boolean,
+		public readonly reason?: string,
 	) {
 		super()
 		this.confirmId = confirmMessage.confirmId

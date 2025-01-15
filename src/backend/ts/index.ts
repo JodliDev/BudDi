@@ -2,7 +2,6 @@ import {DatabaseManager} from "./database/DatabaseManager";
 import {DatabaseInstructions} from "./database/DatabaseInstructions";
 import {WebSocketHelper} from "./network/WebSocketHelper";
 import express from 'express';
-import {Lang} from "../../shared/Lang";
 import {Options, PublicOptions} from "./Options";
 import {DailyScheduleManager} from "./DailyScheduleManager";
 import {LoginSession} from "./database/dataClasses/LoginSession";
@@ -16,11 +15,6 @@ const LOGIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90
 const options = new Options()
 console.log(options)
 console.log("Backend is starting...")
-Lang.init(options.lang).then(
-	() => {
-		console.log(`Server language is ${options.lang}`)
-	}
-)
 
 const optionsFile = `${options.root}/${options.frontend}/options.js`
 console.log(`Write options to ${optionsFile}`)
