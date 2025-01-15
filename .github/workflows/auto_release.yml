@@ -61,7 +61,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: 
-            - ${{ steps.autotag.outputs.tagname  }}
-            - jodlidev/budget-spender:latest
+          tags: |
+            jodlidev/budget-spender:${{ steps.autotag.outputs.tagname  }}
+            jodlidev/budget-spender:latest
           labels: ${{ steps.meta.outputs.labels }}
