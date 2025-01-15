@@ -1,6 +1,6 @@
 services:
     budget-spender:
-        image: jodlidev/budget-spender
+        image: jodlidev/budget-spender:latest
         restart: "unless-stopped"
 #        environment:
 #            portHttp: 1304 #internal port on which the application should run in the docker image.
