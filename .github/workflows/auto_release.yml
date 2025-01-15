@@ -22,20 +22,22 @@ jobs:
         with:
           node-version: 18
       
-      - name: Install Dependencies
-        run: npm install
-      
-      - name: Build for production
-        run: npm run prepare_dist & webpack --config webpack_config/build.production.js
-      
       - name: Create tag
         uses: butlerlogic/action-autotag@1.1.2
         id: autotag
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+            GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          strategy: package
-          tag_prefix: "v"
+            strategy: package
+            tag_prefix: "v"
+      
+      - name: Install Dependencies
+        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
+        run: npm install
+      
+      - name: Build for production
+        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
+        run: npm run prepare_dist & webpack --config webpack_config/build.production.js
       
       - name: Log in to Docker Hub
         if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
