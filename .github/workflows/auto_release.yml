@@ -63,5 +63,5 @@ jobs:
           push: true
           tags: 
             - ${{ steps.autotag.outputs.tagname  }}
-            - "jodlidev/budget-spender:latest"
+            - jodlidev/budget-spender:latest
           labels: ${{ steps.meta.outputs.labels }}
