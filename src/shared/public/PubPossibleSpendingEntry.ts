@@ -25,6 +25,7 @@ export class PubPossibleSpendingEntry extends BasePublicTable {
 	public spendingName: string = ""
 	public homepage: string = ""
 	public spendingUrl: string = ""
+	public iconDataUrl: string = ""
 	
 	public enabled: boolean = true
 	public spendingSum: number = 0

@@ -16,6 +16,7 @@ import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
+import {ImageUpload} from "../../widgets/ImageUpload";
 
 interface NeedsSpendingEntryInformation {
 	possibleSpendingEntry: PubPossibleSpendingEntry
@@ -37,7 +38,7 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	private possibleSpendingLineView(entry: PubPossibleSpendingEntry, addedAt?: number): Vnode {
 		return <div class="horizontal fillSpace possibleSpendingEntry">
-			{ !addedAt &&
+			{ addedAt === undefined &&
 				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry)) }
 			
 			{ entry.homepage.length != 0
@@ -55,7 +56,10 @@ export class Dashboard extends LoggedInBasePage {
 			<div class="fillSpace">
 				{
 					this.possibleSpendingDropdown(
-						<span>{ entry.spendingName }</span>,
+						<div class="horizontal vAlignCenter">
+							{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
+							{ entry.spendingName }
+						</div>,
 						entry,
 						addedAt
 					)
@@ -81,7 +85,7 @@ export class Dashboard extends LoggedInBasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastSpending")}</small>
-					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nextUp")}</span>
+					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nothingYet")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
@@ -157,7 +161,10 @@ export class Dashboard extends LoggedInBasePage {
 						<div class="subSurface textCentered spendingHeader">{info.needsSpendingEntry.amount}{this.user?.currency}</div>
 						{
 							this.possibleSpendingDropdown(
-								<div class="textCentered">{info.possibleSpendingEntry.spendingName}</div>,
+								<div class="horizontal fullLine vAlignCenter hAlignCenter">
+									{ info.possibleSpendingEntry.iconDataUrl && <img class="icon" src={ info.possibleSpendingEntry.iconDataUrl } alt=""/> }
+									{info.possibleSpendingEntry.spendingName}
+								</div>,
 								info.possibleSpendingEntry,
 								info.needsSpendingEntry.addedAt
 							)
@@ -206,7 +213,7 @@ export class Dashboard extends LoggedInBasePage {
 						site: this.site,
 						hideRefresh: true,
 						addOptions: {
-							columns: ["spendingName", "homepage", "spendingUrl"],
+							columns: ["spendingName", "homepage", "spendingUrl", "iconDataUrl",],
 							onAdded: async () => {
 								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
@@ -218,17 +225,24 @@ export class Dashboard extends LoggedInBasePage {
 							}
 						},
 						editOptions: {
-							columns: ["spendingName", "homepage", "spendingUrl", "enabled"],
+							columns: ["spendingName", "homepage", "spendingUrl", "iconDataUrl", "enabled"],
 							onChanged: async () => {
 								await this.waitingListCallback.reload()
 								await this.loadNeededSpending()
+							},
+							customInputView: (key, value, setValue) => {
+								switch(key) {
+									case "iconDataUrl":
+										return ImageUpload(value.toString(), 50, setValue)
+								}
+								
 							}
 						},
 						deleteOptions: {
-							onDeleted: async () => {
+							onDeleted: async() => {
 								await this.waitingListCallback.reload()
 								await this.loadNeededSpending()
-							} 
+							}
 						},
 						getEntryView: entry => this.possibleSpendingLineView(entry.item)
 					})

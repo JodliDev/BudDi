@@ -36,11 +36,13 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	addOptions?: {
 		columns: (keyof EntryT)[],
 		onAdded?: () => void,
+		customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode | undefined,
 		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	}
 	editOptions?: {
 		columns: (keyof EntryT)[],
 		onChanged?: () => void,
+		customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode<any, any> | undefined,
 		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	},
 	customOptions?: Vnode<any, unknown>
@@ -168,6 +170,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 							tableClass: options.tableClass,
 							columns: options.addOptions!.columns,
 							onFinish: this.addItem.bind(this),
+							customInputView: options.addOptions!.customInputView,
 							getValueError: options.addOptions!.getValueError
 						})
 					)
@@ -192,7 +195,8 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 										tableClass: options.tableClass,
 										columns: options.editOptions!.columns,
 										onFinish: this.editItem.bind(this, id),
-										getValueError: options.addOptions!.getValueError,
+										customInputView: options.editOptions!.customInputView,
+										getValueError: options.editOptions!.getValueError,
 										defaults: entry.item
 									})
 								)

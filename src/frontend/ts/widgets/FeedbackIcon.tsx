@@ -45,7 +45,7 @@ class FeedbackIconComponent implements Component<FeedbackIconOptions, unknown> {
 	}
 }
 
-export function FeedbackIcon(callback: FeedbackCallBack, reserveSpace: boolean = false) {
+export function FeedbackIcon(callback: FeedbackCallBack, reserveSpace: boolean = false): Vnode<FeedbackIconOptions, unknown> {
 	return m(FeedbackIconComponent, {
 		reserveSpace: reserveSpace,
 		callback: callback

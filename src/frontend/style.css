@@ -7,6 +7,7 @@
 	--color-accent-light: #fdd6b2;
 	--radius: 10px;
 	--btnSize: 24px;
+	--maxIconSize: 20px;
 }
 
 @keyframes fade-in {
@@ -118,6 +119,11 @@ form {
 				border-color: var(--color-accent-dark);
 				color: var(--color-accent-dark);
 			}
+		}
+		&[type=file] {
+			max-width: 200px;
+			padding-left: 5px;
+			padding-right: 5px;
 		}
 	}
 	
@@ -262,4 +268,10 @@ form {
 		border: 1px solid var(--color-surface-border);
 		text-align: center;
 	}
+}
+
+.icon {
+	margin: 2px;
+	max-width: var(--maxIconSize);
+	max-height: var(--maxIconSize);
 }
