@@ -1,9 +1,13 @@
 .siteHeader {
+	max-width: 100%;
+	min-height: 40px;
 	padding-top: 10px;
 	display: flex;
 	align-items: flex-end;
 	background-color: var(--color-surface);
 	border-bottom: 1px solid var(--color-surface-border);
+	overflow-x: auto;
+	overflow-y: hidden;
 	
 	.navigation {
 		display: flex;
@@ -28,5 +32,6 @@
 	
 	.logoutBtn {
 		padding: 5px 10px;
+		margin-left: 20px;
 	}
 }
