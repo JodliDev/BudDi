@@ -200,6 +200,7 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubWaitingEntry,
 						site: this.site,
 						hideRefresh: true,
+						order: "spendingName" as keyof PubWaitingEntry,
 						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
 						customOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
@@ -215,6 +216,7 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubPossibleSpendingEntry,
 						site: this.site,
 						hideRefresh: true,
+						order: "spendingName",
 						addOptions: {
 							columns: ["spendingName", "homepage", "spendingUrl", "iconDataUrl",],
 							onAdded: async () => {
@@ -244,7 +246,6 @@ export class Dashboard extends LoggedInBasePage {
 									case "iconDataUrl":
 										return ImageUpload(value.toString(), 50, setValue)
 								}
-								
 							}
 						},
 						deleteOptions: {
