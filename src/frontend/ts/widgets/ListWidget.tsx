@@ -36,7 +36,7 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	addOptions?: {
 		columns: (keyof EntryT)[],
 		onAdded?: () => void,
-		customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode | undefined,
+		customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode<any, any> | undefined,
 		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	}
 	editOptions?: {
@@ -177,7 +177,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 				}
 				{ options.customOptions && options.customOptions }
 			</h3>
-			<div class={ `${this.isLoading ? "opacity" : ""} fillSpace subSurface vertical hAlignStretched overflowY textCentered` }>
+			<div class={ `${this.isLoading ? "opacity" : ""} fillSpace subSurface vertical hAlignStretched textCentered` }>
 				{ this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
 					: this.items.map((entry) => {

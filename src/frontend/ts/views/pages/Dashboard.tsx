@@ -220,6 +220,12 @@ export class Dashboard extends LoggedInBasePage {
 							onAdded: async () => {
 								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
+							customInputView: (key, value, setValue) => {
+								switch(key) {
+									case "iconDataUrl":
+										return ImageUpload(value.toString(), 50, setValue)
+								}
+							},
 							getValueError: (key, value) => {
 								switch(key) {
 									case "spendingName":
