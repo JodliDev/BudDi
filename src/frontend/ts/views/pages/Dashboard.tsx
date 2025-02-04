@@ -26,6 +26,7 @@ interface NeedsSpendingEntryInformation {
 export class Dashboard extends LoggedInBasePage {
 	private needsSpendingEntries: NeedsSpendingEntryInformation[] = []
 	private waitingListCallback: ListWidgetCallback = new ListWidgetCallback()
+	private allEntriesCallback: ListWidgetCallback = new ListWidgetCallback()
 	private dropdownOptions: DropdownOptions = {
 		manualPositioning: true,
 		disableMenuPointerEvents: true
@@ -142,7 +143,7 @@ export class Dashboard extends LoggedInBasePage {
 		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsSpendingEntry)) as ConfirmResponseMessage
 		if(response.success) {
 			await this.loadNeededSpending()
-			await this.waitingListCallback.reload()
+			await this.allEntriesCallback.reload()
 		}
 	}
 	
@@ -254,6 +255,7 @@ export class Dashboard extends LoggedInBasePage {
 								await this.loadNeededSpending()
 							}
 						},
+						callback: this.allEntriesCallback,
 						getEntryView: entry => this.possibleSpendingLineView(entry.item)
 					})
 				}

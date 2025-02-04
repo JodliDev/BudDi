@@ -13,7 +13,7 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [data] = db.selectJoinedTable(
 			NeedsSpendingEntry,
-			["possibleSpendingEntryId", "needsSpendingEntryId"],
+			["possibleSpendingEntryId", "needsSpendingEntryId", "amount"],
 			[
 				{
 					joinedTable: PossibleSpendingEntry,
