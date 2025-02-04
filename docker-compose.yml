@@ -6,7 +6,7 @@ services:
 #            portHttp: 1304 #internal port on which the application should run in the docker image.
 #            lang: "en" #Language code to select a translation for the frontend (currently there is only "en").
 #            pathWs: "/websocket" #Relative path on which the websocket should be accessible.
-#            keepAliveTimeoutMs: 50000 #Miliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g. nginx closes connections after one minute).
+#            keepAliveTimeoutMs: 50000 #Milliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g. nginx closes connections after one minute).
         volumes:
             - ./config:/budgetSpender/dist/config:rw
         ports:

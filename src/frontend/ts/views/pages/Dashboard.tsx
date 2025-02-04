@@ -196,7 +196,7 @@ export class Dashboard extends LoggedInBasePage {
 			<div class="horizontal hAlignCenter wrapContent">
 				{
 					ListWidget({
-						title: Lang.get("nextUp"),
+						title: Lang.get("waitingToBeChosen"),
 						tableClass: PubWaitingEntry,
 						site: this.site,
 						hideRefresh: true,
