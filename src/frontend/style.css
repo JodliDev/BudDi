@@ -160,6 +160,9 @@ form {
 	text-decoration: underline;
 }
 
+.overflowHidden {
+	overflow: hidden;
+}
 .overflowY {
 	overflow-y: auto;
 }

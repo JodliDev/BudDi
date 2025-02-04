@@ -37,7 +37,7 @@ export class Dashboard extends LoggedInBasePage {
 		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
 	}
 	private possibleSpendingLineView(entry: PubPossibleSpendingEntry, addedAt?: number): Vnode {
-		return <div class="horizontal fillSpace possibleSpendingEntry">
+		return <div class="horizontal fillSpace possibleSpendingEntry overflowHidden">
 			{ addedAt === undefined &&
 				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry)) }
 			
