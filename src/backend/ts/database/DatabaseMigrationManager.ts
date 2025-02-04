@@ -79,7 +79,7 @@ export class DatabaseMigrationManager {
 	}
 	
 	public async migrateTables(fromVersion: number, options: Options): Promise<void> {
-		if(fromVersion < this.dbInstructions.version)
+		if(fromVersion > this.dbInstructions.version)
 			throw new Error("Downgrading is not supported")
 		console.log(`Migrating from version ${fromVersion} to ${this.dbInstructions.version}`)
 		
