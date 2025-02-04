@@ -44,6 +44,11 @@
 		width: 45vw;
 	}
 }
+@media (width > 1500px) {
+	.page.Dashboard .listWidget {
+		width: 700px;
+	}
+}
 .spendingEntry {
 	overflow: hidden;
 	text-overflow: ellipsis;

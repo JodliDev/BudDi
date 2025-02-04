@@ -166,7 +166,7 @@ export class Dashboard extends LoggedInBasePage {
 							this.possibleSpendingDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
 									{ info.possibleSpendingEntry.iconDataUrl && <img class="icon" src={ info.possibleSpendingEntry.iconDataUrl } alt=""/> }
-									{info.possibleSpendingEntry.spendingName}
+									{ info.possibleSpendingEntry.spendingName }
 								</div>,
 								info.possibleSpendingEntry,
 								info.needsSpendingEntry.addedAt
