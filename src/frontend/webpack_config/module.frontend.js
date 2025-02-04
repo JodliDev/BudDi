@@ -2,6 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require('terser-webpack-plugin');
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 module.exports = {
 	optimization: {
@@ -30,7 +31,22 @@ module.exports = {
 		}),
 		new MiniCssExtractPlugin({
 			filename: '[name].[contenthash].css',
-		})
+		}),
+		
+		new FaviconsWebpackPlugin( {
+			logo: path.join(__dirname, '../../../images/logo.svg'),
+			cache: true,
+			favicons: {
+				icons: {
+					android: false,
+					appleIcon: false,
+					appleStartup: false,
+					favicons: true,
+					windows: false,
+					yandex: false,
+				}
+			}
+		}),
 	],
 	module: {
 		rules: [
