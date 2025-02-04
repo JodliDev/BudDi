@@ -11,7 +11,7 @@ import {BudgetHistory} from "./dataClasses/BudgetHistory";
 import {PreMigrationData} from "./DatabaseMigrationManager";
 
 export class DatabaseInstructions {
-	public version: number = 6
+	public version: number = 7
 	
 	public tables: Class<BasePublicTable>[] = [
 		PossibleSpendingEntry,
@@ -68,6 +68,11 @@ export class DatabaseInstructions {
 					"possibleSpendingEntryId": "donationEntryId"
 				}
 			}
+		}
+		
+		if(fromVersion <= 6) {
+			const statement = db.prepare("UPDATE PossibleSpendingEntry SET spendingSum = 0 WHERE spendingSum IS NULL")
+			statement.run()
 		}
 		
 		return output
