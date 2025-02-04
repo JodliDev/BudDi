@@ -22,7 +22,7 @@ writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encodin
 
 DatabaseManager.access(new DatabaseInstructions(), options)
 	.then((dbManager) => {
-		const scheduler = new DailyScheduleManager(dbManager)
+		const scheduler = new DailyScheduleManager()
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {
 			const oldestLoginSession = Date.now() - LOGIN_SESSION_MAX_AGE

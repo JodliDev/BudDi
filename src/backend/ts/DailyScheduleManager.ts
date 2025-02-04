@@ -13,10 +13,8 @@ const oneDay = 1000 * 60 * 60 * 24
 
 export class DailyScheduleManager {
 	private scheduleEntries: ScheduleEntry[] = [];
-	private readonly db: DatabaseManager
 	
-	constructor(db: DatabaseManager) {
-		this.db = db
+	constructor() {
 		this.scheduleLoop()
 	}
 	

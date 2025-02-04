@@ -20,13 +20,9 @@ module.exports = {
 		extensions: [".ts", ".tsx", ".js"],
 	},
 	output: {
-		// path: "./dist",
 		path: path.join(__dirname, '../../../dist/frontend'),
 		clean: true,
-		// filename: "[name].js",
-		// filename: "index.js",
 		filename: '[name].[contenthash].js',
-		// filename: './frontend.js'
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
