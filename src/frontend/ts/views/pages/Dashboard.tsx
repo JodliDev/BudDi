@@ -74,7 +74,10 @@ export class Dashboard extends LoggedInBasePage {
 				{ clickElement }
 			</div>,
 			() => <div class="surface vertical possibleSpendingDropdownContent">
-				<h3 class="textCentered">{ entry.spendingName }</h3>
+				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
+					{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
+					<span>{ entry.spendingName }</span>
+				</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("spendingCount")}</small>
 					<span>{entry.spendingTimes}</span>
