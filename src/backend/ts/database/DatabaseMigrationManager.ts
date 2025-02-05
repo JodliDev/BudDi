@@ -80,7 +80,7 @@ export class DatabaseMigrationManager {
 	
 	public async migrateTables(fromVersion: number, options: Options): Promise<void> {
 		if(fromVersion > this.dbInstructions.version)
-			throw new Error("Downgrading is not supported")
+			throw new Error(`Downgrading is not supported (from ${fromVersion} to ${this.dbInstructions.version})`)
 		console.log(`Migrating from version ${fromVersion} to ${this.dbInstructions.version}`)
 		
 		const db = this.db
@@ -105,10 +105,17 @@ export class DatabaseMigrationManager {
 			
 			//Recreate tables that have been renamed:
 			console.log(`Dropping renamed tables...`)
-			for (const newTableName in this.renamedTables) {
+			for(const newTableName in this.renamedTables) {
 				const structure = this.sqlGenerator.tables[newTableName]
 				this.recreateTable(structure)
 			}
+			
+			//move data from renamed columns:
+			for(const tableName in this.renamedColumns) {
+				const structure = this.sqlGenerator.tables[tableName] ?? this.sqlGenerator.tables[this.renamedTables[tableName]] 
+				this.recreateTable(structure)
+			}
+			
 			
 			//Find changed foreign keys:
 			if(databaseExists)
@@ -151,6 +158,10 @@ export class DatabaseMigrationManager {
 	 */
 	private recreateTable(structure: TableStructure<any>) {
 		const tableName = BasePublicTable.getName(structure.table)
+		
+		if(this.droppedTables.hasOwnProperty(tableName))
+			return
+		
 		const backupTableName = this.getBackupTableName(tableName);
 		
 		if(this.tableExists(backupTableName)) { // at this point all tables still have their old name
