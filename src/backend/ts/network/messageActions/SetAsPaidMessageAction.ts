@@ -3,38 +3,38 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
-import {NeedsSpendingEntry} from "../../database/dataClasses/NeedsSpendingEntry";
+import {Budget} from "../../database/dataClasses/Budget";
+import {NeedsPayment} from "../../database/dataClasses/NeedsPayment";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
+import {History} from "../../database/dataClasses/History";
 
 // noinspection JSUnusedGlobalSymbols
 export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [data] = db.selectJoinedTable(
-			NeedsSpendingEntry,
-			["possibleSpendingEntryId", "needsSpendingEntryId", "amount"],
+			NeedsPayment,
+			["budgetId", "needsPaymentId", "amount"],
 			[
 				{
-					joinedTable: PossibleSpendingEntry,
+					joinedTable: Budget,
 					select: ["spendingName"],
-					on: `${column(NeedsSpendingEntry, "possibleSpendingEntryId")} = ${column(PossibleSpendingEntry, "possibleSpendingEntryId")}`,
+					on: `${column(NeedsPayment, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
-			`${column(NeedsSpendingEntry, "userId")} = ${session.userId} AND ${column(NeedsSpendingEntry, "needsSpendingEntryId")} = ${this.data.needsSpendingEntry}`,
+			`${column(NeedsPayment, "userId")} = ${session.userId} AND ${column(NeedsPayment, "needsPaymentId")} = ${this.data.needsPaymentId}`,
 			1,
 		)
 		const needsSpendingEntry = data.item
-		const spendingEntry = data.joined["PossibleSpendingEntry"] as PossibleSpendingEntry
+		const spendingEntry = data.joined["Budget"] as Budget
 		
 		if(!needsSpendingEntry) {
 			session.send(new ConfirmResponseMessage(this.data, false))
 			return
 		}
 		
-		db.delete(NeedsSpendingEntry, `${column(NeedsSpendingEntry, "needsSpendingEntryId")} = ${needsSpendingEntry.needsSpendingEntryId}`)
+		db.delete(NeedsPayment, `${column(NeedsPayment, "needsPaymentId")} = ${needsSpendingEntry.needsPaymentId}`)
 		db.update(
-			PossibleSpendingEntry, 
+			Budget, 
 			{
 				"+=": {
 					lastSpending: Date.now(),
@@ -42,9 +42,9 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 					spendingTimes: 1
 				}
 			},
-			`${column(PossibleSpendingEntry, "possibleSpendingEntryId")} = ${needsSpendingEntry.possibleSpendingEntryId}`
+			`${column(Budget, "budgetId")} = ${needsSpendingEntry.budgetId}`
 		)
-		BudgetHistory.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.spendingName])
+		History.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.spendingName])
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }

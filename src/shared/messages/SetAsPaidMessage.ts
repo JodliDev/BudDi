@@ -1,12 +1,12 @@
 import {ConfirmMessage} from "./ConfirmMessage";
-import {PubNeedsSpendingEntry} from "../public/PubNeedsSpendingEntry";
+import {PubNeedsPayment} from "../public/PubNeedsPayment";
 
 export class SetAsPaidMessage extends ConfirmMessage {
-	public readonly needsSpendingEntry: number | bigint
+	public readonly needsPaymentId: number | bigint
 	constructor(
-		entry: PubNeedsSpendingEntry
+		entry: PubNeedsPayment
 	) {
 		super()
-		this.needsSpendingEntry = entry.needsSpendingEntryId
+		this.needsPaymentId = entry.needsPaymentId
 	}
 }

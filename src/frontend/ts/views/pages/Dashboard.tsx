@@ -1,10 +1,10 @@
 import m, { Vnode } from "mithril";
 import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {Lang} from "../../../../shared/Lang";
-import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
-import {PubPossibleSpendingEntry} from "../../../../shared/public/PubPossibleSpendingEntry";
+import {PubWaiting} from "../../../../shared/public/PubWaiting";
+import {PubBudget} from "../../../../shared/public/PubBudget";
 import {BtnWidget} from "../../widgets/BtnWidget";
-import {PubNeedsSpendingEntry} from "../../../../shared/public/PubNeedsSpendingEntry";
+import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
 import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
@@ -19,8 +19,8 @@ import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ImageUpload} from "../../widgets/ImageUpload";
 
 interface NeedsSpendingEntryInformation {
-	possibleSpendingEntry: PubPossibleSpendingEntry
-	needsSpendingEntry: PubNeedsSpendingEntry
+	possibleSpendingEntry: PubBudget
+	needsSpendingEntry: PubNeedsPayment
 }
 
 export class Dashboard extends LoggedInBasePage {
@@ -37,7 +37,7 @@ export class Dashboard extends LoggedInBasePage {
 	private positionPossibleSpendingInfo(event: MouseEvent) {
 		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
 	}
-	private possibleSpendingLineView(entry: PubPossibleSpendingEntry, addedAt?: number): Vnode {
+	private possibleSpendingLineView(entry: PubBudget, addedAt?: number): Vnode {
 		return <div class="horizontal fillSpace possibleSpendingEntry overflowHidden">
 			{ addedAt === undefined &&
 				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry)) }
@@ -68,7 +68,7 @@ export class Dashboard extends LoggedInBasePage {
 			</div>
 		</div>
 	}
-	private possibleSpendingDropdown(clickElement: Vnode, entry: PubPossibleSpendingEntry, addedAt?: number): Vnode<any, unknown> {
+	private possibleSpendingDropdown(clickElement: Vnode, entry: PubBudget, addedAt?: number): Vnode<any, unknown> {
 		return MouseOverDropdownMenu(
 			"possibleSpendingEntry",
 			<div onmousemove={this.positionPossibleSpendingInfo.bind(this)} class="possibleSpendingDropdownClicker">
@@ -102,7 +102,7 @@ export class Dashboard extends LoggedInBasePage {
 		)
 	}
 	
-	private async addToWaitList(entry: PubPossibleSpendingEntry): Promise<void> {
+	private async addToWaitList(entry: PubBudget): Promise<void> {
 		const response = await this.site.socket.sendAndReceive(new AddToWaitingMessage(entry))
 		if(response.success)
 			await this.waitingListCallback.reload()
@@ -120,20 +120,20 @@ export class Dashboard extends LoggedInBasePage {
 		await this.waitingListCallback.reload()
 	}
 	
-	private async removeFromSpending(entry: PubNeedsSpendingEntry): Promise<void> {
+	private async removeFromSpending(entry: PubNeedsPayment): Promise<void> {
 		if(!confirm(Lang.get("confirmDelete")))
 			return
-		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsSpendingEntry, entry.needsSpendingEntryId))
+		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsPayment, entry.needsPaymentId))
 		
 		await this.loadNeededSpending()
 	}
 	
 	private async loadNeededSpending(): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsSpendingEntry, 0, 100)) as ListResponseMessage<PubNeedsSpendingEntry>
+		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsPayment, 0, 100)) as ListResponseMessage<PubNeedsPayment>
 		if(response.success)
 			this.needsSpendingEntries = response.list.map(entry => {
 				return {
-					possibleSpendingEntry: entry.joined["PossibleSpendingEntry"] as PubPossibleSpendingEntry,
+					possibleSpendingEntry: entry.joined["Budget"] as PubBudget,
 					needsSpendingEntry: entry.item
 				}
 			})
@@ -198,23 +198,23 @@ export class Dashboard extends LoggedInBasePage {
 				{
 					ListWidget({
 						title: Lang.get("waitingToBeChosen"),
-						tableClass: PubWaitingEntry,
+						tableClass: PubWaiting,
 						site: this.site,
 						hideRefresh: true,
-						order: "spendingName" as keyof PubWaitingEntry,
+						order: "spendingName" as keyof PubWaiting,
 						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
 						customOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
 						callback: this.waitingListCallback,
 						getEntryView: entry =>
-							this.possibleSpendingLineView(entry.joined.PossibleSpendingEntry as PubPossibleSpendingEntry, entry.item.addedAt)
+							this.possibleSpendingLineView(entry.joined.Budget as PubBudget, entry.item.addedAt)
 					})
 				}
 				
 				{
-					ListWidget<PubPossibleSpendingEntry>({
+					ListWidget<PubBudget>({
 						title: Lang.get("allEntries"),
-						tableClass: PubPossibleSpendingEntry,
+						tableClass: PubBudget,
 						site: this.site,
 						hideRefresh: true,
 						order: "spendingName",
@@ -232,7 +232,7 @@ export class Dashboard extends LoggedInBasePage {
 							getValueError: (key, value) => {
 								switch(key) {
 									case "spendingName":
-										return (value as string).length < PubPossibleSpendingEntry.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
+										return (value as string).length < PubBudget.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
 								}
 							}
 						},

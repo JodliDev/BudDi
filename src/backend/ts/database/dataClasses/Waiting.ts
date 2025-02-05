@@ -1,17 +1,17 @@
-import {PossibleSpendingEntry} from "./PossibleSpendingEntry";
+import {Budget} from "./Budget";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
-import {PubWaitingEntry} from "../../../../shared/public/PubWaitingEntry";
+import {PubWaiting} from "../../../../shared/public/PubWaiting";
 import {column} from "../column";
 import {ChooseForSpendingMessageAction} from "../../network/messageActions/ChooseForSpendingMessageAction";
 
-export class WaitingEntry extends PubWaitingEntry {
+export class Waiting extends PubWaiting {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		
-		settings.setForeignKey("possibleSpendingEntryId", {
-			table: PossibleSpendingEntry,
-			to: "possibleSpendingEntryId",
+		settings.setForeignKey("budgetId", {
+			table: Budget,
+			to: "budgetId",
 			on_delete: "CASCADE",
 			isPublic: true
 		})
@@ -29,12 +29,12 @@ export class WaitingEntry extends PubWaitingEntry {
 			ChooseForSpendingMessageAction.refillWaitingEntriesIfNeeded(db, session.userId!)
 		})
 		
-		settings.setListFilter(session => `${column(WaitingEntry, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => `${column(Waiting, "userId")} = ${session.userId}`)
 		
 		
 		return settings
 	}
 	
 	public userId: number | bigint = 0
-	public possibleSpendingEntryId: number | bigint = 0
+	public budgetId: number | bigint = 0
 }

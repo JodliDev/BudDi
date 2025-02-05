@@ -1,16 +1,16 @@
-import {PossibleSpendingEntry} from "./PossibleSpendingEntry";
+import {Budget} from "./Budget";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
-import {PubNeedsSpendingEntry} from "../../../../shared/public/PubNeedsSpendingEntry";
+import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
 import {column} from "../column";
 
-export class NeedsSpendingEntry extends PubNeedsSpendingEntry {
+export class NeedsPayment extends PubNeedsPayment {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		
-		settings.setForeignKey("possibleSpendingEntryId", {
-			table: PossibleSpendingEntry,
-			to: "possibleSpendingEntryId",
+		settings.setForeignKey("budgetId", {
+			table: Budget,
+			to: "budgetId",
 			on_delete: "CASCADE",
 			isPublic: true
 		})
@@ -21,7 +21,7 @@ export class NeedsSpendingEntry extends PubNeedsSpendingEntry {
 			on_delete: "CASCADE"
 		})
 		
-		settings.setListFilter(session => `${column(NeedsSpendingEntry, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => `${column(NeedsPayment, "userId")} = ${session.userId}`)
 		settings.setFloatValues("amount")
 		
 		settings.setOnBeforeAdd((data, db, session) => {
@@ -32,5 +32,5 @@ export class NeedsSpendingEntry extends PubNeedsSpendingEntry {
 	}
 	
 	public userId: number | bigint = 0
-	public possibleSpendingEntryId: number | bigint = 0
+	public budgetId: number | bigint = 0
 }

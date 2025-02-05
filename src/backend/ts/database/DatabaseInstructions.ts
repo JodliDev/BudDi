@@ -1,26 +1,26 @@
-import {PossibleSpendingEntry} from "./dataClasses/PossibleSpendingEntry";
-import {WaitingEntry} from "./dataClasses/WaitingEntry";
 import {User} from "./dataClasses/User";
 import {Class} from "../../../shared/Class";
 import {LoginSession} from "./dataClasses/LoginSession";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import BetterSqlite3 from "better-sqlite3";
-import {NeedsSpendingEntry} from "./dataClasses/NeedsSpendingEntry";
 import {Schedule} from "./dataClasses/Schedule";
-import {BudgetHistory} from "./dataClasses/BudgetHistory";
+import {History} from "./dataClasses/History";
 import {PreMigrationData} from "./DatabaseMigrationManager";
+import {NeedsPayment} from "./dataClasses/NeedsPayment";
+import {Waiting} from "./dataClasses/Waiting";
+import {Budget} from "./dataClasses/Budget";
 
 export class DatabaseInstructions {
-	public version: number = 7
+	public version: number = 8
 	
 	public tables: Class<BasePublicTable>[] = [
-		PossibleSpendingEntry,
+		Budget,
 		LoginSession,
 		User,
-		WaitingEntry,
-		NeedsSpendingEntry,
+		Waiting,
+		NeedsPayment,
 		Schedule,
-		BudgetHistory
+		History
 	]
 	
 	/**
@@ -73,6 +73,31 @@ export class DatabaseInstructions {
 		if(fromVersion <= 6) {
 			const statement = db.prepare("UPDATE PossibleSpendingEntry SET spendingSum = 0 WHERE spendingSum IS NULL")
 			statement.run()
+		}
+		
+		if(fromVersion <= 7) {
+			output.migrationTableOrder = ["Budget", "NeedsPayment", "Waiting"]
+			output.tablesForRenaming = {
+				History: "BudgetHistory",
+				NeedsPayment: "NeedsSpendingEntry",
+				Budget: "PossibleSpendingEntry",
+				Waiting: "WaitingEntry",
+			}
+
+			output.columnsForRenaming = {
+				NeedsPayment: {
+					"budgetId": "possibleSpendingEntryId",
+					"needsSpendingId": "needsSpendingEntryId",
+				},
+				Budget: {
+					"budgetId": "possibleSpendingEntryId",
+					"needsSpendingId": "needsSpendingEntryId",
+				},
+				Waiting: {
+					"waitingId": "waitingEntryId",
+					"budgetId": "possibleSpendingEntryId",
+				}
+			}
 		}
 		
 		return output

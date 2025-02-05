@@ -1,12 +1,12 @@
 import {ConfirmMessage} from "./ConfirmMessage";
-import {PubPossibleSpendingEntry} from "../public/PubPossibleSpendingEntry";
+import {PubBudget} from "../public/PubBudget";
 
 export class AddToWaitingMessage extends ConfirmMessage {
 	public readonly spendingEntryId: number | bigint
 	constructor(
-		entry: PubPossibleSpendingEntry
+		entry: PubBudget
 	) {
 		super()
-		this.spendingEntryId = entry.possibleSpendingEntryId
+		this.spendingEntryId = entry.budgetId
 	}
 }

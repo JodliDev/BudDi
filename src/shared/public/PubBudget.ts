@@ -1,10 +1,10 @@
 import {BasePublicTable} from "../BasePublicTable";
 import {LangKey} from "../Lang";
 
-export class PubPossibleSpendingEntry extends BasePublicTable {
+export class PubBudget extends BasePublicTable {
 	public static readonly SPENDING_NAME_MIN_LENGTH = 3
 	
-	getTranslation(key: keyof PubPossibleSpendingEntry): LangKey {
+	getTranslation(key: keyof PubBudget): LangKey {
 		switch(key) {
 			case "spendingName":
 				return "name"
@@ -17,11 +17,11 @@ export class PubPossibleSpendingEntry extends BasePublicTable {
 		}
 	}
 	getPrimaryKey(): keyof this {
-		return "possibleSpendingEntryId"
+		return "budgetId"
 	}
 	
 	
-	public possibleSpendingEntryId: number | bigint = 0
+	public budgetId: number | bigint = 0
 	public spendingName: string = ""
 	public homepage: string = ""
 	public spendingUrl: string = ""

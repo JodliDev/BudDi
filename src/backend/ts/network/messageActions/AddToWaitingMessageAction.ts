@@ -4,16 +4,16 @@ import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
-import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
+import {Budget} from "../../database/dataClasses/Budget";
+import {Waiting} from "../../database/dataClasses/Waiting";
 
 // noinspection JSUnusedGlobalSymbols
 export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [spendingEntry] = db.selectTable(
-			PossibleSpendingEntry, 
-			`${column(PossibleSpendingEntry, "userId")} = ${session.userId} AND ${column(PossibleSpendingEntry, "possibleSpendingEntryId")} = ${this.data.spendingEntryId}`,
+			Budget, 
+			`${column(Budget, "userId")} = ${session.userId} AND ${column(Budget, "budgetId")} = ${this.data.spendingEntryId}`,
 			1
 		)
 		if(!spendingEntry) {
@@ -25,11 +25,11 @@ export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitin
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 	
-	public static createEntry(db: DatabaseManager, userId: number | bigint, possibleSpendingEntry: PossibleSpendingEntry) {
-		db.insert(WaitingEntry, {
+	public static createEntry(db: DatabaseManager, userId: number | bigint, possibleSpendingEntry: Budget) {
+		db.insert(Waiting, {
 			userId: userId,
 			addedAt: Date.now(),
-			possibleSpendingEntryId: possibleSpendingEntry.possibleSpendingEntryId,
+			budgetId: possibleSpendingEntry.budgetId,
 		})
 		
 	}

@@ -1,11 +1,11 @@
 import {BasePublicTable} from "../BasePublicTable";
 
-export class PubNeedsSpendingEntry extends BasePublicTable {
+export class PubNeedsPayment extends BasePublicTable {
 	getPrimaryKey(): keyof this {
-		return "needsSpendingEntryId"
+		return "needsPaymentId"
 	}
 	
-	public needsSpendingEntryId: number | bigint = 0
+	public needsPaymentId: number | bigint = 0
 	public addedAt: number = 0
 	public amount: number = 0
 }

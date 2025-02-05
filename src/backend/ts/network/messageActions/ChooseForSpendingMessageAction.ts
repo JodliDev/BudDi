@@ -3,11 +3,11 @@ import {DatabaseManager} from "../../database/DatabaseManager";
 import {column} from "../../database/column";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {PossibleSpendingEntry} from "../../database/dataClasses/PossibleSpendingEntry";
-import {NeedsSpendingEntry} from "../../database/dataClasses/NeedsSpendingEntry";
-import {WaitingEntry} from "../../database/dataClasses/WaitingEntry";
+import {Budget} from "../../database/dataClasses/Budget";
+import {NeedsPayment} from "../../database/dataClasses/NeedsPayment";
+import {Waiting} from "../../database/dataClasses/Waiting";
 import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
-import {BudgetHistory} from "../../database/dataClasses/BudgetHistory";
+import {History} from "../../database/dataClasses/History";
 import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
 
 // noinspection JSUnusedGlobalSymbols
@@ -20,50 +20,50 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 	
 	public static addNewChoice(db: DatabaseManager, userId: number | bigint, amount: number): boolean {
 		const [data] = db.selectJoinedTable(
-			WaitingEntry,
-			["possibleSpendingEntryId", "waitingEntryId"],
+			Waiting,
+			["budgetId", "waitingId"],
 			[
 				{
-					joinedTable: PossibleSpendingEntry,
+					joinedTable: Budget,
 					select: ["spendingName"],
-					on: `${column(WaitingEntry, "possibleSpendingEntryId")} = ${column(PossibleSpendingEntry, "possibleSpendingEntryId")}`,
+					on: `${column(Waiting, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
-			`${column(WaitingEntry, "userId")} = ${userId}`,
+			`${column(Waiting, "userId")} = ${userId}`,
 			1,
 			undefined,
 			"RANDOM()"
 		)
 		const waitingEntry = data.item
-		const possibleSpendingEntry = data.joined["PossibleSpendingEntry"] as PossibleSpendingEntry
+		const possibleSpendingEntry = data.joined["Budget"] as Budget
 		
 		if(!waitingEntry)
 			return false
 		
 		const [needsSpendingEntry] = db.selectTable(
-			NeedsSpendingEntry,
-			`${column(NeedsSpendingEntry, "possibleSpendingEntryId")} = ${waitingEntry.possibleSpendingEntryId}`,
+			NeedsPayment,
+			`${column(NeedsPayment, "budgetId")} = ${waitingEntry.budgetId}`,
 			1
 		)
 		
 		if(needsSpendingEntry) {
 			db.update(
-				NeedsSpendingEntry, 
+				NeedsPayment, 
 				{"+=": {amount: amount}}, 
-				`${column(NeedsSpendingEntry, "possibleSpendingEntryId")} = ${waitingEntry.possibleSpendingEntryId}`
+				`${column(NeedsPayment, "budgetId")} = ${waitingEntry.budgetId}`
 			)
 		}
 		else {
-			db.insert(NeedsSpendingEntry, {
-				possibleSpendingEntryId: waitingEntry.possibleSpendingEntryId,
+			db.insert(NeedsPayment, {
+				budgetId: waitingEntry.budgetId,
 				userId: userId,
 				addedAt: Date.now(),
 				amount: amount
 			})
 		}
-		db.delete(WaitingEntry, `${column(WaitingEntry, "waitingEntryId")} = ${waitingEntry.waitingEntryId}`)
+		db.delete(Waiting, `${column(Waiting, "waitingId")} = ${waitingEntry.waitingId}`)
 		
-		BudgetHistory.addHistory(db, userId, "historyChooseForSpending", [possibleSpendingEntry.spendingName])
+		History.addHistory(db, userId, "historyChooseForSpending", [possibleSpendingEntry.spendingName])
 		
 		this.refillWaitingEntriesIfNeeded(db, userId)
 		
@@ -71,18 +71,18 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 	}
 	
 	public static refillWaitingEntriesIfNeeded(db: DatabaseManager, userId: number | bigint) {
-		const entriesLeft = db.getCount(WaitingEntry, `${column(WaitingEntry, "userId")} = ${userId}`)
+		const entriesLeft = db.getCount(Waiting, `${column(Waiting, "userId")} = ${userId}`)
 		if(entriesLeft != 0)
 			return
 		
 		const possibleSpendingEntries = db.selectTable(
-			PossibleSpendingEntry,
-			`${column(PossibleSpendingEntry, "userId")} = ${userId} AND ${column(PossibleSpendingEntry, "enabled")} = 1`
+			Budget,
+			`${column(Budget, "userId")} = ${userId} AND ${column(Budget, "enabled")} = 1`
 		)
 		for(const possibleSpendingEntry of possibleSpendingEntries) {
 			AddToWaitingMessageAction.createEntry(db, userId, possibleSpendingEntry)
 		}
 		
-		BudgetHistory.addHistory(db, userId, "historyRefillList", [])
+		History.addHistory(db, userId, "historyRefillList", [])
 	}
 }
