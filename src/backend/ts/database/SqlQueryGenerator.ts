@@ -125,7 +125,7 @@ export class SqlQueryGenerator {
 	}
 	
 	public static getDropTableSql(tableName: string) {
-		return `DROP TABLE IF EXISTS ${tableName};\n`
+		return `DROP TABLE IF EXISTS ${tableName};`
 	}
 	
 	public static toSqlValue(value: unknown): string | number | null {
@@ -144,10 +144,13 @@ export class SqlQueryGenerator {
 	}
 	
 	public static createNewColumnSql(table: string, columnInfo: ColumnInfo): string {
-		return `ALTER TABLE ${table} ADD ${SqlQueryGenerator.getColumnDefinitionSql(columnInfo)};\n`
+		return `ALTER TABLE ${table} ADD ${SqlQueryGenerator.getColumnDefinitionSql(columnInfo)};`
 	}
-	public static modifyColumnSql(table: string, columnInfo: ColumnInfo): string {
-		return `ALTER TABLE ${table} DROP COLUMN ${columnInfo.name}; ${SqlQueryGenerator.createNewColumnSql(table, columnInfo)}`
+	public static createCopyColumnSql(table: string, oldColumnName: string, newColumnName: string): string {
+		return `UPDATE ${table} SET ${oldColumnName} = ${newColumnName};`
+	}
+	public static createDropColumnSql(table: string, columnName: string): string {
+		return `ALTER TABLE ${table} DROP COLUMN ${columnName};`
 	}
 	
 	public static createSelectSql(

@@ -5,22 +5,26 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import BetterSqlite3 from "better-sqlite3";
 import {Schedule} from "./dataClasses/Schedule";
 import {History} from "./dataClasses/History";
-import {PreMigrationData} from "./DatabaseMigrationManager";
+import {Migrations} from "./DatabaseMigrationManager";
 import {NeedsPayment} from "./dataClasses/NeedsPayment";
 import {Waiting} from "./dataClasses/Waiting";
 import {Budget} from "./dataClasses/Budget";
+import {column} from "./column";
 
 export class DatabaseInstructions {
 	public version: number = 8
 	
+	/**
+	 * Order needs to reflect foreign keys
+	 */
 	public tables: Class<BasePublicTable>[] = [
-		Budget,
-		LoginSession,
 		User,
+		LoginSession,
+		Budget,
+		History,
 		Waiting,
 		NeedsPayment,
 		Schedule,
-		History
 	]
 	
 	/**
@@ -28,83 +32,56 @@ export class DatabaseInstructions {
 	 * @param db link to current database for database operations
 	 * @param fromVersion Version of current database
 	 * @param toVersion Version of database after update
-	 * @return See {@link PreMigrationData}
 	 */
 	public preMigration(
 		db: BetterSqlite3.Database,
+		migrations: Migrations,
 		fromVersion: number,
 		toVersion: number
-	): PreMigrationData {
-		const output: PreMigrationData = {}
-		
+	): Record<number, unknown> {
+		const output: Record<number, unknown> = {}
 		if(fromVersion == 2) {
-			output.migrationTableOrder = ["PossibleSpendingEntry", "NeedsSpendingEntry"]
+			migrations.renameTable("DonationHistory", History)
+			migrations.renameTable("NeedsDonationEntry", NeedsPayment)
+			migrations.renameTable("DonationEntry", Budget)
 			
-			output.tablesForRenaming = {
-				BudgetHistory: "DonationHistory",
-				NeedsSpendingEntry: "NeedsDonationEntry",
-				PossibleSpendingEntry: "DonationEntry"
-			}
+			migrations.renameColumn(NeedsPayment, "donationEntryId", "possibleSpendingEntryId")
+			migrations.renameColumn(NeedsPayment, "needsDonationEntryId", "needsSpendingEntryId")
 			
-			output.columnsForRenaming = {
-				NeedsSpendingEntry: {
-					"possibleSpendingEntryId": "donationEntryId",
-					"needsSpendingEntryId": "needsDonationEntryId"
-				},
-				PossibleSpendingEntry: {
-					"needsSpendingEntryId": "needsDonationEntryId",
-					"possibleSpendingEntryId": "donationEntryId",
-					"spendingName": "donationName",
-					"spendingUrl": "donationUrl",
-					"spendingSum": "donationsSum",
-					"spendingTimes": "donationTimes",
-					"lastSpending": "lastDonation"
-				},
-				User: {
-					"spendingAmountType": "donationAmountType",
-					"spendingAmount": "donationAmount"
-				},
-				WaitingEntry: {
-					"possibleSpendingEntryId": "donationEntryId"
-				}
-			}
-		}
-		
-		if(fromVersion <= 6) {
-			const statement = db.prepare("UPDATE PossibleSpendingEntry SET spendingSum = 0 WHERE spendingSum IS NULL")
-			statement.run()
+			migrations.renameColumn(Budget, "donationEntryId", "possibleSpendingEntryId")
+			migrations.renameColumn(Budget, "donationName", "spendingName")
+			migrations.renameColumn(Budget, "donationUrl", "spendingUrl")
+			migrations.renameColumn(Budget, "donationsSum", "spendingSum")
+			migrations.renameColumn(Budget, "donationTimes", "spendingTimes")
+			migrations.renameColumn(Budget, "lastDonation", "lastSpending")
+			
+			// migrations.renameColumn(User, "donationAmountType", "spendingAmountType")
+			// migrations.renameColumn(User, "donationAmount", "spendingAmount")
+			
+			migrations.renameColumn(Waiting, "donationEntryId", "possibleSpendingEntryId")
 		}
 		
 		if(fromVersion <= 7) {
-			output.migrationTableOrder = ["Budget", "NeedsPayment", "Waiting"]
-			output.tablesForRenaming = {
-				History: "BudgetHistory",
-				NeedsPayment: "NeedsSpendingEntry",
-				Budget: "PossibleSpendingEntry",
-				Waiting: "WaitingEntry",
-			}
-
-			output.columnsForRenaming = {
-				NeedsPayment: {
-					"budgetId": "possibleSpendingEntryId",
-					"needsSpendingId": "needsSpendingEntryId",
-				},
-				Budget: {
-					"budgetId": "possibleSpendingEntryId",
-					"needsSpendingId": "needsSpendingEntryId",
-				},
-				Waiting: {
-					"waitingId": "waitingEntryId",
-					"budgetId": "possibleSpendingEntryId",
-				}
-			}
+			migrations.renameTable("BudgetHistory", History)
+			migrations.renameTable("NeedsSpendingEntry", NeedsPayment)
+			migrations.renameTable("PossibleSpendingEntry", Budget)
+			migrations.renameTable("WaitingEntry", Waiting)
+			
+			migrations.renameColumn(NeedsPayment, "possibleSpendingEntryId", "budgetId")
+			migrations.renameColumn(NeedsPayment, "needsSpendingEntryId", "needsPaymentId")
+			
+			migrations.renameColumn(Budget, "possibleSpendingEntryId", "budgetId")
+			
+			migrations.renameColumn(Waiting, "waitingEntryId", "waitingId")
+			migrations.renameColumn(Waiting, "possibleSpendingEntryId", "budgetId")
 		}
 		
 		return output
 	}
 	public postMigration(db: BetterSqlite3.Database, fromVersion: number, toVersion: number, preData: Record<number, unknown>): void {
-	
+		if(fromVersion <= 6) {
+			const statement = db.prepare(`UPDATE ${Budget.name} SET ${column(Budget, "spendingSum", true)} = 0 WHERE ${column(Budget, "spendingSum", true)} IS NULL`)
+			statement.run()
+		}
 	}
-	
-	
 }

@@ -5,63 +5,82 @@ import BetterSqlite3 from "better-sqlite3";
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {Options} from "../Options";
+import {Class} from "../../../shared/Class";
 
-interface TransferEntry {
-	backupTable: string,
-	newTable: string,
-	backupColumns: string[],
-	newColumns: string[],
-	backupIdColumn: string
-	newIdColumn?: string
+interface MigrationInstructions {
+	oldTableName?: string,
+	recreate: boolean
+	
+	/**
+	 * Stores changes to column (0: name in database, last: current name in code)
+	 */
+	renamedColumns: string[][]
 }
 
-export interface PreMigrationData {
-	/**
-	 * A custom Record organised by version that can be used to transfer information to {@link postMigration}
-	 */
-	dataForPostMigration?: Record<number, unknown>
+export class Migrations {
+	private readonly migrationData: Record<string, MigrationInstructions> = {}
 	
-	/**
-	 * Tables that will be renamed. Is usually empty and is meant to be filled by preMigration.
-	 * Structure: { NewTableName: OldTableName }
-	 */
-	tablesForRenaming?: Record<string, string>,
+	private getEntry(newTable: Class<BasePublicTable>): MigrationInstructions {
+		const newTableName = BasePublicTable.getName(newTable)
+		if(!this.migrationData.hasOwnProperty(newTableName)) {
+			this.migrationData[newTableName] = {
+				recreate: false,
+				renamedColumns: []
+			}
+		}
+		return this.migrationData[newTableName]
+	}
 	
-	/**
-	 * Columns that will be renamed. Is usually empty and is meant to be filled by preMigration
-	 * Structure: { TableName: { NewColumnName: OldColumnName } }
-	 */
-	columnsForRenaming?: Record<string, Record<string, string>>,
+	public renameTable(oldTableName: string, newTable: Class<BasePublicTable>) {
+		const entry = this.getEntry(newTable)
+		entry.recreate = true
+		if(!entry.oldTableName)
+			entry.oldTableName = oldTableName
+	}
 	
-	/**
-	 * Table order in which migrations should be run. Tables that are not mentioned will run last
-	 * Needed to prevent foreign key conflicts
-	 */
-	migrationTableOrder?: string[]
+	
+	public recreateTable(newTable: Class<BasePublicTable>) {
+		const entry = this.getEntry(newTable)
+		entry.recreate = true
+	}
+	
+	public renameColumn(table: Class<BasePublicTable>, oldColumn: string, newColumn: string): void {
+		const entry = this.getEntry(table)
+		const existingColumnEntry = entry.renamedColumns.find((entry) => entry[entry.length - 1] == oldColumn)
+		
+		if(existingColumnEntry)
+			existingColumnEntry.push(newColumn)
+		else
+			entry.renamedColumns.push([oldColumn, newColumn])
+	}
+	
+	public getMigrationData(): Record<string, MigrationInstructions> {
+		return this.migrationData
+	}
+	
+	public loopRenamedColumns(tableName: string, callback: (oldColumnName: string, newColumnName: string) => void): void {
+		const migrationEntry = this.migrationData[tableName]
+		
+		//We have to assume that there were multiple version changes in which the column name was changed multiple times
+		//So we only rename from the original name (index 0) to the newest (last index)
+		for(const renamingArray of migrationEntry.renamedColumns) {
+			if(renamingArray.length <= 1)
+				continue
+			const oldColumnName = renamingArray[0]
+			const newColumnName = renamingArray[renamingArray.length - 1]
+			
+			callback(oldColumnName, newColumnName)
+		}
+	}
+	
+	public willBeRecreated(tableName: string): boolean {
+		return this.migrationData[tableName]?.recreate
+	}
 }
 
 export class DatabaseMigrationManager {
+	private migrations = new Migrations()
 	
-	/**
-	 * Tables that will be renamed. Is usually empty and is meant to be filled by preMigration.
-	 * Structure: { NewTableName: OldTableName }
-	 */
-	private renamedTables: Record<string, string> = {};
-	
-	/**
-	 * Columns that will be renamed. Is usually empty and is meant to be filled by preMigration
-	 * Structure: { TableName: { NewColumnName: OldColumnName } }
-	 */
-	private renamedColumns: Record<string, Record<string, string>> = {};
-	
-	/**
-	 * Table order in which migrations should be run. Tables that are not mentioned will run last
-	 * Needed to prevent foreign key conflicts
-	 */
-	private migrationTableOrder: string[] = [];
-	
-	private columnsToTransfer: TransferEntry[] = []
-	private droppedTables: Record<string, boolean> = {}
 	private readonly sqlGenerator: SqlQueryGenerator
 	
 	constructor(
@@ -84,7 +103,6 @@ export class DatabaseMigrationManager {
 		console.log(`Migrating from version ${fromVersion} to ${this.dbInstructions.version}`)
 		
 		const db = this.db
-		const databaseExists = fromVersion != 0
 		
 		//Create backup:
 		const backupName = `from_${fromVersion}_to_${this.dbInstructions.version}`
@@ -93,117 +111,72 @@ export class DatabaseMigrationManager {
 		const backupDb = new BetterSqlite3(backupPath)
 		
 		const transaction = db.transaction(() => {
+			//Disable foreign key constraints for now
+			db.pragma("foreign_keys = OFF")
+			
 			//Run pre migrations:
-			const preMigrationData = this.dbInstructions.preMigration(
+			const dataForPostMigration = this.dbInstructions.preMigration(
 				db,
+				this.migrations,
 				fromVersion,
-				this.dbInstructions.version
+				this.dbInstructions.version,
 			)
-			this.renamedTables = preMigrationData.tablesForRenaming ?? {}
-			this.renamedColumns = preMigrationData.columnsForRenaming ?? {}
-			this.migrationTableOrder = preMigrationData.migrationTableOrder ?? []
-			
-			//Recreate tables that have been renamed:
-			console.log(`Dropping renamed tables...`)
-			for(const newTableName in this.renamedTables) {
-				const structure = this.sqlGenerator.tables[newTableName]
-				this.recreateTable(structure)
-			}
-			
-			//move data from renamed columns:
-			for(const tableName in this.renamedColumns) {
-				const structure = this.sqlGenerator.tables[tableName] ?? this.sqlGenerator.tables[this.renamedTables[tableName]] 
-				this.recreateTable(structure)
-			}
 			
 			
 			//Find changed foreign keys:
-			if(databaseExists)
-				this.migrateForeignKeys(this.sqlGenerator)
+			this.migrateForeignKeys(this.sqlGenerator)
+			
+			
+			//Run Table alterations:
+			const additionalQuery = this.migrateColumns(this.sqlGenerator)
+			if(additionalQuery) {
+				console.log(`Table alterations:\n${additionalQuery}`)
+				db.exec(additionalQuery)
+			}
+			
+			//Rename columns. Needs to happen after migrateColumns()
+			const renameQuery = this.renameColumns()
+			if(renameQuery) {
+				console.log(`Renamed columns:\n${renameQuery}`)
+				db.exec(renameQuery)
+			}
+			
+			//Drop tables that will be recreated:
+			const migrationData = this.migrations.getMigrationData()
+			for(const newTableName in migrationData) {
+				const migrationEntry = migrationData[newTableName]
+				if(!migrationEntry.recreate)
+					continue
+				const query = SqlQueryGenerator.getDropTableSql(migrationEntry.oldTableName ?? newTableName)
+				console.log(`Dropping table ${migrationEntry.oldTableName} for recreation: ${query}`)
+				const statement = this.db.prepare(query)
+				statement.run()
+			}
 			
 			//(re)create tables if needed:
 			this.createTables()
 			
-			//Run Table alterations:
-			if(databaseExists) {
-				const additionalQuery = this.migrateColumns(this.sqlGenerator)
-				if(additionalQuery) {
-					console.log(`Table alterations:\n${additionalQuery}`)
-					db.exec(additionalQuery)
-				}
-			}
-			
 			//Recreate data:
-			this.moveDataFromBackup(backupDb)
+			this.migrateDataFromBackup(backupDb)
 			
 			//Run post migrations:
-			this.dbInstructions.postMigration(db, fromVersion, this.dbInstructions.version, preMigrationData.dataForPostMigration ?? {})
+			this.dbInstructions.postMigration(db, fromVersion, this.dbInstructions.version, dataForPostMigration ?? {})
 			
 			//Update database version:
 			db.pragma(`user_version = ${this.dbInstructions.version}`)
+			
+			//Enable foreign key constraints again
+			db.pragma("foreign_keys = ON")
 		})
 		
 		transaction()
-	}
-	
-	private getBackupTableName(tableName: string): string {
-		return this.renamedTables[tableName] ?? tableName;
-	}
-	
-	/**
-	 * Drops a table and adds all columns that exist in the backup to {@link columnsToTransfer} to be refilled from the backup.
-	 * This method is used mostly to update the structure of a table when its changes can not be migrated through {@link migrateColumns()}
-	 * making use of the fact that the table is automatically recreated when DataMigrationManager starts.
-	 * @param structure the table data that is dropped
-	 */
-	private recreateTable(structure: TableStructure<any>) {
-		const tableName = BasePublicTable.getName(structure.table)
-		
-		if(this.droppedTables.hasOwnProperty(tableName))
-			return
-		
-		const backupTableName = this.getBackupTableName(tableName);
-		
-		if(this.tableExists(backupTableName)) { // at this point all tables still have their old name
-			//find all columns that exist in old and new table:
-			const renamedColumns = this.renamedColumns[tableName] ?? {};
-			const oldColumnList = this.db.pragma(`table_info(${backupTableName})`) as ColumnInfo[]
-			const columnsForMoving = structure.columns
-				.filter(newColumn => oldColumnList
-					.find(oldColumn => oldColumn.name == (renamedColumns[newColumn.name] ?? newColumn.name)) != null
-				)
-				.map(column => column.name)
-			
-			const query = SqlQueryGenerator.getDropTableSql(tableName)
-			const statement = this.db.prepare(query)
-			statement.run()
-			
-			console.log(`Dropped table ${tableName}`)
-			
-			this.droppedTables[tableName] = true
-			this.columnsToTransfer.push({
-				backupTable: backupTableName,
-				newTable: tableName,
-				backupIdColumn: this.getPrimaryKeyColumn(oldColumnList),
-				backupColumns: columnsForMoving.map(columnName => renamedColumns[columnName] ?? columnName),
-				newColumns: columnsForMoving
-			})
-		}
-		else
-			console.log(`Not recreating ${tableName} because it does not exist`)
-	}
-	
-	private tableExists(tableName: string): boolean {
-		const statement = this.db.prepare("SELECT name FROM sqlite_master WHERE name = ? LIMIT 1")
-		const result = statement.get(tableName)
-		return !!result
 	}
 	
 	private migrateForeignKeys(tableStructure: SqlQueryGenerator) {
 		console.log("Migrating foreign keys...")
 		
 		for(const tableName in tableStructure.tables) {
-			if(this.droppedTables[tableName])
+			if(this.migrations.willBeRecreated(tableName))
 				continue
 			const structure = tableStructure.tables[tableName]
 			const newForeignKeys = structure.foreignKeys
@@ -211,8 +184,10 @@ export class DatabaseMigrationManager {
 			const oldForeignKeys = this.db.pragma(`foreign_key_list(${tableName})`) as ForeignKeyInfo<BasePublicTable>[]
 			
 			if(!newForeignKeys) {
-				if(oldForeignKeys?.length)
-					this.recreateTable(structure)
+				if(oldForeignKeys?.length) {
+					console.log(`Found missing foreign keys in ${tableName}!`)
+					this.migrations.recreateTable(structure.table)
+				}
 				
 				continue
 			}
@@ -235,64 +210,51 @@ export class DatabaseMigrationManager {
 				}
 			}
 			
-			if(count != oldForeignKeys.length)
-				this.recreateTable(structure)
+			if(count != oldForeignKeys.length) {
+				console.log(`Found new foreign keys in ${tableName}!`)
+				this.migrations.recreateTable(structure.table)
+			}
 		}
 	}
 	
 	/**
-	 * Checks all columns of a table, creates them if they do not exist in the database and modifies them if needed.
-	 * Also adds all changed columns that exist in the backup to {@link columnsToTransfer} to be refilled from the backup.
+	 * Checks all columns of all tables, creates them if they do not exist in the database and modifies them if needed.
+	 * If types, default values or primary key change, the table is recreated
 	 * @param tableStructure The table whose columns should be migrated.
 	 */
 	private migrateColumns(tableStructure: SqlQueryGenerator): string {
 		let additionalQuery = ""
 		for(const tableName in tableStructure.tables) {
-			if(this.droppedTables[tableName])
+			if(this.migrations.willBeRecreated(tableName))
 				continue
-			
-			const oldTableName = this.getBackupTableName(tableName);
+			let additionalQueryForTable = ""
 			
 			const newTableDefinition = tableStructure.tables[tableName]
 			
-			const oldColumnList = this.db.pragma(`table_info(${oldTableName})`) as ColumnInfo[]
+			const oldColumnList = this.db.pragma(`table_info(${tableName})`) as ColumnInfo[]
 			const oldPrimaryKey = this.getPrimaryKeyColumn(oldColumnList)
 			
 			const newColumnList = newTableDefinition.columns
 			const newPrimaryKey = newTableDefinition.primaryKey
 			
-			const renamedColumns = this.renamedColumns[tableName] ?? {};
-			const backupColumnsToTransfer: string[] = [];
-			const newColumnsToTransfer: string[] = [];
+			if(oldPrimaryKey != newPrimaryKey) {
+				this.migrations.recreateTable(newTableDefinition.table)
+				continue
+			}
 			
 			for(const newColumn of newColumnList) {
-				const oldColumnName = renamedColumns[newColumn.name] ?? newColumn.name;
-				const oldColumn = oldColumnList.find(entry => entry.name == oldColumnName)
+				const oldColumn = oldColumnList.find(entry => entry.name == newColumn.name)
 				
-				if(oldColumn == undefined || oldColumnName != newColumn.name) {
+				if(oldColumn == undefined)
 					additionalQuery += SqlQueryGenerator.createNewColumnSql(tableName, newColumn)
-					if(oldColumn) {
-						backupColumnsToTransfer.push(oldColumnName)
-						newColumnsToTransfer.push(newColumn.name)
-					}
-				}
 				else if(newColumn.type != oldColumn.type || newColumn.dflt_value != oldColumn.dflt_value) {
-					additionalQuery += SqlQueryGenerator.modifyColumnSql(tableName, newColumn)
-					backupColumnsToTransfer.push(oldColumnName)
-					newColumnsToTransfer.push(newColumn.name)
+					this.migrations.recreateTable(newTableDefinition.table)
+					additionalQueryForTable = ""
+					break
 				}
 			}
 			
-			if(backupColumnsToTransfer.length) {
-				this.columnsToTransfer.push({
-					backupTable: oldTableName,
-					newTable: tableName,
-					backupIdColumn: oldPrimaryKey,
-					newIdColumn: newPrimaryKey.toString(),
-					backupColumns: backupColumnsToTransfer,
-					newColumns: newColumnsToTransfer,
-				})
-			}
+			additionalQuery += additionalQueryForTable
 		}
 		
 		return additionalQuery
@@ -306,47 +268,71 @@ export class DatabaseMigrationManager {
 		return ""
 	}
 	
-	
-	private moveDataFromBackup(backupDb: BetterSqlite3.Database ) {
-		this.columnsToTransfer.sort((a,b) => {
-			const posA = this.migrationTableOrder.indexOf(a.newTable)
-			const posB = this.migrationTableOrder.indexOf(b.newTable)
-			return (posA == -1 ? Number.MAX_VALUE : posA) - (posB == -1 ? Number.MAX_VALUE : posB)
-		});
+	private renameColumns() {
+		let renameQueries = ""
 		
-		for(const entry of this.columnsToTransfer) {
-			console.log(`***** Recreating column data from ${entry.newTable}: ${entry.newColumns.join(", ")}`)
+		const migrationData = this.migrations.getMigrationData()
+		
+		for(const tableName in migrationData) {
+			if(migrationData[tableName].recreate)
+				continue
 			
+			this.migrations.loopRenamedColumns(tableName, (oldColumnName, newColumnName) => {
+				const copyQuery = SqlQueryGenerator.createCopyColumnSql(tableName, oldColumnName, newColumnName)
+				const dropQuery = SqlQueryGenerator.createDropColumnSql(tableName, oldColumnName)
+
+				renameQueries += `${copyQuery} ${dropQuery}\n`
+			})
+		}
+		return renameQueries
+	}
+	
+	private migrateDataFromBackup(backupDb: BetterSqlite3.Database) {
+		//Loop tables in order
+		const migrationData = this.migrations.getMigrationData()
+		for(const table of this.dbInstructions.tables) {
+			const newTableName = table.name
+			if(!migrationData.hasOwnProperty(newTableName))
+				continue
+			
+			const migrationEntry = migrationData[table.name]
+			
+			if(!migrationEntry.recreate)
+				continue
+			
+			console.log(`***** Recreating data into ${newTableName}`)
+			
+			const oldColumnList = backupDb.pragma(`table_info(${migrationEntry.oldTableName})`) as ColumnInfo[]
+			
+			
+			//load all data from table:
 			const selectSql = SqlQueryGenerator.createSelectSql(
-				entry.backupTable,
-				[entry.backupIdColumn, ...entry.backupColumns]
+				migrationEntry.oldTableName ?? table.name,
+				oldColumnList.map((columnInfo => columnInfo.name))
 			)
 			const statement = backupDb.prepare(selectSql)
-			const oldData = statement.all() as any[]
+			let data = statement.all() as any[]
 			
-			for(const data of oldData) {
-				const values: Record<string, unknown> = {}
-				for(let i = 0; i < entry.newColumns.length; ++i) {
-					const newKey = entry.newColumns[i]
-					const oldKey = entry.backupColumns[i]
-					values[newKey] = data[oldKey]
+			if(!data.length)
+				continue
+			
+			this.migrations.loopRenamedColumns(table.name, (oldColumnName, newColumnName) => {
+				for(const entry of data) {
+					entry[newColumnName] = entry[oldColumnName]
+					delete entry[oldColumnName]
 				}
-				const sqlValues = Object.values(values).map(value => SqlQueryGenerator.toSqlValue(value))
-				let query: string
-				let queryValues: unknown[] = []
-				if(entry.newIdColumn) {
-					query = SqlQueryGenerator.createUpdateSql(entry.newTable, { "=": values }, `${entry.newIdColumn} = ?`)
-					queryValues = [...Object.values(sqlValues), data[entry.backupIdColumn]]
-				}
-				else {
-					query = SqlQueryGenerator.createInsertSql(entry.newTable, values)
-					queryValues = Object.values(sqlValues)
-				}
+			})
+			
+			const query = SqlQueryGenerator.createInsertSql(newTableName, data[0]) //structure of entries are all the same
+			
+			//insert data into new db:
+			for(const entry of data) {
+				const queryValues = Object.values(entry)
+				
 				console.log(query, queryValues)
 				const statement = this.db.prepare(query)
 				statement.run(queryValues)
 			}
 		}
-		this.columnsToTransfer = []
 	}
 }
