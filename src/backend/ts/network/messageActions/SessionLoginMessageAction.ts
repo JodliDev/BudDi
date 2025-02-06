@@ -12,12 +12,11 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = `${column(LoginSession, "loginSessionId")} = '${this.data.sessionId}'`
 		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)
+		if(!loginSession)
+			return
 		const timedHash = await SessionLoginMessage.createSessionHash(loginSession.sessionSecret, this.data.sessionTimestamp)
 		
-		if(!loginSession
-			|| this.data.sessionTimestamp < Date.now() - 1000 * 60 * 30
-			|| timedHash != this.data.sessionHash
-		)
+		if(this.data.sessionTimestamp < Date.now() - 1000 * 60 * 30 || timedHash != this.data.sessionHash)
 			return
 		
 		db.update(LoginSession, { "=": { lastLogin: Date.now()} }, sqlConstraint, 1)
