@@ -8,7 +8,7 @@ on:
 
 env:
   DOCKER_REGISTRY: jodlidev
-  DOCKER_IMAGE_NAME: budget-spender
+  DOCKER_IMAGE_NAME: buddi
 
 jobs:
   build-and-release:
@@ -62,6 +62,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            jodlidev/budget-spender:${{ steps.autotag.outputs.tagname  }}
-            jodlidev/budget-spender:latest
+            jodlidev/buddi:${{ steps.autotag.outputs.tagname  }}
+            jodlidev/buddi:latest
           labels: ${{ steps.meta.outputs.labels }}

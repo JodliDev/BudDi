@@ -1,16 +1,16 @@
 <p align="center">
-<img alt="" width="300" height="48" src="images/header.png"/>
+<img alt="" src="images/header.png"/>
 </p>
 
-Budget-Spender is intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.
+BudDi is intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.
 
-For example: You can use it to organize all projects or organisations you want to donate money to. Budget-Spender will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to.
+For example: You can use it to organize all projects or organisations you want to donate money to. BudDi will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to.
 
 
 ## How does it work?
-Budget-Spender keeps two lists: "All budgets" and "Waiting to be chosen".
+BudDi keeps two lists: "All budgets" and "Waiting to be chosen".
 Entries that are added to the "All budgets" section will also be added to "Next up" automatically.
-Every time you press the "Select a random spending now" button (or when the scheduler does it automatically), one random entry is removed from the "Waiting to be chosen" list and Budget-Spender prompts you to pay money to this budget (by adding it to a third list at the top that can be checkmarked).
+Every time you press the "Select a random spending now" button (or when the scheduler does it automatically), one random entry is removed from the "Waiting to be chosen" list and BudDi prompts you to pay money to this budget (by adding it to a third list at the top that can be checkmarked).
 
 When "Waiting to be chosen" is empty, it will automatically be refilled with the entries von "All budgets" and the cycle restarts.
 
@@ -20,13 +20,13 @@ Use docker compose.
 
 Create a new directory and move there:
 ```shell
-mkdir ./budget-spender
-cd ./budget-spender
+mkdir ./buddi
+cd ./buddi
 ```
 
 Download the docker compose file:
 ```shell
-wget -O https://raw.githubusercontent.com/JodliDev/Budget-Spender/refs/heads/master/docker-compose.yml
+wget -O https://raw.githubusercontent.com/JodliDev/BudDi/refs/heads/master/docker-compose.yml
 ```
 
 Run the container:
@@ -101,9 +101,9 @@ Can be set in the environment section in `docker-compose.yml`:
 
 
 ## How to update?
->**Note 1:** Database updates happen automatically. When Budget-Spender upgrades its database, it automatically creates a backup of its database file (found in `budget-spender/config`).
+>**Note 1:** Database updates happen automatically. When BudDi upgrades its database, it automatically creates a backup of its database file (found in `buddi/config`).
 
->**Note 2:** When starting, Budget-Spender logs all database changes to the console.
+>**Note 2:** When starting, BudDi logs all database changes to the console.
 
 Download a new image for the container and restart:
 ```shell
