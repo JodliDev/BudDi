@@ -148,7 +148,7 @@ export class DatabaseMigrationManager {
 				if(!migrationEntry.recreate)
 					continue
 				const query = SqlQueryGenerator.getDropTableSql(migrationEntry.oldTableName ?? newTableName)
-				console.log(`Dropping table ${migrationEntry.oldTableName} for recreation: ${query}`)
+				console.log(`Dropping for recreation: ${query}`)
 				const statement = this.db.prepare(query)
 				statement.run()
 			}
@@ -250,7 +250,7 @@ export class DatabaseMigrationManager {
 				const oldColumn = oldColumnList.find(entry => entry.name == newColumn.name)
 				
 				if(oldColumn == undefined)
-					additionalQuery += SqlQueryGenerator.createNewColumnSql(tableName, newColumn)
+					additionalQuery += SqlQueryGenerator.createNewColumnSql(tableName, newColumn) + "\n"
 				else if(newColumn.type != oldColumn.type || newColumn.dflt_value != oldColumn.dflt_value) {
 					this.migrations.recreateTable(newTableDefinition.table)
 					additionalQueryForTable = ""
