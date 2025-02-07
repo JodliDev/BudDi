@@ -8,7 +8,7 @@ import {LoginSession} from "./database/dataClasses/LoginSession";
 import {column} from "./database/column";
 import {writeFileSync} from "node:fs";
 import {Schedule} from "./database/dataClasses/Schedule";
-import {ChooseForSpendingMessageAction} from "./network/messageActions/ChooseForSpendingMessageAction";
+import {ChooseForPaymentMessageAction} from "./network/messageActions/ChooseForPaymentMessageAction";
 
 const LOGIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90
 
@@ -36,7 +36,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 			
 			for(const schedule of schedules) {
 				for(let i = schedule.spendingCount; i > 0; --i) {
-					ChooseForSpendingMessageAction.addNewChoice(dbManager, schedule.userId, schedule.spendingAmount)
+					ChooseForPaymentMessageAction.addNewChoice(dbManager, schedule.userId, schedule.spendingAmount)
 				}
 				
 				const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)

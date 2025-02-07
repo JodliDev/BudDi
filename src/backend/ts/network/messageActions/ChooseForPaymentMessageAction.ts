@@ -8,13 +8,13 @@ import {NeedsPayment} from "../../database/dataClasses/NeedsPayment";
 import {Waiting} from "../../database/dataClasses/Waiting";
 import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
 import {History} from "../../database/dataClasses/History";
-import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
+import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaymentMessage";
 
 // noinspection JSUnusedGlobalSymbols
-export class ChooseForSpendingMessageAction extends LoggedInMessageAction<ChooseForSpendingMessage> {
+export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseForPaymentMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const success = ChooseForSpendingMessageAction.addNewChoice(db, session.userId!, this.data.spendingAmount)
+		const success = ChooseForPaymentMessageAction.addNewChoice(db, session.userId!, this.data.spendingAmount)
 		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 	
@@ -25,7 +25,7 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 			[
 				{
 					joinedTable: Budget,
-					select: ["spendingName"],
+					select: ["budgetName"],
 					on: `${column(Waiting, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
@@ -63,7 +63,7 @@ export class ChooseForSpendingMessageAction extends LoggedInMessageAction<Choose
 		}
 		db.delete(Waiting, `${column(Waiting, "waitingId")} = ${waitingEntry.waitingId}`)
 		
-		History.addHistory(db, userId, "historyChooseForSpending", [possibleSpendingEntry.spendingName])
+		History.addHistory(db, userId, "historyChooseForPayment", [possibleSpendingEntry.budgetName])
 		
 		this.refillWaitingEntriesIfNeeded(db, userId)
 		

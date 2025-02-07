@@ -1,8 +1,4 @@
 import {ScheduleRepeatOptions} from "../../shared/ScheduleRepeatOptions";
-import {DatabaseManager} from "./database/DatabaseManager";
-import {Schedule} from "./database/dataClasses/Schedule";
-import {column} from "./database/column";
-import {ChooseForSpendingMessageAction} from "./network/messageActions/ChooseForSpendingMessageAction";
 
 interface ScheduleEntry extends ScheduleRepeatOptions {
 	nextRun: number

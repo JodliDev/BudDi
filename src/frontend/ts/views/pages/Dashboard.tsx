@@ -5,7 +5,7 @@ import {PubWaiting} from "../../../../shared/public/PubWaiting";
 import {PubBudget} from "../../../../shared/public/PubBudget";
 import {BtnWidget} from "../../widgets/BtnWidget";
 import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
-import {ChooseForSpendingMessage} from "../../../../shared/messages/ChooseForSpendingMessage";
+import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaymentMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
@@ -48,9 +48,9 @@ export class Dashboard extends LoggedInBasePage {
 				</a>
 				: BtnWidget.Empty()
 			}
-			{ entry.spendingUrl.length != 0
-				? <a href={ entry.spendingUrl } target="_blank">
-					{ BtnWidget.PopoverBtn("donate", Lang.get("spendingUrl")) }
+			{ entry.paymentUrl.length != 0
+				? <a href={ entry.paymentUrl } target="_blank">
+					{ BtnWidget.PopoverBtn("donate", Lang.get("paymentUrl")) }
 				</a>
 				: BtnWidget.Empty()
 			}
@@ -59,7 +59,7 @@ export class Dashboard extends LoggedInBasePage {
 					this.possibleSpendingDropdown(
 						<div class="horizontal vAlignCenter">
 							{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
-							{ entry.spendingName }
+							{ entry.budgetName }
 						</div>,
 						entry,
 						addedAt
@@ -77,7 +77,7 @@ export class Dashboard extends LoggedInBasePage {
 			() => <div class="surface vertical possibleSpendingDropdownContent">
 				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
 					{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
-					<span>{ entry.spendingName }</span>
+					<span>{ entry.budgetName }</span>
 				</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("spendingCount")}</small>
@@ -88,8 +88,8 @@ export class Dashboard extends LoggedInBasePage {
 					<span>{entry.spendingSum}{this.user.currency}</span>
 				</div>
 				<div class="subSurface labelLike">
-					<small>{Lang.get("lastSpending")}</small>
-					<span>{entry.lastSpending ? (new Date(entry.lastSpending)).toLocaleDateString() : Lang.get("nothingYet")}</span>
+					<small>{Lang.get("lastPayment")}</small>
+					<span>{entry.lastPayment ? (new Date(entry.lastPayment)).toLocaleDateString() : Lang.get("nothingYet")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
@@ -108,11 +108,11 @@ export class Dashboard extends LoggedInBasePage {
 			await this.waitingListCallback.reload()
 	}
 	
-	private async chooseForSpending(): Promise<void> {
+	private async chooseForPayment(): Promise<void> {
 		const amount = prompt(Lang.get("promptSpendingAmount"), "1")
 		if(!amount || Number.isNaN(amount))
 			return
-		const response = await this.site.socket.sendAndReceive(new ChooseForSpendingMessage(parseFloat(amount)))
+		const response = await this.site.socket.sendAndReceive(new ChooseForPaymentMessage(parseFloat(amount)))
 		if(!response.success)
 			return
 		
@@ -167,7 +167,7 @@ export class Dashboard extends LoggedInBasePage {
 							this.possibleSpendingDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
 									{ info.possibleSpendingEntry.iconDataUrl && <img class="icon" src={ info.possibleSpendingEntry.iconDataUrl } alt=""/> }
-									{ info.possibleSpendingEntry.spendingName }
+									{ info.possibleSpendingEntry.budgetName }
 								</div>,
 								info.possibleSpendingEntry,
 								info.needsSpendingEntry.addedAt
@@ -180,9 +180,9 @@ export class Dashboard extends LoggedInBasePage {
 									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 								</a>
 							}
-							{ info.possibleSpendingEntry.spendingUrl.length != 0 &&
-								<a href={ info.possibleSpendingEntry.spendingUrl } target="_blank">
-									{ BtnWidget.PopoverBtn("donate", Lang.get("spendingUrl")) }
+							{ info.possibleSpendingEntry.paymentUrl.length != 0 &&
+								<a href={ info.possibleSpendingEntry.paymentUrl } target="_blank">
+									{ BtnWidget.PopoverBtn("donate", Lang.get("paymentUrl")) }
 								</a>
 							}
 							<div class="fillSpace"></div>
@@ -201,10 +201,10 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubWaiting,
 						site: this.site,
 						hideRefresh: true,
-						order: "spendingName" as keyof PubWaiting,
+						order: "budgetName" as keyof PubWaiting,
 						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
 						customOptions: this.waitingListCallback.isEmpty() ? undefined :
-							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForSpending.bind(this)),
+							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForPayment.bind(this)),
 						callback: this.waitingListCallback,
 						getEntryView: entry =>
 							this.possibleSpendingLineView(entry.joined.Budget as PubBudget, entry.item.addedAt)
@@ -217,9 +217,9 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubBudget,
 						site: this.site,
 						hideRefresh: true,
-						order: "spendingName",
+						order: "budgetName",
 						addOptions: {
-							columns: ["spendingName", "homepage", "spendingUrl", "iconDataUrl",],
+							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "isTaxExempt"],
 							onAdded: async () => {
 								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
@@ -231,13 +231,13 @@ export class Dashboard extends LoggedInBasePage {
 							},
 							getValueError: (key, value) => {
 								switch(key) {
-									case "spendingName":
+									case "budgetName":
 										return (value as string).length < PubBudget.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
 								}
 							}
 						},
 						editOptions: {
-							columns: ["spendingName", "homepage", "spendingUrl", "iconDataUrl", "enabled"],
+							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "enabled"],
 							onChanged: async () => {
 								await this.waitingListCallback.reload()
 								await this.loadNeededSpending()

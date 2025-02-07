@@ -20,7 +20,7 @@ export class Budget extends PubBudget {
 		})
 		settings.setOnAfterAdd((data, db, addedId) => {
 			db.insert(Waiting, { budgetId: addedId, userId: data.userId })
-			History.addHistory(db, data.userId!, "historyAddSpending", [data.spendingName, addedId])
+			History.addHistory(db, data.userId!, "historyAddSpending", [data.budgetName, addedId])
 		})
 		settings.setOnBeforeDelete((id, db, session) => {
 			History.addHistory(db, session.userId!, "historyDeleteSpending", [id])

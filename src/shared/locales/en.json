@@ -41,14 +41,14 @@
 	"history": "History",
 	"historyAddSpending": "Added a new Spending: \"%s\" (id: %d).",
 	"historyDeleteSpending": "Deleted spending with id \"%d\".",
-	"historyChooseForSpending": "Chose for spending: \"%s\".",
+	"historyChooseForPayment": "Chose for spending: \"%s\".",
 	"historyRefillList": "Refilled spending list.",
 	"historySetAsPaid": "\"%s\" was paid.",
 	"iconDataUrl": "Icon",
 	"infoReconnecting": "Reconnecting...",
 	"infoSpendingCalculation": "How the spending amount should be used for calculation.",
-	"lastSpending": "Last spending",
 	"lastScheduleLoop": "Last run",
+	"lastPayment": "Last payment",
 	"login": "Login",
 	"logout": "Logout",
 	"logs": "Logs",
@@ -77,5 +77,5 @@
 	"name": "Name",
 	"enabled": "Enabled",
 	"homepage": "Homepage",
-	"spendingUrl": "Direct url for spending"
+	"paymentUrl": "Direct url for payment"
 }

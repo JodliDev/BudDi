@@ -17,7 +17,7 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 			[
 				{
 					joinedTable: Budget,
-					select: ["spendingName"],
+					select: ["budgetName"],
 					on: `${column(NeedsPayment, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
@@ -37,14 +37,14 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 			Budget, 
 			{
 				"+=": {
-					lastSpending: Date.now(),
+					lastPayment: Date.now(),
 					spendingSum: needsSpendingEntry.amount,
 					spendingTimes: 1
 				}
 			},
 			`${column(Budget, "budgetId")} = ${needsSpendingEntry.budgetId}`
 		)
-		History.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.spendingName])
+		History.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.budgetName])
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }

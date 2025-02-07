@@ -6,11 +6,11 @@ export class PubBudget extends BasePublicTable {
 	
 	getTranslation(key: keyof PubBudget): LangKey {
 		switch(key) {
-			case "spendingName":
+			case "budgetName":
 				return "name"
 			case "enabled":
 			case "homepage":
-			case "spendingUrl":
+			case "paymentUrl":
 				return key
 			default:
 				return key as LangKey
@@ -22,13 +22,13 @@ export class PubBudget extends BasePublicTable {
 	
 	
 	public budgetId: number | bigint = 0
-	public spendingName: string = ""
+	public budgetName: string = ""
 	public homepage: string = ""
-	public spendingUrl: string = ""
+	public paymentUrl: string = ""
 	public iconDataUrl: string = ""
 	
 	public enabled: boolean = true
 	public spendingSum: number = 0
 	public spendingTimes: number = 0
-	public lastSpending: number = 0
+	public lastPayment: number = 0
 }

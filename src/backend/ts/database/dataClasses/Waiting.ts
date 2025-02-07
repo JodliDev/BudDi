@@ -3,7 +3,7 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubWaiting} from "../../../../shared/public/PubWaiting";
 import {column} from "../column";
-import {ChooseForSpendingMessageAction} from "../../network/messageActions/ChooseForSpendingMessageAction";
+import {ChooseForPaymentMessageAction} from "../../network/messageActions/ChooseForPaymentMessageAction";
 
 export class Waiting extends PubWaiting {
 	getSettings(): TableSettings<this> {
@@ -26,7 +26,7 @@ export class Waiting extends PubWaiting {
 			data.userId = session.userId
 		})
 		settings.setOnAfterDelete((_, db, session) => {
-			ChooseForSpendingMessageAction.refillWaitingEntriesIfNeeded(db, session.userId!)
+			ChooseForPaymentMessageAction.refillWaitingEntriesIfNeeded(db, session.userId!)
 		})
 		
 		settings.setListFilter(session => `${column(Waiting, "userId")} = ${session.userId}`)
