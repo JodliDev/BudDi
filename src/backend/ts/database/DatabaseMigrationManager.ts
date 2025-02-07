@@ -306,7 +306,7 @@ export class DatabaseMigrationManager {
 			
 			console.log(`***** Recreating data into ${newTableName}`)
 			
-			const oldColumnList = backupDb.pragma(`table_info(${migrationEntry.oldTableName})`) as ColumnInfo[]
+			const oldColumnList = backupDb.pragma(`table_info(${migrationEntry.oldTableName ?? table.name})`) as ColumnInfo[]
 			
 			
 			//load all data from table:
