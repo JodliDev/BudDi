@@ -232,6 +232,10 @@ export class DatabaseMigrationManager {
 			const newTableDefinition = tableStructure.tables[tableName]
 			
 			const oldColumnList = this.db.pragma(`table_info(${tableName})`) as ColumnInfo[]
+			if(!oldColumnList.length) {
+				console.log(`Found new table ${tableName}`)
+				continue
+			}
 			const oldPrimaryKey = this.getPrimaryKeyColumn(oldColumnList)
 			
 			const newColumnList = newTableDefinition.columns
