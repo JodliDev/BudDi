@@ -147,7 +147,7 @@ export class SqlQueryGenerator {
 		return `ALTER TABLE ${table} ADD ${SqlQueryGenerator.getColumnDefinitionSql(columnInfo)};`
 	}
 	public static createCopyColumnSql(table: string, oldColumnName: string, newColumnName: string): string {
-		return `UPDATE ${table} SET ${oldColumnName} = ${newColumnName};`
+		return `UPDATE ${table} SET ${newColumnName} = ${oldColumnName};`
 	}
 	public static createDropColumnSql(table: string, columnName: string): string {
 		return `ALTER TABLE ${table} DROP COLUMN ${columnName};`
