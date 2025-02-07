@@ -35,7 +35,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 			"RANDOM()"
 		)
 		const waitingEntry = data.item
-		const possibleSpendingEntry = data.joined["Budget"] as Budget
+		const budget = data.joined["Budget"] as Budget
 		
 		if(!waitingEntry)
 			return false
@@ -63,7 +63,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		}
 		db.delete(Waiting, `${column(Waiting, "waitingId")} = ${waitingEntry.waitingId}`)
 		
-		History.addHistory(db, userId, "historyChooseForPayment", [possibleSpendingEntry.budgetName])
+		History.addHistory(db, userId, "historyChooseForPayment", [budget.budgetName], waitingEntry.budgetId)
 		
 		this.refillWaitingEntriesIfNeeded(db, userId)
 		

@@ -24,27 +24,27 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 			`${column(NeedsPayment, "userId")} = ${session.userId} AND ${column(NeedsPayment, "needsPaymentId")} = ${this.data.needsPaymentId}`,
 			1,
 		)
-		const needsSpendingEntry = data.item
-		const spendingEntry = data.joined["Budget"] as Budget
+		const needsPaymentEntry = data.item
+		const budget = data.joined["Budget"] as Budget
 		
-		if(!needsSpendingEntry) {
+		if(!needsPaymentEntry) {
 			session.send(new ConfirmResponseMessage(this.data, false))
 			return
 		}
 		
-		db.delete(NeedsPayment, `${column(NeedsPayment, "needsPaymentId")} = ${needsSpendingEntry.needsPaymentId}`)
+		db.delete(NeedsPayment, `${column(NeedsPayment, "needsPaymentId")} = ${needsPaymentEntry.needsPaymentId}`)
 		db.update(
 			Budget, 
 			{
 				"+=": {
 					lastPayment: Date.now(),
-					spendingSum: needsSpendingEntry.amount,
+					spendingSum: needsPaymentEntry.amount,
 					spendingTimes: 1
 				}
 			},
-			`${column(Budget, "budgetId")} = ${needsSpendingEntry.budgetId}`
+			`${column(Budget, "budgetId")} = ${needsPaymentEntry.budgetId}`
 		)
-		History.addHistory(db, session.userId!, "historySetAsPaid", [spendingEntry.budgetName])
+		History.addHistory(db, session.userId!, "historySetAsPaid", [budget.budgetName], budget.budgetId)
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }

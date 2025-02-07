@@ -202,7 +202,7 @@ export class DatabaseManager {
 		table: Class<T>,
 		values: UpdateValues<T>,
 		where: string,
-		limit: number = 1
+		limit: number | undefined = 1
 	) {
 		for(const key in values) {
 			const valueKey = key as keyof UpdateValues<T>

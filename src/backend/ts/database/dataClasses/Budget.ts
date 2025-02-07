@@ -20,10 +20,11 @@ export class Budget extends PubBudget {
 		})
 		settings.setOnAfterAdd((data, db, addedId) => {
 			db.insert(Waiting, { budgetId: addedId, userId: data.userId })
-			History.addHistory(db, data.userId!, "historyAddSpending", [data.budgetName, addedId])
+			History.addHistory(db, data.userId!, "historyAddBudget", [data.budgetName], addedId)
 		})
 		settings.setOnBeforeDelete((id, db, session) => {
-			History.addHistory(db, session.userId!, "historyDeleteSpending", [id])
+			const [budget] = db.selectTable(Budget, `${column(Budget, "budgetId")} = ${id}`, 1)
+			History.addHistory(db, session.userId!, "historyDeleteBudget", [budget.budgetName])
 		})
 		
 		settings.setListFilter(session => `${column(Budget, "userId")} = ${session.userId}`)

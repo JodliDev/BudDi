@@ -6,22 +6,26 @@ import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessa
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {Budget} from "../../database/dataClasses/Budget";
 import {Waiting} from "../../database/dataClasses/Waiting";
+import {History} from "../../database/dataClasses/History";
 
 // noinspection JSUnusedGlobalSymbols
 export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [spendingEntry] = db.selectTable(
+		const [budget] = db.selectTable(
 			Budget, 
 			`${column(Budget, "userId")} = ${session.userId} AND ${column(Budget, "budgetId")} = ${this.data.spendingEntryId}`,
 			1
 		)
-		if(!spendingEntry) {
+		if(!budget) {
 			session.send(new ConfirmResponseMessage(this.data, false))
 			return
 		}
 		
-		AddToWaitingMessageAction.createEntry(db, session.userId!, spendingEntry)
+		AddToWaitingMessageAction.createEntry(db, session.userId!, budget)
+		
+		History.addHistory(db, session.userId!, "historyAddToWaiting", [], budget.budgetId)
+		
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 	
