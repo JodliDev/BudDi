@@ -166,7 +166,7 @@ export class SqlQueryGenerator {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
 		if(joinArray)
 			query += joinArray
-				.map(join =>` JOIN ${join.joinedTableName} ON ${join.on}`)
+				.map(join =>` LEFT JOIN ${join.joinedTableName} ON ${join.on}`)
 				.join("")
 		if(where)
 			query += ` WHERE ${where}`
