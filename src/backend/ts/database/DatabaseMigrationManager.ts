@@ -82,6 +82,7 @@ export class DatabaseMigrationManager {
 	private migrations = new Migrations()
 	
 	private readonly sqlGenerator: SqlQueryGenerator
+	private existingTables: string[] = []
 	
 	constructor(
 		private readonly db: BetterSqlite3.Database,
@@ -113,6 +114,11 @@ export class DatabaseMigrationManager {
 		const transaction = db.transaction(() => {
 			//Disable foreign key constraints for now
 			db.pragma("foreign_keys = OFF")
+			
+			const selectSql = SqlQueryGenerator.createSelectSql("sqlite_master", ["name"], "type = 'table'")
+			const statement = backupDb.prepare(selectSql)
+			this.existingTables = (statement.all() as {name: string}[]).map((obj) => obj.name)
+			
 			
 			//Run pre migrations:
 			const dataForPostMigration = this.dbInstructions.preMigration(
@@ -172,11 +178,15 @@ export class DatabaseMigrationManager {
 		transaction()
 	}
 	
+	private tableDoesNotExists(tableName: string) {
+		return this.existingTables.indexOf(tableName) == -1
+	}
+	
 	private migrateForeignKeys(tableStructure: SqlQueryGenerator) {
 		console.log("Migrating foreign keys...")
 		
 		for(const tableName in tableStructure.tables) {
-			if(this.migrations.willBeRecreated(tableName))
+			if(this.migrations.willBeRecreated(tableName) || this.tableDoesNotExists(tableName))
 				continue
 			const structure = tableStructure.tables[tableName]
 			const newForeignKeys = structure.foreignKeys
@@ -225,17 +235,14 @@ export class DatabaseMigrationManager {
 	private migrateColumns(tableStructure: SqlQueryGenerator): string {
 		let additionalQuery = ""
 		for(const tableName in tableStructure.tables) {
-			if(this.migrations.willBeRecreated(tableName))
+			if(this.migrations.willBeRecreated(tableName) || this.tableDoesNotExists(tableName))
 				continue
 			let additionalQueryForTable = ""
 			
 			const newTableDefinition = tableStructure.tables[tableName]
 			
 			const oldColumnList = this.db.pragma(`table_info(${tableName})`) as ColumnInfo[]
-			if(!oldColumnList.length) {
-				console.log(`Found new table ${tableName}`)
-				continue
-			}
+			
 			const oldPrimaryKey = this.getPrimaryKeyColumn(oldColumnList)
 			
 			const newColumnList = newTableDefinition.columns
