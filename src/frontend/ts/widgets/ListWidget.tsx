@@ -9,12 +9,8 @@ import {Site} from "../views/Site";
 import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseEntry, ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
 import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
-import {AddMessage} from "../../../shared/messages/AddMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
-import {EditMessage} from "../../../shared/messages/EditMessage";
-import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
-import {BindValueToInput} from "./BindValueToInput";
 import {ListEntryEditComponent} from "./ListEntryEditWidget";
 
 const PAGE_SIZE = 25;
@@ -30,7 +26,8 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	site: Site
 	tableClass: Class<EntryT>
 	title: string,
-	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode,
+	AddHeaderView?: () => Vnode,
+	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode | Vnode[],
 	hideRefresh?: boolean
 	deleteOptions?: { onDeleted?: () => void },
 	addOptions?: {
@@ -177,34 +174,38 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 				}
 				{ options.customOptions && options.customOptions }
 			</h3>
-			<div class={ `${this.isLoading ? "opacity" : ""} fillSpace subSurface vertical hAlignStretched textCentered` }>
+			<div class={ `${this.isLoading ? "opacity" : ""} content fillSpace subSurface vertical hAlignStretched textCentered` }>
 				{ this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
-					: this.items.map((entry) => {
-						const id = this.getId(entry.item)
-						return <div class="horizontal entry vAlignCenter">
-							{ options.getEntryView(entry) }
-							{ options.editOptions &&
-								DropdownMenu(
-									`Edit~${BasePublicTable.getName(options.tableClass)}`,
-									BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
-									() => m(ListEntryEditComponent<EntryT>, {
-										mode: "edit",
-										site: options.site,
-										editId: id,
-										tableClass: options.tableClass,
-										columns: options.editOptions!.columns,
-										onFinish: this.editItem.bind(this, id),
-										customInputView: options.editOptions!.customInputView,
-										getValueError: options.editOptions!.getValueError,
-										defaults: entry.item
-									})
-								)
-							
-							}
-							{ options.deleteOptions && BtnWidget.PopoverBtn("delete", Lang.get("deleteEntryInfo"), () => this.deleteItem(entry.item)) }
-						</div>
-					})
+					: [
+						options.AddHeaderView && options.AddHeaderView(), 
+						...this.items.map((entry) => {
+							const id = this.getId(entry.item)
+						
+							return <div class="horizontal entry vAlignCenter">
+								{ options.getEntryView(entry) }
+								{ options.editOptions &&
+									DropdownMenu(
+										`Edit~${BasePublicTable.getName(options.tableClass)}`,
+										BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
+										() => m(ListEntryEditComponent<EntryT>, {
+											mode: "edit",
+											site: options.site,
+											editId: id,
+											tableClass: options.tableClass,
+											columns: options.editOptions!.columns,
+											onFinish: this.editItem.bind(this, id),
+											customInputView: options.editOptions!.customInputView,
+											getValueError: options.editOptions!.getValueError,
+											defaults: entry.item
+										})
+									)
+								
+								}
+								{ options.deleteOptions && BtnWidget.PopoverBtn("delete", Lang.get("deleteEntryInfo"), () => this.deleteItem(entry.item)) }
+							</div>
+						})
+					]
 				}
 			</div>
 			{ this.pagesHelper.isNeeded() && this.pagesHelper.getView() }
