@@ -14,6 +14,8 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {LocalStorageKeys} from "../LocalStorageKeys";
 import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage";
 import {setCookie} from "../../../shared/Cookies";
+import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
+import {BinaryDownloadMessage} from "../../../shared/messages/BinaryDownloadMessage";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
@@ -63,6 +65,10 @@ export class FrontendWebSocketHelper {
 	
 	async onMessage(event: MessageEvent): Promise<void> {
 		try {
+			if(event.data instanceof Blob) {
+				this.expectedResponseManager.checkBinary(event.data)
+				return
+			}
 			const message = JSON.parse(event.data.toString()) as BaseMessage
 			
 			if(!this.expectedResponseManager.check(message)) {
@@ -75,6 +81,7 @@ export class FrontendWebSocketHelper {
 			}
 		}
 		catch(error: unknown) {
+			console.error(error)
 			this.site.errorManager.error(Lang.get("errorCouldNotParseData", event.data, error as string))
 		}
 	}
@@ -94,7 +101,24 @@ export class FrontendWebSocketHelper {
 		return this.socket?.readyState === WebSocket.OPEN;
 	}
 	
-	public send(message: BaseMessage) {
+	public send(message: BaseMessage): void {
+		if(BinaryUploadMessage.isBinaryMessage(message)) {
+			const binaryMessage: BinaryUploadMessage = message
+			const file = binaryMessage.sendFile
+			if(!file) {
+				binaryMessage.isBinaryMessage = false
+			}
+			else {
+				binaryMessage.sendFile = undefined
+				const confirmation = this.expectedResponseManager.createConfirmation(binaryMessage.initialConfirm)
+				this.socket?.send(JSON.stringify(binaryMessage))
+				confirmation.then(() => {
+					this.socket?.send(file)
+				})
+				return
+			}
+		}
+		
 		const json = JSON.stringify(message)
 		this.socket?.send(json)
 		this.sendKeepAlive()
@@ -117,6 +141,12 @@ export class FrontendWebSocketHelper {
 	 */
 	public sendAndReceive(message: ConfirmMessage): Promise<ConfirmResponseMessage> {
 		const r = this.expectedResponseManager.createConfirmation(message)
+		this.send(message)
+		return r
+	}
+	
+	public sendAndReceiveBinary(message: BinaryDownloadMessage): Promise<Blob | null> {
+		const r = this.expectedResponseManager.createBinaryConfirmation(message)
 		this.send(message)
 		return r
 	}

@@ -15,6 +15,8 @@ export interface TableStructure<T extends BasePublicTable> {
 	foreignKeys?: Record<keyof T, ForeignKeyInfo<any>>
 }
 
+export type SqlDataTypes = "string" | "number" | "boolean" | "blob"
+
 export class SqlQueryGenerator {
 	public readonly tables: Record<string, TableStructure<any>> = {}
 	
@@ -55,18 +57,24 @@ export class SqlQueryGenerator {
 				pk: property == primaryKey ? 1 : 0
 			} as ColumnInfo
 			
-			switch(typeof value) {
+			const type = tableSettings.dataTypes.hasOwnProperty(propertyKey) ? tableSettings.dataTypes[propertyKey] : typeof value
+			// noinspection JSUnreachableSwitchBranches
+			switch(type) {
+				case "blob":
+					columnData.type = "BLOB"
+					columnData.dflt_value = "NULL"
+					break
 				case "string":
 					columnData.type = "TEXT"
-					columnData.dflt_value = `"${value}"`
+					columnData.dflt_value = value == null ? "NULL" : `"${value}"`
 					break
 				case "number":
 					columnData.type = floatValues[propertyKey] ? "REAL" : "INTEGER"
-					columnData.dflt_value = (value as number).toString()
+					columnData.dflt_value = value == null ? "NULL" : value.toString()
 					break
 				case "boolean":
 					columnData.type = "INTEGER"
-					columnData.dflt_value = value ? "1" : "0"
+					columnData.dflt_value = value == null ? "NULL" : (!!value ? "1" : "0")
 					break
 				case "function":
 					continue

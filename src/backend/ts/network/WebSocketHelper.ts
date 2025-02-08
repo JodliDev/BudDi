@@ -11,6 +11,7 @@ import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ServerSettingsMessage} from "../../../shared/messages/ServerSettingsMessage";
 import {Server} from "node:http";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
+import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
 
 export class WebSocketHelper {
 	private readonly wss: WebSocketServer;
@@ -37,11 +38,28 @@ export class WebSocketHelper {
 			}
 			ws.on('error', console.error)
 			
-			ws.on('message', async (data ) => {
+			let binaryMessage: BinaryUploadMessage | null = null
+			ws.on('message', async (data, isBinary) => {
 				let confirmMessage: ConfirmMessage | null = null
-				
 				try {
-					const message = JSON.parse(data.toString()) as BaseMessage
+					let message: BaseMessage
+					if(isBinary) {
+						if(!binaryMessage)
+							return
+						
+						binaryMessage.receiveFile = data
+						message = binaryMessage //message is complete now. We can continue as usual
+						binaryMessage = null
+					}
+					else {
+						message = JSON.parse(data.toString())
+						if(BinaryUploadMessage.isBinaryMessage(message)) {
+							binaryMessage = message //store message until actual binary data arrives
+							session.send(new ConfirmResponseMessage(binaryMessage.initialConfirm, true)) //send a response that binary data can be sent
+							return
+						}
+					}
+					
 					if(ConfirmMessage.isConfirmMessage(message))
 						confirmMessage = message
 					

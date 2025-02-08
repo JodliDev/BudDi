@@ -12,6 +12,9 @@ export class WebSocketSession {
 	public send(message: BaseMessage) {
 		this.ws.send(JSON.stringify(message))
 	}
+	public sendBinary(blob: ArrayBuffer | Buffer | Buffer[]) {
+		this.ws.send(blob)
+	}
 	
 	public login(userId: number | bigint, isAdmin: boolean = false) {
 		this.isLoggedIn = true

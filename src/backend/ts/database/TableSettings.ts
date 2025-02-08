@@ -2,8 +2,10 @@ import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {DatabaseManager} from "./DatabaseManager";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {WebSocketSession} from "../network/WebSocketSession";
+import {SqlDataTypes} from "./SqlQueryGenerator";
 
 export class TableSettings<TableT> {
+	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public readonly floatValues = {} as Record<keyof TableT, boolean>
 	public hasForeignKeys: boolean = false
@@ -21,6 +23,14 @@ export class TableSettings<TableT> {
 			return where
 	}
 	
+	/**
+	 * Will usually be used when a data type can not be detected (usually when it is null, or we need a blob).
+	 * @param column column name.
+	 * @param type string definition of the type.
+	 */
+	setDataType(column: keyof TableT, type: SqlDataTypes) {
+		this.dataTypes[column] = type
+	}
 	
 	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }

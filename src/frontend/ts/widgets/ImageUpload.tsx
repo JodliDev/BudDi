@@ -17,8 +17,9 @@ class ImageUploadComponent implements Component<ImageUploadComponentOptions, unk
 			return
 		
 		const file = target.files[0];
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
+		const reader = new FileReader()
+		
+		reader.readAsDataURL(file)
 		reader.onload = () => {
 			if(!reader.result) {
 				this.error = Lang.get("errorUnknown")
