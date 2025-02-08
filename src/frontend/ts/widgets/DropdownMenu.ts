@@ -141,6 +141,8 @@ class DropdownComponent implements Component<DropdownComponentOptions, unknown> 
 		if(this.currentClickListener)
 			clickDom.dom.removeEventListener(eventName, this.currentClickListener)
 		this.currentClickListener = () => {
+			if(options?.customEvent)
+				options.customEvent()
 			const impl = openDropdown(id, vNode.dom, vNode.attrs.menuContent, options)
 			if(impl && options?.manualPositioning) {
 				options.updatePositionCallback = (x: number, y: number) => {
