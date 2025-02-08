@@ -2,7 +2,7 @@ import {BasePublicTable} from "../BasePublicTable";
 import {LangKey} from "../Lang";
 
 export class PubBudget extends BasePublicTable {
-	public static readonly SPENDING_NAME_MIN_LENGTH = 3
+	public static readonly BUDGET_NAME_MIN_LENGTH = 3
 	
 	getTranslation(key: keyof PubBudget): LangKey {
 		switch(key) {
@@ -31,4 +31,5 @@ export class PubBudget extends BasePublicTable {
 	public spendingSum: number = 0
 	public spendingTimes: number = 0
 	public lastPayment: number = 0
+	public isTaxExempt: boolean = false
 }

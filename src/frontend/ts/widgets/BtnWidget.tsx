@@ -9,6 +9,7 @@ import homeSvg from "../../img/icons/home.svg";
 import luckSvg from "../../img/icons/luck.svg"
 import nextSvg from "../../img/icons/next.svg"
 import prevSvg from "../../img/icons/prev.svg"
+import receiptSvg from "../../img/icons/receipt.svg";
 import reloadSvg from "../../img/icons/reload.svg";
 import toStartSvg from "../../img/icons/toStart.svg"
 import trashSvg from "../../img/icons/trash.svg";
@@ -27,6 +28,7 @@ export const ButtonType = {
 	next: nextSvg,
 	prev: prevSvg,
 	remove: cancelSvg,
+	receipt: receiptSvg,
 	luck: luckSvg,
 	reload: reloadSvg,
 	toStart: toStartSvg,

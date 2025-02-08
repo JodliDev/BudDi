@@ -4,6 +4,7 @@ import {PubHistory} from "../../../../shared/public/PubHistory";
 import {LangKey} from "../../../../shared/Lang";
 import {DatabaseManager} from "../DatabaseManager";
 import {Budget} from "./Budget";
+import {User} from "./User";
 
 
 export class History extends PubHistory {
@@ -11,6 +12,12 @@ export class History extends PubHistory {
 		const settings = new TableSettings<this>()
 		
 		settings.setDataType("budgetId", "number")
+		
+		settings.setForeignKey("userId", {
+			table: User,
+			to: "userId",
+			on_delete: "CASCADE"
+		})
 		
 		settings.setForeignKey("budgetId", {
 			table: Budget,

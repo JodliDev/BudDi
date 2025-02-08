@@ -10,6 +10,7 @@ import {NeedsPayment} from "./dataClasses/NeedsPayment";
 import {Waiting} from "./dataClasses/Waiting";
 import {Budget} from "./dataClasses/Budget";
 import {column} from "./column";
+import {Payment} from "./dataClasses/Payment";
 
 export class DatabaseInstructions {
 	public version: number = 9
@@ -22,6 +23,7 @@ export class DatabaseInstructions {
 		LoginSession,
 		Budget,
 		History,
+		Payment,
 		Waiting,
 		NeedsPayment,
 		Schedule,

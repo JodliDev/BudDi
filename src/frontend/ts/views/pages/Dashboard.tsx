@@ -9,7 +9,7 @@ import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaym
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
+import {closeDropdown, DropdownMenu, DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
 import {PubUser} from "../../../../shared/public/PubUser";
@@ -17,14 +17,18 @@ import {LoggedInBasePage} from "../LoggedInBasePage";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ImageUpload} from "../../widgets/ImageUpload";
+import {BindValueToInput} from "../../widgets/BindValueToInput";
+import {LoadingSpinner} from "../../widgets/LoadingSpinner";
+import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
+import {PubPayment} from "../../../../shared/public/PubPayment";
 
-interface NeedsSpendingEntryInformation {
-	possibleSpendingEntry: PubBudget
-	needsSpendingEntry: PubNeedsPayment
+interface NeedsPaymentInformation {
+	budget: PubBudget
+	needsPayment: PubNeedsPayment
 }
 
 export class Dashboard extends LoggedInBasePage {
-	private needsSpendingEntries: NeedsSpendingEntryInformation[] = []
+	private needsPaymentEntries: NeedsPaymentInformation[] = []
 	private waitingListCallback: ListWidgetCallback = new ListWidgetCallback()
 	private allEntriesCallback: ListWidgetCallback = new ListWidgetCallback()
 	private dropdownOptions: DropdownOptions = {
@@ -32,6 +36,10 @@ export class Dashboard extends LoggedInBasePage {
 		disableMenuPointerEvents: true
 	}
 	private user = new PubUser()
+	
+	private paymentAmount: number = 0
+	private setPaidIsLoading: boolean = false
+	private setPaidFeedback: FeedbackCallBack = {}
 	
 	
 	private positionPossibleSpendingInfo(event: MouseEvent) {
@@ -131,19 +139,33 @@ export class Dashboard extends LoggedInBasePage {
 	private async loadNeededSpending(): Promise<void> {
 		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsPayment, 0, 100)) as ListResponseMessage<PubNeedsPayment>
 		if(response.success)
-			this.needsSpendingEntries = response.list.map(entry => {
+			this.needsPaymentEntries = response.list.map(entry => {
 				return {
-					possibleSpendingEntry: entry.joined["Budget"] as PubBudget,
-					needsSpendingEntry: entry.item
+					budget: entry.joined["Budget"] as PubBudget,
+					needsPayment: entry.item
 				}
 			})
 	}
 	
-	private async setAsPaid(info: NeedsSpendingEntryInformation) {
-		const response = await this.site.socket.sendAndReceive(new SetAsPaidMessage(info.needsSpendingEntry)) as ConfirmResponseMessage
+	private async setAsPaid(info: NeedsPaymentInformation, event: SubmitEvent) {
+		event.preventDefault()
+		const target = event.target as HTMLFormElement
+		const elements = target.elements
+		const amount = elements.namedItem("amount") as HTMLInputElement
+		const receipt = elements.namedItem("receipt") as HTMLInputElement
+		const file = receipt.files ? receipt.files[0] as File : undefined
+		
+		if(file && file.size > PubPayment.RECEIPT_MAX_SIZE) {
+			this.site.errorManager.error(Lang.get("errorFileTooBig", PubPayment.RECEIPT_MAX_SIZE / 1e+6))
+			return
+		}
+		
+		const paidMessage = new SetAsPaidMessage(file, file?.type, file?.name, info.needsPayment, parseInt(amount.value) ?? 1)
+		const response = await this.site.socket.sendAndReceive(paidMessage) as ConfirmResponseMessage
 		if(response.success) {
 			await this.loadNeededSpending()
 			await this.allEntriesCallback.reload()
+			closeDropdown("setPaidDialog")
 		}
 	}
 	
@@ -160,37 +182,57 @@ export class Dashboard extends LoggedInBasePage {
 	getView(): Vnode {
 		return <div class="vertical">
 			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsSpendingBox">
-				{ this.needsSpendingEntries.map(info => 
+				{ this.needsPaymentEntries.map(info => 
 					<div class="vertical surface needsSpendingEntry hAlignStretched">
-						<div class="subSurface textCentered spendingHeader">{info.needsSpendingEntry.amount}{this.user?.currency}</div>
+						<div class="subSurface textCentered spendingHeader">{info.needsPayment.amount}{this.user?.currency}</div>
 						{
 							this.possibleSpendingDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
-									{ info.possibleSpendingEntry.iconDataUrl && <img class="icon" src={ info.possibleSpendingEntry.iconDataUrl } alt=""/> }
-									{ info.possibleSpendingEntry.budgetName }
+									{ info.budget.iconDataUrl && <img class="icon" src={ info.budget.iconDataUrl } alt=""/> }
+									{ info.budget.budgetName }
 								</div>,
-								info.possibleSpendingEntry,
-								info.needsSpendingEntry.addedAt
+								info.budget,
+								info.needsPayment.addedAt
 							)
 						}
 						<div class="fillSpace"></div>
 						<div class="horizontal subSurface">
-							{ info.possibleSpendingEntry.homepage.length != 0 &&
-								<a href={ info.possibleSpendingEntry.homepage } target="_blank">
+							{ info.budget.homepage.length != 0 &&
+								<a href={ info.budget.homepage } target="_blank">
 									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 								</a>
 							}
-							{ info.possibleSpendingEntry.paymentUrl.length != 0 &&
-								<a href={ info.possibleSpendingEntry.paymentUrl } target="_blank">
+							{ info.budget.paymentUrl.length != 0 &&
+								<a href={ info.budget.paymentUrl } target="_blank">
 									{ BtnWidget.PopoverBtn("donate", Lang.get("paymentUrl")) }
 								</a>
 							}
 							<div class="fillSpace"></div>
 							{
-								BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), this.setAsPaid.bind(this, info))
+								DropdownMenu(
+									"setPaidDialog",
+									BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), () => {
+										this.paymentAmount = info.needsPayment.amount
+									}),
+									() => <form class="vertical" onsubmit={this.setAsPaid.bind(this, info)}>
+										<label>
+											<small>{Lang.get("amount")}</small>
+											<input type="number" name="amount" min="0" {...BindValueToInput(() => this.paymentAmount, (value) => this.paymentAmount = value)}/>
+										</label>
+										<label>
+											<small>{Lang.get("receipt")}</small>
+											<input type="file" name="receipt" />
+										</label>
+										<div class="horizontal hAlignEnd vAlignCenter">
+											{LoadingSpinner(this.setPaidIsLoading, true)}
+											{FeedbackIcon(this.setPaidFeedback, true)}
+											<input disabled={this.setPaidIsLoading} type="submit" value={Lang.get("save")} />
+										</div>
+									</form>
+								)
 							}
 						</div>
-						{ BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsSpendingEntry) ) }
+						{BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsPayment))}
 					</div>
 				)}
 			</div>
@@ -232,7 +274,7 @@ export class Dashboard extends LoggedInBasePage {
 							getValueError: (key, value) => {
 								switch(key) {
 									case "budgetName":
-										return (value as string).length < PubBudget.SPENDING_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
+										return (value as string).length < PubBudget.BUDGET_NAME_MIN_LENGTH ? Lang.get("errorTooShort") : undefined
 								}
 							}
 						},

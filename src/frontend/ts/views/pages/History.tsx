@@ -5,6 +5,7 @@ import {LoggedInBasePage} from "../LoggedInBasePage";
 import {PubHistory} from "../../../../shared/public/PubHistory";
 import "./history.css"
 import {PubBudget} from "../../../../shared/public/PubBudget";
+import {BtnWidget} from "../../widgets/BtnWidget";
 
 export class History extends LoggedInBasePage {
 	getView(): Vnode {
@@ -25,8 +26,9 @@ export class History extends LoggedInBasePage {
 								{(new Date(entry.item.historyTime)).toLocaleTimeString()}
 							</small>
 							<span>
-							{budget?.iconDataUrl &&
-								<img alt="" src={budget.iconDataUrl}/>
+							{budget?.iconDataUrl
+								? <img alt="" src={budget.iconDataUrl}/>
+								: BtnWidget.Empty()
 							}
 								{Lang.get(entry.item.langKey, ...JSON.parse(entry.item.langValues))}
 						</span>
