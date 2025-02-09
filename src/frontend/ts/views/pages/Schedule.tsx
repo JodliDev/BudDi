@@ -55,7 +55,7 @@ export class Schedule extends LoggedInBasePage {
 			<div class="surface vertical vAlignStart">
 				<h3>{Lang.get("schedule")}</h3>
 				<label>
-					<div class="horizontal">
+					<div class="horizontal vAlignCenter">
 						<input type="checkbox" disabled={this.isLoading} {...BindValueToInput(() => this.scheduleEnabled, async value => {
 							this.scheduleEnabled = value
 							await this.saveScheduleActivation()
@@ -65,20 +65,20 @@ export class Schedule extends LoggedInBasePage {
 				</label>
 				{this.scheduleEnabled &&
 					<div class="vertical vAlignStart">
-						<div class="horizontal">
+						<form class="horizontal">
 							{schedule.lastLoop != 0 &&
 								<div class="labelLike">
 									<small>{Lang.get("lastScheduleLoop")}</small>
-									<span class="subSurface">{(new Date(schedule.lastLoop)).toLocaleDateString()}</span>
+									<span class="inputLike">{(new Date(schedule.lastLoop)).toLocaleDateString()}</span>
 								</div>
 							}
 							{schedule.nextLoop != 0 &&
 								<div class="labelLike">
 									<small>{Lang.get("nextScheduleLoop")}</small>
-									<span class="subSurface">{(new Date(schedule.nextLoop)).toLocaleDateString()}</span>
+									<span class="inputLike">{(new Date(schedule.nextLoop)).toLocaleDateString()}</span>
 								</div>
 							}
-						</div>
+						</form>
 						
 						
 						
@@ -104,6 +104,14 @@ export class Schedule extends LoggedInBasePage {
 												}
 											</div>
 											<small>{Lang.get("atSpecificDayOfMonth")}</small>
+										</label>
+									case "amount":
+										return <label>
+											<small>{Lang.get("amount")}</small>
+											<div>
+												<input type="number" min="1" {...BindValueToInput(() => value, setValue)}/>
+												<span>{this.site.getCurrency()}</span>
+											</div>
 										</label>
 								}
 							}

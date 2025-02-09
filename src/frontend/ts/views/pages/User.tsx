@@ -65,7 +65,10 @@ export class User extends LoggedInBasePage {
 					editId: this.user.userId,
 					defaults: this.user,
 					tableClass: PubUser,
-					columns: ["currency", "username"]
+					columns: ["currency", "username"],
+					onFinish: (entry) => {
+						this.site.loginState.setLoginData(entry.item.username, entry.item.currency)
+					}
 				})}
 			</div>
 			<form class="surface vertical vAlignStart" onsubmit={this.changePassword.bind(this)}>

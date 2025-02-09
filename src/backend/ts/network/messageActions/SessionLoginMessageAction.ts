@@ -24,6 +24,10 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		const [user] = db.selectTable(User, SqlWhere(User).is("userId", loginSession.userId), 1)
 		
 		session.login(user.userId, user.isAdmin)
-		session.send(new IsLoggedInMessage(loginSession.loginSessionId))
+		session.send(new IsLoggedInMessage({
+			sessionId: loginSession.loginSessionId,
+			username: user.username,
+			currency: user.currency
+		}))
 	}
 }

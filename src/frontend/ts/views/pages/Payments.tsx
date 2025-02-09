@@ -124,6 +124,7 @@ export class Payments extends LoggedInBasePage {
 							</td>,
 							<td>
 								{payment.amount}
+								{this.site.getCurrency()}
 							</td>,
 							<td>
 								{payment.receiptFileName

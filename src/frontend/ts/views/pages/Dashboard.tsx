@@ -35,7 +35,6 @@ export class Dashboard extends LoggedInBasePage {
 		manualPositioning: true,
 		disableMenuPointerEvents: true
 	}
-	private user = new PubUser()
 	
 	private paymentAmount: number = 0
 	private setPaidIsLoading: boolean = false
@@ -93,7 +92,7 @@ export class Dashboard extends LoggedInBasePage {
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("totalSpending")}</small>
-					<span>{entry.spendingSum}{this.user.currency}</span>
+					<span>{entry.spendingSum}{this.site.getCurrency()}</span>
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastPayment")}</small>
@@ -124,7 +123,7 @@ export class Dashboard extends LoggedInBasePage {
 		if(!response.success)
 			return
 		
-		await this.loadNeededSpending()
+		await this.loadNeedsPayment()
 		await this.waitingListCallback.reload()
 	}
 	
@@ -133,10 +132,10 @@ export class Dashboard extends LoggedInBasePage {
 			return
 		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsPayment, entry.needsPaymentId))
 		
-		await this.loadNeededSpending()
+		await this.loadNeedsPayment()
 	}
 	
-	private async loadNeededSpending(): Promise<void> {
+	private async loadNeedsPayment(): Promise<void> {
 		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsPayment, 0, 100)) as ListResponseMessage<PubNeedsPayment>
 		if(response.success)
 			this.needsPaymentEntries = response.list.map(entry => {
@@ -163,7 +162,7 @@ export class Dashboard extends LoggedInBasePage {
 		const paidMessage = new SetAsPaidMessage(file, file?.type, file?.name, info.needsPayment, parseInt(amount.value) ?? 1)
 		const response = await this.site.socket.sendAndReceive(paidMessage) as ConfirmResponseMessage
 		if(response.success) {
-			await this.loadNeededSpending()
+			await this.loadNeedsPayment()
 			await this.allEntriesCallback.reload()
 			closeDropdown("setPaidDialog")
 		}
@@ -171,12 +170,7 @@ export class Dashboard extends LoggedInBasePage {
 	
 	async load(): Promise<void> {
 		await super.load()
-		await this.loadNeededSpending()
-		
-		const response = await this.site.socket.sendAndReceive(new ListMessage(PubUser, 0, 1)) as ListResponseMessage<PubUser>
-		
-		if(response.success && response.list.length != 0)
-			this.user = response.list[0].item
+		await this.loadNeedsPayment()
 	}
 	
 	getView(): Vnode {
@@ -184,7 +178,7 @@ export class Dashboard extends LoggedInBasePage {
 			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsSpendingBox">
 				{ this.needsPaymentEntries.map(info => 
 					<div class="vertical surface needsSpendingEntry hAlignStretched">
-						<div class="subSurface textCentered spendingHeader">{info.needsPayment.amount}{this.user?.currency}</div>
+						<div class="subSurface textCentered spendingHeader">{info.needsPayment.amount}{this.site.getCurrency()}</div>
 						{
 							this.possibleSpendingDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
@@ -282,7 +276,7 @@ export class Dashboard extends LoggedInBasePage {
 							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
 							onChanged: async () => {
 								await this.waitingListCallback.reload()
-								await this.loadNeededSpending()
+								await this.loadNeedsPayment()
 							},
 							customInputView: (key, value, setValue) => {
 								switch(key) {
@@ -294,7 +288,7 @@ export class Dashboard extends LoggedInBasePage {
 						deleteOptions: {
 							onDeleted: async() => {
 								await this.waitingListCallback.reload()
-								await this.loadNeededSpending()
+								await this.loadNeedsPayment()
 							}
 						},
 						callback: this.allEntriesCallback,

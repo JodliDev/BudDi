@@ -28,6 +28,15 @@ export class LoginMessageAction extends BaseBackendMessageAction<LoginMessage> {
 		const sessionId = db.insert(LoginSession, newSession)
 		
 		session.login(user.userId, user.isAdmin)
-		session.send(new LoginResponseMessage(this.data, true, sessionId, newSession.sessionSecret))
+		session.send(new LoginResponseMessage(
+			this.data,
+			true,
+			{
+				sessionId: sessionId,
+				username: user.username,
+				currency: user.currency
+			},
+			newSession.sessionSecret
+		))
 	}
 }

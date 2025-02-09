@@ -4,7 +4,7 @@ import {IsLoggedInMessage} from "../../../../shared/messages/IsLoggedInMessage";
 
 export class IsLoggedInMessageAction extends BaseFrontendMessageAction<IsLoggedInMessage> {
 	exec(site: Site): void {
-		site.login(this.data.sessionId)
+		site.login(this.data.loggedInData)
 	}
 	
 }

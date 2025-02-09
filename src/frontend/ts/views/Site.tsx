@@ -11,6 +11,7 @@ import {ServerSettings} from "../../../shared/ServerSettings";
 import {IPublicOptions} from "../../../shared/IPublicOptions";
 import {Dashboard} from "./pages/Dashboard";
 import {LoginState} from "../LoginState";
+import {LoginData} from "../../../shared/LoginData";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -78,8 +79,8 @@ export class Site {
 		}
 	}
 	
-	public login(sessionId: number | bigint, sessionHash?: string) {
-		this.loginState.login(sessionId, sessionHash)
+	public login(loginData: LoginData, sessionHash?: string) {
+		this.loginState.login(loginData, sessionHash)
 	}
 	
 	public logout() {
@@ -94,6 +95,10 @@ export class Site {
 	
 	public goto(pageName: string): void {
 		window.location.hash = `#${pageName}`
+	}
+	
+	public getCurrency() {
+		return this.loginState.getLoginData()?.currency ?? ""
 	}
 	
 	/**

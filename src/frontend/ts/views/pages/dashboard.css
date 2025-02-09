@@ -6,7 +6,12 @@
 	}
 }
 .possibleSpendingDropdownContent {
-	max-width: 250px
+	max-width: 250px;
+	
+	.labelLike span {
+		margin: 5px;
+		padding: 10px;
+	}
 }
 
 .possibleSpendingEntry a {

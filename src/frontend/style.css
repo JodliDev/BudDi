@@ -84,9 +84,14 @@ label, .labelLike {
 	input[type="checkbox"], input[type="radio"] {
 		margin: 20px 0 15px 5px;
 	}
-	span, span.subSurface {
-		padding: 13px 10px 12px 10px;
+	.inputLike {
+		padding: 10px;
 		margin: 5px;
+		border: 1px solid var(--color-surface-border);
+		border-radius: var(--radius);
+		background-color: var(--color-inside-surface);
+	}
+	span, span.subSurface {
 	}
 }
 

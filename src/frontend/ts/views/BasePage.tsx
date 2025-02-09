@@ -35,10 +35,6 @@ export abstract class BasePage {
 		this.onVariablesChanged(variables)
 	}
 	
-	protected goTo(url: string) {
-		document.location.hash = url;
-	}
-	
 	public onVariablesChanged(variables?: PageVariables): void {
 		// needs overload
 	}
