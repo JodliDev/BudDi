@@ -261,7 +261,7 @@ export class Dashboard extends LoggedInBasePage {
 						hideRefresh: true,
 						order: "budgetName",
 						addOptions: {
-							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "isTaxExempt"],
+							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "enabledForWaitingList", "isTaxExempt"],
 							onAdded: async () => {
 								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
@@ -279,7 +279,7 @@ export class Dashboard extends LoggedInBasePage {
 							}
 						},
 						editOptions: {
-							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "enabled"],
+							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
 							onChanged: async () => {
 								await this.waitingListCallback.reload()
 								await this.loadNeededSpending()

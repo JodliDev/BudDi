@@ -13,7 +13,7 @@ import {column} from "./column";
 import {Payment} from "./dataClasses/Payment";
 
 export class DatabaseInstructions {
-	public version: number = 9
+	public version: number = 10
 	
 	/**
 	 * Order needs to reflect foreign keys

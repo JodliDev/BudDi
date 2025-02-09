@@ -78,7 +78,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		
 		const possibleSpendingEntries = db.selectTable(
 			Budget,
-			SqlWhere(Budget).is("userId", userId).and().is("enabled", "1")
+			SqlWhere(Budget).is("userId", userId).and().is("enabledForWaitingList", "1")
 		)
 		for(const possibleSpendingEntry of possibleSpendingEntries) {
 			AddToWaitingMessageAction.createEntry(db, userId, possibleSpendingEntry)
