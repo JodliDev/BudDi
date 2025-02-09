@@ -8,7 +8,7 @@ export class PubBudget extends BasePublicTable {
 		switch(key) {
 			case "budgetName":
 				return "name"
-			case "enabled":
+			case "enabledForWaitingList":
 			case "homepage":
 			case "paymentUrl":
 				return key
@@ -27,7 +27,7 @@ export class PubBudget extends BasePublicTable {
 	public paymentUrl: string = ""
 	public iconDataUrl: string = ""
 	
-	public enabled: boolean = true
+	public enabledForWaitingList: boolean = true
 	public spendingSum: number = 0
 	public spendingTimes: number = 0
 	public lastPayment: number = 0

@@ -11,6 +11,7 @@ import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {ListFilter} from "../../../../shared/ListFilter";
 
 export class Payments extends LoggedInBasePage {
+	private isTaxExempt: boolean = false;
 	private yearsForFilter: number[] = []
 	private selectedYear: string = ""
 	private paymentsCallback: ListWidgetCallback = new ListWidgetCallback()
@@ -53,6 +54,8 @@ export class Payments extends LoggedInBasePage {
 			filter.addRule("paymentTime", ">=", first.getTime())
 			filter.addRule("paymentTime", "<=", last.getTime())
 		}
+		if(this.isTaxExempt)
+			filter.addRule("isTaxExempt", "=", true)
 		
 		return <div class="vertical hAlignCenter">
 			{
@@ -82,9 +85,14 @@ export class Payments extends LoggedInBasePage {
 								}
 							</select>
 						</label>
+						<label>
+							<small>{Lang.get("isTaxExempt")}</small>
+							<input type="checkbox" {...BindValueToInput(() => this.isTaxExempt, (value) => this.isTaxExempt = value)} />
+						</label>
 					</form>,
-					AddFirstLineView: () => <tr>
+				AddFirstLineView: () => <tr>
 						<th></th>
+						<th>{Lang.get("budget")}</th>
 						<th>{Lang.get("date")}</th>
 						<th>{Lang.get("time")}</th>
 						<th>{Lang.get("amount")}</th>
@@ -99,11 +107,20 @@ export class Payments extends LoggedInBasePage {
 								? <img alt="" src={budget.iconDataUrl}/>
 								: BtnWidget.Empty()
 							}</td>,
-							<td>
-								{(new Date(payment.paymentTime)).toLocaleDateString()}
+							<td class="textLeft">
+								{budget.budgetName}
 							</td>,
 							<td>
-								{(new Date(payment.paymentTime)).toLocaleTimeString()}
+								{(new Date(payment.paymentTime)).toLocaleDateString(undefined, {
+									year: "numeric",
+									month: "2-digit",
+									day: "2-digit"
+								})}
+							</td>,
+							<td>
+								{(new Date(payment.paymentTime)).toLocaleTimeString(undefined, {
+									timeStyle: "short"
+								})}
 							</td>,
 							<td>
 								{payment.amount}

@@ -29,7 +29,7 @@ export class Payment extends PubPayment {
 		})
 		
 		settings.setListFilter(session => SqlWhere(Payment).is("userId", session.userId))
-		settings.setAllowedFilterColumns(["paymentTime"])
+		settings.setAllowedFilterColumns(["paymentTime", "isTaxExempt"])
 		return settings
 	}
 	

@@ -16,6 +16,7 @@ export interface SqlWhereData {
 interface StatementBuilder<T extends BasePublicTable> extends SqlWhereData {
 	is(columnName: keyof T, value: unknown): ConnectorBuilder<T>
 	isCompared(operator: Operators, columnName: keyof T, value: unknown): ConnectorBuilder<T>
+	isComparedForeignKey(operator: Operators, columnName: string, value: unknown): ConnectorBuilder<T>
 }
 interface ConnectorBuilder<T extends BasePublicTable> extends SqlWhereData {
 	and(): StatementBuilder<T>
@@ -29,12 +30,25 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 	
 	constructor(private table: Class<T>) { }
 	
+	private valueToSql(value: unknown): unknown {
+		switch(typeof value) {
+			case "boolean":
+				return value ? "1" : "0"
+			default:
+				return value
+		}
+	}
+	
 	public is(columnName: keyof T, value: unknown): ConnectorBuilder<T> {
 		return this.isCompared("=", columnName, value)
 	}
 	public isCompared(operator: Operators, columnName: keyof T, value: unknown): ConnectorBuilder<T> {
-		this.sql += ` ${column(this.table, columnName)} ${operator} ?`
-		this.values.push(value)
+		return this.isComparedForeignKey(operator, column(this.table, columnName), value)
+	}
+	
+	public isComparedForeignKey(operator: Operators, columnName: string, value: unknown): ConnectorBuilder<T> {
+		this.sql += ` ${columnName} ${operator} ?`
+		this.values.push(this.valueToSql(value))
 		return this
 	}
 	public concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<T> {
@@ -96,7 +110,8 @@ export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, s
 		
 		if(!settings.isAllowedColumn(entry.column))
 			throw new FaultyInputException()
-		builder.isCompared(entry.operator, entry.column as keyof T, entry.value)
+		//We are using the foreignKey variant, because both do pretty much the same and the string was checked anyway
+		builder.isComparedForeignKey(entry.operator, entry.column, entry.value)
 		notFirstLoop = true
 	}
 	
