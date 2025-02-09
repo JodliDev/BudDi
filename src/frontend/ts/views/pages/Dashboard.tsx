@@ -245,7 +245,7 @@ export class Dashboard extends LoggedInBasePage {
 						hideRefresh: true,
 						order: "budgetName",
 						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
-						customOptions: this.waitingListCallback.isEmpty() ? undefined :
+						customHeaderOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForPayment.bind(this)),
 						callback: this.waitingListCallback,
 						getEntryView: entry =>
@@ -255,7 +255,7 @@ export class Dashboard extends LoggedInBasePage {
 				
 				{
 					ListWidget<PubBudget>({
-						title: Lang.get("allEntries"),
+						title: Lang.get("allBudgets"),
 						tableClass: PubBudget,
 						site: this.site,
 						hideRefresh: true,

@@ -11,6 +11,7 @@ import {Class} from "../../../../shared/Class";
 import {column} from "../../database/column";
 import {TableSettings} from "../../database/TableSettings";
 import {FaultyInputException} from "../../exceptions/FaultyInputException";
+import {SqlWhereFromFilter} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
@@ -24,7 +25,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
 		
 		if((this.data.orderType && this.data.orderType != "ASC" && this.data.orderType != "DESC")
-			|| (this.data.order && settings.allowedOrderColumns.indexOf(this.data.order) == -1)
+			|| (this.data.order && !settings.isAllowedColumn(this.data.order))
 			|| !this.isType(this.data.from, "number")
 			|| !this.isType(this.data.limit, "number")
 		)
@@ -34,7 +35,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 			tableClass,
 			publicObj.getColumnNames(),
 			settings,
-			settings?.getWhere(session),
+			settings?.getWhere(session, this.data.filter ? SqlWhereFromFilter(tableClass, settings, this.data.filter) : undefined),
 			this.data.limit,
 			this.data.from,
 			this.data.order,

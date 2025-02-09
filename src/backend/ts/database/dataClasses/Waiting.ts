@@ -30,7 +30,7 @@ export class Waiting extends PubWaiting {
 		})
 		
 		settings.setListFilter(session => SqlWhere(Waiting).is("userId", session.userId))
-		settings.setAllowedOrderColumns(["budgetName"])
+		settings.setAllowedFilterColumns(["budgetName"])
 		
 		return settings
 	}

@@ -1,14 +1,31 @@
 import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
-import {ListWidget} from "../../widgets/ListWidget";
+import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {PubBudget} from "../../../../shared/public/PubBudget";
 import {PubPayment} from "../../../../shared/public/PubPayment";
 import {BtnWidget} from "../../widgets/BtnWidget";
 import {DownloadReceiptMessage} from "../../../../shared/messages/DownloadReceiptMessage";
 import "./payments.css"
+import {BindValueToInput} from "../../widgets/BindValueToInput";
+import {ListFilter} from "../../../../shared/ListFilter";
 
 export class Payments extends LoggedInBasePage {
+	private yearsForFilter: number[] = []
+	private selectedYear: string = ""
+	private paymentsCallback: ListWidgetCallback = new ListWidgetCallback()
+	
+	async load(): Promise<void> {
+		const payment = await this.site.socket.getSingleEntry(PubPayment, "paymentTime", "ASC")
+		
+		if(payment) {
+			const last = new Date(payment.paymentTime).getFullYear()
+			const now = new Date().getFullYear()
+			for(let i = last; i <= now; ++i) {
+				this.yearsForFilter.push(i)
+			}
+		}
+	}
 	
 	private async downloadReceipt(payment: PubPayment): Promise<void> {
 		const response = await this.site.socket.sendAndReceiveBinary(new DownloadReceiptMessage(payment.paymentId))
@@ -28,6 +45,15 @@ export class Payments extends LoggedInBasePage {
 	}
 	
 	getView(): Vnode {
+		const filter = new ListFilter("and")
+		if(this.selectedYear) {
+			const year = parseInt(this.selectedYear)
+			const first = new Date(year, 0, 1, 0, 0, 0, 0)
+			const last = new Date(year, 11, 31, 23, 59, 59, 999)
+			filter.addRule("paymentTime", ">=", first.getTime())
+			filter.addRule("paymentTime", "<=", last.getTime())
+		}
+		
 		return <div class="vertical hAlignCenter">
 			{
 				ListWidget({
@@ -36,7 +62,28 @@ export class Payments extends LoggedInBasePage {
 					order: "paymentTime",
 					orderType: "DESC",
 					site: this.site,
-					AddHeaderView: () => <tr>
+					filter: filter,
+					callback: this.paymentsCallback,
+					AddSubHeader: () => <form>
+						<label>
+							<small>{Lang.get("year")}</small>
+							<select {...BindValueToInput(
+								() => this.selectedYear,
+								(value) => {
+									this.selectedYear = value
+									m.redraw()
+								}
+							)}>
+								<option value="">{Lang.get("all")}</option>
+								{
+									this.yearsForFilter.map((year) =>
+										<option>{year}</option>
+									)
+								}
+							</select>
+						</label>
+					</form>,
+					AddFirstLineView: () => <tr>
 						<th></th>
 						<th>{Lang.get("date")}</th>
 						<th>{Lang.get("time")}</th>
@@ -48,7 +95,7 @@ export class Payments extends LoggedInBasePage {
 						const budget = entry.joined["Budget"] as PubBudget
 						
 						return [
-							<td>{ budget?.iconDataUrl
+							<td>{budget?.iconDataUrl
 								? <img alt="" src={budget.iconDataUrl}/>
 								: BtnWidget.Empty()
 							}</td>,

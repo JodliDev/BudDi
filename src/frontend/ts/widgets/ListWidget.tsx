@@ -12,6 +12,7 @@ import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {ListEntryEditComponent} from "./ListEntryEditWidget";
+import {ListFilter} from "../../../shared/ListFilter";
 
 const PAGE_SIZE = 25;
 
@@ -26,7 +27,8 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	site: Site
 	tableClass: Class<EntryT>
 	title: string,
-	AddHeaderView?: () => Vnode,
+	AddFirstLineView?: () => Vnode,
+	AddSubHeader?: () => Vnode,
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode | Vnode[],
 	hideRefresh?: boolean
 	deleteOptions?: { onDeleted?: () => void },
@@ -42,10 +44,11 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 		customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode<any, any> | undefined,
 		getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
 	},
-	customOptions?: Vnode<any, unknown>
+	customHeaderOptions?: Vnode<any, unknown>
 	pageSize?: number
 	order?: (keyof EntryT | string)
-	orderType?: "ASC" | "DESC"
+	orderType?: "ASC" | "DESC",
+	filter?: ListFilter,
 	callback?: ListWidgetCallback
 }
 
@@ -64,7 +67,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 		
 		const pageSize = PAGE_SIZE
 		const response = await this.options!.site.socket.sendAndReceive(
-			new ListMessage(options.tableClass, pageNumber * pageSize, pageSize, options.order ? options.order.toString() : undefined, options.orderType)
+			new ListMessage(options.tableClass, pageNumber * pageSize, pageSize, options.order ? options.order.toString() : undefined, options.orderType, options.filter)
 		)
 		const listMessage = response as ListResponseMessage<EntryT>
 		if(!listMessage.success) {
@@ -80,7 +83,11 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 	}
 	
 	private needsReset(oldOptions: ListComponentOptions<EntryT>, newOptions: ListComponentOptions<EntryT>): boolean {
-		return oldOptions.tableClass != newOptions.tableClass || oldOptions.order != newOptions.order || oldOptions.orderType != newOptions.orderType
+		return oldOptions.tableClass != newOptions.tableClass
+			|| oldOptions.order != newOptions.order
+			|| oldOptions.orderType != newOptions.orderType
+			|| !!oldOptions.filter != !!newOptions.filter
+			|| (!!newOptions.filter && !oldOptions.filter?.isSame(newOptions.filter))
 	}
 	
 	private getId(entry: EntryT): number {
@@ -172,13 +179,14 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 						})
 					)
 				}
-				{ options.customOptions && options.customOptions }
+				{ options.customHeaderOptions && options.customHeaderOptions }
 			</h3>
+			{ options.AddSubHeader && options.AddSubHeader() }
 			<div class={ `${this.isLoading ? "opacity" : ""} content fillSpace subSurface vertical hAlignStretched textCentered` }>
 				{ this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
 					: [
-						options.AddHeaderView && options.AddHeaderView(), 
+						options.AddFirstLineView && options.AddFirstLineView(), 
 						...this.items.map((entry) => {
 							const id = this.getId(entry.item)
 						

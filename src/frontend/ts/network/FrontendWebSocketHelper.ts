@@ -124,8 +124,8 @@ export class FrontendWebSocketHelper {
 		this.sendKeepAlive()
 	}
 	
-	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>): Promise<T | null> {
-		const response = await this.site.socket.sendAndReceive(new ListMessage(table, 0, 1)) as ListResponseMessage<T>
+	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>, order?: keyof T | string, orderType?: "ASC" | "DESC"): Promise<T | null> {
+		const response = await this.site.socket.sendAndReceive(new ListMessage(table, 0, 1, order?.toString(), orderType)) as ListResponseMessage<T>
 		
 		if(response.success && response.list.length != 0)
 			return response.list[0].item
