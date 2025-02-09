@@ -25,7 +25,7 @@ export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitin
 		
 		AddToWaitingMessageAction.createEntry(db, session.userId!, budget)
 		
-		History.addHistory(db, session.userId!, "historyAddToWaiting", [], budget.budgetId)
+		History.addHistory(db, session.userId!, "historyAddToWaiting", [budget.budgetName], budget.budgetId)
 		
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
