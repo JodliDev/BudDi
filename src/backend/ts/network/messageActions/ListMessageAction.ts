@@ -10,6 +10,7 @@ import {FaultyListException} from "../../exceptions/FaultyListException";
 import {Class} from "../../../../shared/Class";
 import {column} from "../../database/column";
 import {TableSettings} from "../../database/TableSettings";
+import {FaultyInputException} from "../../exceptions/FaultyInputException";
 
 // noinspection JSUnusedGlobalSymbols
 export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
@@ -19,7 +20,15 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 		const tableClass = await ListMessageAction.getTableClass(publicTableClass)
 		const obj = new tableClass
 		
+		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
+		
+		if((this.data.orderType && this.data.orderType != "ASC" && this.data.orderType != "DESC")
+			|| (this.data.order && settings.allowedOrderColumns.indexOf(this.data.order) == -1)
+			|| !this.isType(this.data.from, "number")
+			|| !this.isType(this.data.limit, "number")
+		)
+			throw new FaultyInputException()
 		
 		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			tableClass,
@@ -28,7 +37,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 			settings?.getWhere(session),
 			this.data.limit,
 			this.data.from,
-			this.data.order as keyof BasePublicTable,
+			this.data.order,
 			this.data.orderType
 		)
 		
@@ -115,7 +124,7 @@ export class ListMessageAction extends LoggedInMessageAction<ListMessage> {
 			delete values[primaryKey as keyof BasePublicTable]
 		for(const key in values) {
 			if(!Object.prototype.hasOwnProperty.call(publicObj, key))
-				throw new FaultyListException()
+				throw new FaultyInputException()
 		}
 	}
 }

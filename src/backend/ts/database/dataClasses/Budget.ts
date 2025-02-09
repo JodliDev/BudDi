@@ -29,6 +29,7 @@ export class Budget extends PubBudget {
 		
 		settings.setListFilter(session => SqlWhere(Budget).is("userId", session.userId))
 		settings.setFloatValues("spendingSum")
+		settings.setAllowedOrderColumns(["budgetName"])
 
 		return settings
 	}

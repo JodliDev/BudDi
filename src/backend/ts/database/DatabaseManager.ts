@@ -104,7 +104,7 @@ export class DatabaseManager {
 		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
-		order?: keyof T | "RANDOM()",
+		order?: (keyof T | string),
 		orderType: "ASC" | "DESC" = "ASC"
 	): Promise<ListResponseEntry<T>[]> {
 		const joinArray = settings ? await ListMessageAction.getPublicJoinArray(table, settings) : []
@@ -118,7 +118,7 @@ export class DatabaseManager {
 		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
-		order?: keyof T | "RANDOM()",
+		order?: (keyof T | string),
 		orderType: "ASC" | "DESC" = "ASC"
 	): JoinedResponseEntry<T>[] {
 		let selectWithTable = select.map(entry => column(table, entry))

@@ -31,6 +31,7 @@ export class History extends PubHistory {
 		})
 		
 		settings.setListFilter(session => SqlWhere(History).is("userId", session.userId))
+		settings.setAllowedOrderColumns(["historyTime"])
 		return settings
 	}
 	

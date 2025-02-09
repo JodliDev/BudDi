@@ -44,7 +44,7 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	},
 	customOptions?: Vnode<any, unknown>
 	pageSize?: number
-	order?: keyof EntryT
+	order?: (keyof EntryT | string)
 	orderType?: "ASC" | "DESC"
 	callback?: ListWidgetCallback
 }

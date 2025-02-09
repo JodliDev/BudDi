@@ -1,4 +1,3 @@
-import {ConfirmMessage} from "./ConfirmMessage";
 import {PubNeedsPayment} from "../public/PubNeedsPayment";
 import {BinaryUploadMessage} from "./BinaryUploadMessage";
 

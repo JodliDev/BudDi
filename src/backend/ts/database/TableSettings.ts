@@ -9,6 +9,7 @@ export class TableSettings<TableT extends BasePublicTable> {
 	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public readonly floatValues = {} as Record<keyof TableT, boolean>
+	public allowedOrderColumns: (keyof TableT | string)[] = []
 	public hasForeignKeys: boolean = false
 	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
@@ -24,14 +25,6 @@ export class TableSettings<TableT extends BasePublicTable> {
 			return where
 	}
 	
-	/**
-	 * Will usually be used when a data type can not be detected (usually when it is null, or we need a blob).
-	 * @param column column name.
-	 * @param type string definition of the type.
-	 */
-	setDataType(column: keyof TableT, type: SqlDataTypes) {
-		this.dataTypes[column] = type
-	}
 	
 	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">) {
 		this.foreignKeys[column] = { from: column.toString(), ...info }
@@ -55,10 +48,26 @@ export class TableSettings<TableT extends BasePublicTable> {
 		this.onAfterAdd = onAdd
 	}
 	
+	/**
+	 * Adds where conditions whenever the table is used  in {@Link ListMessageAction} / {@link ListWidget}
+	 * @param listFilter
+	 */
 	setListFilter(listFilter: (session: WebSocketSession) => SqlWhereData): void {
 		this.listFilter = listFilter
 	}
 	
+	setAllowedOrderColumns(columns: (keyof TableT | string)[]) {
+		this.allowedOrderColumns = columns
+	}
+	
+	/**
+	 * Will usually be used when a data type can not be detected (usually when it is null, or we need a blob).
+	 * @param column column name.
+	 * @param type string definition of the type.
+	 */
+	setDataType(column: keyof TableT, type: SqlDataTypes) {
+		this.dataTypes[column] = type
+	}
 	setFloatValues(... keys: (keyof TableT)[]) {
 		for(const key of keys) {
 			this.floatValues[key] = true

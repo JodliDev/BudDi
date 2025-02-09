@@ -243,7 +243,7 @@ export class Dashboard extends LoggedInBasePage {
 						tableClass: PubWaiting,
 						site: this.site,
 						hideRefresh: true,
-						order: "budgetName" as keyof PubWaiting,
+						order: "budgetName",
 						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
 						customOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForPayment.bind(this)),
