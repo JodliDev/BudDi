@@ -6,6 +6,7 @@ import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ListMessageAction} from "./ListMessageAction";
 import {TableSettings} from "../../database/TableSettings";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class DeleteMessageAction extends LoggedInMessageAction<DeleteMessage> {
@@ -16,7 +17,7 @@ export class DeleteMessageAction extends LoggedInMessageAction<DeleteMessage> {
 		const obj = new tableClass
 		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
+		const where = SqlWhere(tableClass).is(publicObj.getPrimaryKey() as keyof BasePublicTable, this.data.id)
 		
 		settings?.onBeforeDelete(this.data.id, db, session)
 		const response = db.delete(tableClass, settings?.getWhere(session, where) ?? where, 1)

@@ -6,6 +6,7 @@ import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ListMessageAction} from "./ListMessageAction";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {TableSettings} from "../../database/TableSettings";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
@@ -21,7 +22,7 @@ export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
 		settings?.onBeforeAdd(this.data.values, db, session)
 		
 		const response = db.insert(listClass, this.data.values)
-		const where = `${publicObj.getPrimaryKey().toString()} = ${response}`
+		const where = SqlWhere(listClass).is(publicObj.getPrimaryKey() as keyof BasePublicTable, response)
 		
 		if(response != 0)
 			settings?.onAfterAdd(this.data.values, db, response)

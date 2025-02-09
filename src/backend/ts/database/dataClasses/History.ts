@@ -1,10 +1,10 @@
 import {TableSettings} from "../TableSettings";
-import {column} from "../column";
 import {PubHistory} from "../../../../shared/public/PubHistory";
 import {LangKey} from "../../../../shared/Lang";
 import {DatabaseManager} from "../DatabaseManager";
 import {Budget} from "./Budget";
 import {User} from "./User";
+import {SqlWhere} from "../SqlWhere";
 
 
 export class History extends PubHistory {
@@ -30,7 +30,7 @@ export class History extends PubHistory {
 			data.userId = session.userId
 		})
 		
-		settings.setListFilter(session => `${column(History, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => SqlWhere(History).is("userId", session.userId))
 		return settings
 	}
 	

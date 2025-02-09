@@ -5,10 +5,10 @@ import express from 'express';
 import {Options, PublicOptions} from "./Options";
 import {DailyScheduleManager} from "./DailyScheduleManager";
 import {LoginSession} from "./database/dataClasses/LoginSession";
-import {column} from "./database/column";
 import {writeFileSync} from "node:fs";
 import {Schedule} from "./database/dataClasses/Schedule";
 import {ChooseForPaymentMessageAction} from "./network/messageActions/ChooseForPaymentMessageAction";
+import {SqlWhere} from "./database/SqlWhere";
 
 const LOGIN_SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90
 
@@ -26,12 +26,12 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {
 			const oldestLoginSession = Date.now() - LOGIN_SESSION_MAX_AGE
-			dbManager.delete(LoginSession, `${column(LoginSession, "lastLogin")} < ${oldestLoginSession}`)
+			dbManager.delete(LoginSession, SqlWhere(LoginSession).is("lastLogin", oldestLoginSession))
 		})
 		
 		scheduler.addSchedule({ repeatDays: 1 }, () => {
 			const now = Date.now()
-			const schedules = dbManager.selectTable(Schedule, `${column(Schedule, "enabled")} = 1 AND ${column(Schedule, "nextLoop")} <= ${now}`)
+			const schedules = dbManager.selectTable(Schedule, SqlWhere(Schedule).is("enabled", "1").and().isCompared("<=", "nextLoop", now))
 			console.log(`Found ${schedules.length} Schedules that will run now`)
 			
 			for(const schedule of schedules) {
@@ -43,7 +43,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 				dbManager.update(
 					Schedule,
 					{ "=": { nextLoop: newTimestamp, lastLoop: now } },
-					`${column(Schedule, "scheduleId")} = ${schedule.scheduleId}`
+					SqlWhere(Schedule).is("scheduleId", schedule.scheduleId)
 				)
 			}
 		})

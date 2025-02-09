@@ -7,14 +7,15 @@ import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmRespons
 import {Budget} from "../../database/dataClasses/Budget";
 import {Waiting} from "../../database/dataClasses/Waiting";
 import {History} from "../../database/dataClasses/History";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitingMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [budget] = db.selectTable(
-			Budget, 
-			`${column(Budget, "userId")} = ${session.userId} AND ${column(Budget, "budgetId")} = ${this.data.spendingEntryId}`,
+			Budget,
+			SqlWhere(Budget).is("userId", session.userId).and().is("budgetId", this.data.spendingEntryId),
 			1
 		)
 		if(!budget) {

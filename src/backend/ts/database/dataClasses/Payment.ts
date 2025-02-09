@@ -1,8 +1,8 @@
 import {TableSettings} from "../TableSettings";
-import {column} from "../column";
 import {PubPayment} from "../../../../shared/public/PubPayment";
 import {Budget} from "./Budget";
 import {User} from "./User";
+import {SqlWhere} from "../SqlWhere";
 
 
 export class Payment extends PubPayment {
@@ -28,7 +28,7 @@ export class Payment extends PubPayment {
 			data.userId = session.userId
 		})
 		
-		settings.setListFilter(session => `${column(Payment, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => SqlWhere(Payment).is("userId", session.userId))
 		return settings
 	}
 	

@@ -8,6 +8,7 @@ import {NeedsPayment} from "../../database/dataClasses/NeedsPayment";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
 import {History} from "../../database/dataClasses/History";
 import {Payment} from "../../database/dataClasses/Payment";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
@@ -22,7 +23,7 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 					on: `${column(NeedsPayment, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
-			`${column(NeedsPayment, "userId")} = ${session.userId} AND ${column(NeedsPayment, "needsPaymentId")} = ${this.data.needsPaymentId}`,
+			SqlWhere(NeedsPayment).is("userId", session.userId).and().is("needsPaymentId", this.data.needsPaymentId),
 			1,
 		)
 		const needsPaymentEntry = dbData.item
@@ -42,7 +43,7 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 					spendingTimes: 1
 				}
 			},
-			`${column(Budget, "budgetId")} = ${needsPaymentEntry.budgetId}`
+			SqlWhere(Budget).is("budgetId", needsPaymentEntry.budgetId)
 		)
 		
 		const payment: Partial<Payment> = {
@@ -57,7 +58,7 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 		db.insert(Payment, payment)
 		
 		History.addHistory(db, session.userId!, "historySetAsPaid", [budget.budgetName], needsPaymentEntry.budgetId)
-		db.delete(NeedsPayment, `${column(NeedsPayment, "needsPaymentId")} = ${needsPaymentEntry.needsPaymentId}`)
+		db.delete(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", needsPaymentEntry.needsPaymentId))
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }

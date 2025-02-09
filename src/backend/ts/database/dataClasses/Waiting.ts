@@ -2,8 +2,8 @@ import {Budget} from "./Budget";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubWaiting} from "../../../../shared/public/PubWaiting";
-import {column} from "../column";
 import {ChooseForPaymentMessageAction} from "../../network/messageActions/ChooseForPaymentMessageAction";
+import {SqlWhere} from "../SqlWhere";
 
 export class Waiting extends PubWaiting {
 	getSettings(): TableSettings<this> {
@@ -29,7 +29,7 @@ export class Waiting extends PubWaiting {
 			ChooseForPaymentMessageAction.refillWaitingEntriesIfNeeded(db, session.userId!)
 		})
 		
-		settings.setListFilter(session => `${column(Waiting, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => SqlWhere(Waiting).is("userId", session.userId))
 		
 		
 		return settings

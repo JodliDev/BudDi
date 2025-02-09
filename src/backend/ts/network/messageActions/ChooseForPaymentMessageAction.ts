@@ -9,6 +9,7 @@ import {Waiting} from "../../database/dataClasses/Waiting";
 import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
 import {History} from "../../database/dataClasses/History";
 import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaymentMessage";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseForPaymentMessage> {
@@ -29,7 +30,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 					on: `${column(Waiting, "budgetId")} = ${column(Budget, "budgetId")}`,
 				}
 			],
-			`${column(Waiting, "userId")} = ${userId}`,
+			SqlWhere(Waiting).is("userId", userId),
 			1,
 			undefined,
 			"RANDOM()"
@@ -42,7 +43,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		
 		const [needsSpendingEntry] = db.selectTable(
 			NeedsPayment,
-			`${column(NeedsPayment, "budgetId")} = ${waitingEntry.budgetId}`,
+			SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId),
 			1
 		)
 		
@@ -50,7 +51,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 			db.update(
 				NeedsPayment, 
 				{"+=": {amount: amount}}, 
-				`${column(NeedsPayment, "budgetId")} = ${waitingEntry.budgetId}`
+				SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId)
 			)
 		}
 		else {
@@ -61,7 +62,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 				amount: amount
 			})
 		}
-		db.delete(Waiting, `${column(Waiting, "waitingId")} = ${waitingEntry.waitingId}`)
+		db.delete(Waiting, SqlWhere(Waiting).is("waitingId", waitingEntry.waitingId))
 		
 		History.addHistory(db, userId, "historyChooseForPayment", [budget.budgetName], waitingEntry.budgetId)
 		
@@ -71,13 +72,13 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 	}
 	
 	public static refillWaitingEntriesIfNeeded(db: DatabaseManager, userId: number | bigint) {
-		const entriesLeft = db.getCount(Waiting, `${column(Waiting, "userId")} = ${userId}`)
+		const entriesLeft = db.getCount(Waiting, SqlWhere(Waiting).is("userId", userId))
 		if(entriesLeft != 0)
 			return
 		
 		const possibleSpendingEntries = db.selectTable(
 			Budget,
-			`${column(Budget, "userId")} = ${userId} AND ${column(Budget, "enabled")} = 1`
+			SqlWhere(Budget).is("userId", userId).and().is("enabled", "1")
 		)
 		for(const possibleSpendingEntry of possibleSpendingEntries) {
 			AddToWaitingMessageAction.createEntry(db, userId, possibleSpendingEntry)

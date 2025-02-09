@@ -1,8 +1,8 @@
 import {TableSettings} from "../TableSettings";
 import {PubUser} from "../../../../shared/public/PubUser";
-import {column} from "../column";
 import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
 import {NoPermissionException} from "../../exceptions/NoPermissionException";
+import {SqlWhere} from "../SqlWhere";
 
 
 export class User extends PubUser {
@@ -11,7 +11,7 @@ export class User extends PubUser {
 		
 		settings.setOnBeforeEdit((data, db, session) => {
 			if(Object.prototype.hasOwnProperty.call(data, "username")) {
-				const [existingUser] = db.selectTable(User, `${column(User, "username")} = '${data.username}'`, 1)
+				const [existingUser] = db.selectTable(User, SqlWhere(User).is("username", data.username), 1)
 				if(existingUser && existingUser.userId != session.userId)
 					throw new UsernameAlreadyExistsException()
 			}
@@ -19,7 +19,7 @@ export class User extends PubUser {
 		settings.setOnBeforeAdd((_data, _db, session) => {
 			throw new NoPermissionException()
 		})
-		settings.setListFilter(session => session.isAdmin ? "1" : `${column(User, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => session.isAdmin ? SqlWhere(User) : SqlWhere(User).is("userId", session.userId))
 		return settings
 	}
 	

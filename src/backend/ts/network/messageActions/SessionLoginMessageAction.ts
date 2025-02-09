@@ -1,16 +1,16 @@
 import {BaseBackendMessageAction} from "../BaseBackendMessageAction";
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
-import {column} from "../../database/column";
 import {LoginSession} from "../../database/dataClasses/LoginSession";
 import {SessionLoginMessage} from "../../../../shared/messages/SessionLoginMessage";
 import {User} from "../../database/dataClasses/User";
 import {IsLoggedInMessage} from "../../../../shared/messages/IsLoggedInMessage";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionLoginMessage> {
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const sqlConstraint = `${column(LoginSession, "loginSessionId")} = '${this.data.sessionId}'`
+		const sqlConstraint = SqlWhere(LoginSession).is("loginSessionId", this.data.sessionId)
 		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)
 		if(!loginSession)
 			return
@@ -21,7 +21,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		
 		db.update(LoginSession, { "=": { lastLogin: Date.now()} }, sqlConstraint, 1)
 		
-		const [user] = db.selectTable(User, `${column(User, "userId")} = ${loginSession.userId}`, 1)
+		const [user] = db.selectTable(User, SqlWhere(User).is("userId", loginSession.userId), 1)
 		
 		session.login(user.userId, user.isAdmin)
 		session.send(new IsLoggedInMessage(loginSession.loginSessionId))

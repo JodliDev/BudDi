@@ -2,7 +2,7 @@ import {Budget} from "./Budget";
 import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
-import {column} from "../column";
+import {SqlWhere} from "../SqlWhere";
 
 export class NeedsPayment extends PubNeedsPayment {
 	getSettings(): TableSettings<this> {
@@ -21,7 +21,7 @@ export class NeedsPayment extends PubNeedsPayment {
 			on_delete: "CASCADE"
 		})
 		
-		settings.setListFilter(session => `${column(NeedsPayment, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => SqlWhere(NeedsPayment).is("userId", session.userId))
 		settings.setFloatValues("amount")
 		
 		settings.setOnBeforeAdd((data, db, session) => {

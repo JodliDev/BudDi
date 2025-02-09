@@ -6,6 +6,7 @@ import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {TableSettings} from "../../database/TableSettings";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class EditMessageAction extends LoggedInMessageAction<EditMessage> {
@@ -19,7 +20,7 @@ export class EditMessageAction extends LoggedInMessageAction<EditMessage> {
 		
 		const settings = obj.getSettings() as TableSettings<BasePublicTable>
 		settings?.onBeforeEdit(this.data.values, db, session)
-		const where = `${publicObj.getPrimaryKey().toString()} = ${this.data.id}`
+		const where = SqlWhere(tableClass).is(publicObj.getPrimaryKey() as keyof BasePublicTable, this.data.id)
 		
 		let count = 0
 		for(const _ in this.data.values) {

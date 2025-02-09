@@ -3,8 +3,9 @@ import {DatabaseManager} from "./DatabaseManager";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {WebSocketSession} from "../network/WebSocketSession";
 import {SqlDataTypes} from "./SqlQueryGenerator";
+import {SqlWhereData} from "./SqlWhere";
 
-export class TableSettings<TableT> {
+export class TableSettings<TableT extends BasePublicTable> {
 	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public readonly floatValues = {} as Record<keyof TableT, boolean>
@@ -14,11 +15,11 @@ export class TableSettings<TableT> {
 	public onBeforeEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onBeforeDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onAfterDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
-	private listFilter?: (session: WebSocketSession) => string = undefined
+	private listFilter?: (session: WebSocketSession) => SqlWhereData = undefined
 	
-	public getWhere(session: WebSocketSession, where?: string): string | undefined {
-		if(this.listFilter)
-			return where ? `${where} AND ${this.listFilter(session)}` : this.listFilter(session)
+	public getWhere(session: WebSocketSession, where?: SqlWhereData): SqlWhereData | undefined {
+		if(this.listFilter && this.listFilter(session).isNotEmpty())
+			return where ? this.listFilter(session).combine("AND", where) : this.listFilter(session)
 		else
 			return where
 	}
@@ -54,7 +55,7 @@ export class TableSettings<TableT> {
 		this.onAfterAdd = onAdd
 	}
 	
-	setListFilter(listFilter: (session: WebSocketSession) => string): void {
+	setListFilter(listFilter: (session: WebSocketSession) => SqlWhereData): void {
 		this.listFilter = listFilter
 	}
 	

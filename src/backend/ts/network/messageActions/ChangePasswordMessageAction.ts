@@ -1,11 +1,11 @@
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
-import {column} from "../../database/column";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {User} from "../../database/dataClasses/User";
 import bcrypt from "bcrypt";
 import {ChangePasswordMessage} from "../../../../shared/messages/ChangePasswordMessage";
+import {SqlWhere} from "../../database/SqlWhere";
 
 // noinspection JSUnusedGlobalSymbols
 export class ChangePasswordMessageAction extends LoggedInMessageAction<ChangePasswordMessage> {
@@ -18,7 +18,7 @@ export class ChangePasswordMessageAction extends LoggedInMessageAction<ChangePas
 			{
 				"=": { hashedPassword: hash }
 			},
-			`${column(User, "userId")} = ${session.userId}`
+			SqlWhere(User).is("userId", session.userId)
 		)
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}

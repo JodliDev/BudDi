@@ -2,7 +2,7 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
 import {DailyScheduleManager} from "../../DailyScheduleManager";
-import {column} from "../column";
+import {SqlWhere} from "../SqlWhere";
 
 export class Schedule extends PubSchedule {
 	getSettings(): TableSettings<this> {
@@ -32,7 +32,7 @@ export class Schedule extends PubSchedule {
 		})
 		
 		settings.setOnBeforeEdit((data) => setNextLoop(data))
-		settings.setListFilter(session => `${column(Schedule, "userId")} = ${session.userId}`)
+		settings.setListFilter(session => SqlWhere(Schedule).is("userId", session.userId))
 		
 		settings.setFloatValues("spendingAmount")
 		

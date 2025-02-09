@@ -10,6 +10,7 @@ import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {ListMessageAction} from "../network/messageActions/ListMessageAction";
 import {TableSettings} from "./TableSettings";
 import {User} from "./dataClasses/User";
+import {SqlWhereData} from "./SqlWhere";
 
 
 const DB_NAME = "db.sqlite"
@@ -87,7 +88,7 @@ export class DatabaseManager {
 	
 	public selectTable<T extends BasePublicTable>(
 		table: Class<T>,
-		where?: string,
+		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
 		order?: keyof T | "RANDOM()",
@@ -100,7 +101,7 @@ export class DatabaseManager {
 		table: Class<T>,
 		select: (keyof T)[],
 		settings?: TableSettings<T>,
-		where?: string,
+		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
 		order?: keyof T | "RANDOM()",
@@ -114,7 +115,7 @@ export class DatabaseManager {
 		table: Class<T>,
 		select: (keyof T)[],
 		joinArray: MapToJoinedDataArray<JoinedT>,
-		where?: string,
+		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
 		order?: keyof T | "RANDOM()",
@@ -166,22 +167,22 @@ export class DatabaseManager {
 	private unsafeSelect(
 		tableName: string,
 		select?: string[],
-		where?: string,
+		where?: SqlWhereData,
 		limit?: number,
 		from?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
 		join?: { joinedTableName: string, on: string }[]
 	) {
-		const query = SqlQueryGenerator.createSelectSql(tableName, select, where, limit, from, order, orderType, join)
+		const query = SqlQueryGenerator.createSelectSql(tableName, select, where?.getSql(), limit, from, order, orderType, join)
 		const statement = this.db.prepare(query)
-		return statement.all()
+		return statement.all(...where?.getValues() ?? [])
 	}
 	
-	public getCount<T extends BasePublicTable>(table: Class<T>, where?: string): number {
-		const query = SqlQueryGenerator.createSelectSql(table.name, ["COUNT(*)"], where)
+	public getCount<T extends BasePublicTable>(table: Class<T>, where?: SqlWhereData): number {
+		const query = SqlQueryGenerator.createSelectSql(table.name, ["COUNT(*)"], where?.getSql())
 		const statement = this.db.prepare(query)
-		const result = statement.get() as Record<string, number>
+		const result = statement.get(...where?.getValues() ?? []) as Record<string, number>
 		return result["COUNT(*)"]
 	}
 	
@@ -201,7 +202,7 @@ export class DatabaseManager {
 	public update<T extends BasePublicTable>(
 		table: Class<T>,
 		values: UpdateValues<T>,
-		where: string,
+		where: SqlWhereData,
 		limit: number | undefined = 1
 	) {
 		for(const key in values) {
@@ -212,8 +213,8 @@ export class DatabaseManager {
 		
 		return this.unsafeUpdate(BasePublicTable.getName(table), values, where, limit)
 	}
-	private unsafeUpdate<T extends BasePublicTable>(tableName: string, values: UpdateValues<T>, where: string, limit?: number) {
-		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where, limit)
+	private unsafeUpdate<T extends BasePublicTable>(tableName: string, values: UpdateValues<T>, where: SqlWhereData, limit?: number) {
+		const query = SqlQueryGenerator.createUpdateSql(tableName, values, where.getSql(), limit)
 		
 		const sqlValues: unknown[] = []
 		for(const operator in values) {
@@ -224,15 +225,15 @@ export class DatabaseManager {
 		}
 		
 		const statement = this.db.prepare(query)
-		return statement.run(Object.values(sqlValues)).changes
+		return statement.run(Object.values(sqlValues).concat(...where.getValues())).changes
 	}
 	
-	public delete<T extends BasePublicTable>(table: Class<T>, where: string, limit?: number) {
+	public delete<T extends BasePublicTable>(table: Class<T>, where: SqlWhereData, limit?: number) {
 		return this.unsafeDelete(BasePublicTable.getName(table), where, limit)
 	}
-	private unsafeDelete(tableName: string, where: string, limit?: number) {
-		const query = SqlQueryGenerator.createDeleteSql(tableName, where, limit)
+	private unsafeDelete(tableName: string, where: SqlWhereData, limit?: number) {
+		const query = SqlQueryGenerator.createDeleteSql(tableName, where.getSql(), limit)
 		const statement = this.db.prepare(query)
-		return statement.run().changes
+		return statement.run(...where.getValues()).changes
 	}
 }
