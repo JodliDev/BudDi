@@ -13,7 +13,7 @@ import {column} from "./column";
 import {Payment} from "./dataClasses/Payment";
 
 export class DatabaseInstructions {
-	public version: number = 10
+	public version: number = 11
 	
 	/**
 	 * Order needs to reflect foreign keys
@@ -56,9 +56,6 @@ export class DatabaseInstructions {
 			migrations.renameColumn(Budget, "donationsSum", "spendingSum")
 			migrations.renameColumn(Budget, "donationTimes", "spendingTimes")
 			migrations.renameColumn(Budget, "lastDonation", "lastSpending")
-			
-			// migrations.renameColumn(User, "donationAmountType", "spendingAmountType")
-			// migrations.renameColumn(User, "donationAmount", "spendingAmount")
 			
 			migrations.renameColumn(Waiting, "donationEntryId", "possibleSpendingEntryId")
 		}

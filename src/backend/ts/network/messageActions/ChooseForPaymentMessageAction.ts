@@ -15,7 +15,7 @@ import {SqlWhere} from "../../database/SqlWhere";
 export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseForPaymentMessage> {
 	
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const success = ChooseForPaymentMessageAction.addNewChoice(db, session.userId!, this.data.spendingAmount)
+		const success = ChooseForPaymentMessageAction.addNewChoice(db, session.userId!, this.data.amount)
 		session.send(new ConfirmResponseMessage(this.data, success))
 	}
 	

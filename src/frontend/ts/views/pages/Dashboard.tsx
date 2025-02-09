@@ -88,7 +88,7 @@ export class Dashboard extends LoggedInBasePage {
 					<span>{ entry.budgetName }</span>
 				</h3>
 				<div class="subSurface labelLike">
-					<small>{Lang.get("spendingCount")}</small>
+					<small>{Lang.get("paymentCount")}</small>
 					<span>{entry.spendingTimes}</span>
 				</div>
 				<div class="subSurface labelLike">

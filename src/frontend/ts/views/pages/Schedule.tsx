@@ -88,7 +88,7 @@ export class Schedule extends LoggedInBasePage {
 							editId: this.schedule.scheduleId,
 							defaults: this.schedule,
 							tableClass: PubSchedule,
-							columns: ["spendingAmount", "spendingCount", "fixedDayOfMonth", "repeatDays"],
+							columns: ["amount", "count", "fixedDayOfMonth", "repeatDays"],
 							onFinish: newSchedule => {this.schedule = newSchedule.item},
 							customInputView: (key, value, setValue) => {
 								switch(key) {

@@ -34,7 +34,7 @@ export class Schedule extends PubSchedule {
 		settings.setOnBeforeEdit((data) => setNextLoop(data))
 		settings.setListFilter(session => SqlWhere(Schedule).is("userId", session.userId))
 		
-		settings.setFloatValues("spendingAmount")
+		settings.setFloatValues("amount")
 		
 		return settings
 	}
