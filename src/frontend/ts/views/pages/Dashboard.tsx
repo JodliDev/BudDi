@@ -17,7 +17,6 @@ import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessa
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ImageUpload} from "../../widgets/ImageUpload";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
-import {LoadingSpinner} from "../../widgets/LoadingSpinner";
 import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {PubPayment} from "../../../../shared/public/PubPayment";
 
@@ -36,8 +35,7 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	
 	private paymentAmount: number = 0
-	private setPaidIsLoading: boolean = false
-	private setPaidFeedback: FeedbackCallBack = {}
+	private setPaidFeedback = new FeedbackCallBack()
 	
 	
 	private budgetLineView(budget: PubBudget, addedAt?: number): Vnode {
@@ -179,9 +177,8 @@ export class Dashboard extends LoggedInBasePage {
 					<input type="file" name="receipt" />
 				</label>
 				<div class="horizontal hAlignEnd vAlignCenter">
-					{LoadingSpinner(this.setPaidIsLoading, true)}
 					{FeedbackIcon(this.setPaidFeedback, true)}
-					<input disabled={this.setPaidIsLoading} type="submit" value={Lang.get("save")} />
+					<input disabled={!this.setPaidFeedback.isReady()} type="submit" value={Lang.get("save")} />
 				</div>
 			</form>
 		)

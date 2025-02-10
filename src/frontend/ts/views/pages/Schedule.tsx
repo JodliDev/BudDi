@@ -5,10 +5,8 @@ import {PubSchedule} from "../../../../shared/public/PubSchedule";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
-import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
-import {PubUser} from "../../../../shared/public/PubUser";
 
 export class Schedule extends LoggedInBasePage {
 	private scheduleEnabled: boolean = false
@@ -79,8 +77,6 @@ export class Schedule extends LoggedInBasePage {
 								</div>
 							}
 						</form>
-						
-						
 						
 						{ListEntryEditWidget<PubSchedule>({
 							mode: "edit",

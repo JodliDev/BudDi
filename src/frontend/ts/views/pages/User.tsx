@@ -1,7 +1,6 @@
 import m, { Vnode } from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
-import {LoadingSpinner} from "../../widgets/LoadingSpinner";
 import {ChangePasswordMessage} from "../../../../shared/messages/ChangePasswordMessage";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
@@ -13,23 +12,22 @@ import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
 
 export class User extends LoggedInBasePage {
 	private user = new PubUser()
-	private passwordSaving: boolean = false
-	private passwordFeedback: FeedbackCallBack = {}
+	private passwordFeedback = new FeedbackCallBack()
 	private newPassword: string = ""
 	private newPasswordRepeat: string = ""
 	private confirmDeleteAccount: boolean = false
 	
 	private async changePassword(e: SubmitEvent) {
 		e.preventDefault()
-		this.passwordSaving = true
+		this.passwordFeedback.loading(true)
 		m.redraw()
 		
 		const response = await this.site.socket.sendAndReceive(new ChangePasswordMessage(this.newPassword)) as ConfirmResponseMessage
 		
-		this.passwordFeedback.feedback!(response.success)
+		this.passwordFeedback.feedback(response.success)
 		this.newPassword = ""
 		this.newPasswordRepeat = ""
-		this.passwordSaving = false
+		this.passwordFeedback.loading(false)
 		m.redraw()
 	}
 	
@@ -84,10 +82,9 @@ export class User extends LoggedInBasePage {
 				</label>
 				
 				<div class="horizontal hAlignEnd vAlignCenter">
-					{LoadingSpinner(this.passwordSaving, true)}
 					{FeedbackIcon(this.passwordFeedback, true)}
 					<input type="submit" value={Lang.get("change")}
-						   disabled={this.newPassword.length < PASSWORD_MIN_LENGTH || this.newPassword != this.newPasswordRepeat || this.passwordSaving}/>
+						   disabled={this.newPassword.length < PASSWORD_MIN_LENGTH || this.newPassword != this.newPasswordRepeat || !this.passwordFeedback.isReady()}/>
 				</div>
 			</form>
 			<form class="surface horizontal">

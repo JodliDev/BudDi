@@ -3,7 +3,6 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import m, {Component, Vnode} from "mithril";
 import {BindValueToInput} from "./BindValueToInput";
 import {Lang, LangKey} from "../../../shared/Lang";
-import {LoadingSpinner} from "./LoadingSpinner";
 import {AddMessage} from "../../../shared/messages/AddMessage";
 import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
 import {EditMessage} from "../../../shared/messages/EditMessage";
@@ -25,8 +24,7 @@ interface ListEntryEditComponentOptions<EntryT> {
 }
 
 export class ListEntryEditComponent<EntryT extends BasePublicTable> implements Component<ListEntryEditComponentOptions<EntryT>, unknown> {
-	private isLoading: boolean = false
-	private feedback: FeedbackCallBack = {}
+	private feedback = new FeedbackCallBack()
 	private invalidColumns: Record<string, string> = {}
 	private data: Partial<EntryT> = {}
 	
@@ -82,14 +80,14 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 	
 	private async onSubmit(options: ListEntryEditComponentOptions<EntryT>, e: SubmitEvent): Promise<void> {
 		e.preventDefault()
-		this.isLoading = true
+		this.feedback.loading(true)
 		m.redraw()
 		if(options.mode == "edit")
 			await this.sendEntry(options, new EditMessage(options.tableClass, options.editId ?? -1, this.data), "errorEdit")
 		else
 			await this.sendEntry(options, new AddMessage(options.tableClass, this.data), "errorAdd")
 		
-		this.isLoading = false
+		this.feedback.loading(false)
 		m.redraw()
 	}
 	
@@ -101,7 +99,7 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 		else
 			options.site.errorManager.error(Lang.get(errorKey))
 		
-		this.feedback.feedback!(response.success)
+		this.feedback.feedback(response.success)
 	}
 	
 	view(vNode: Vnode<ListEntryEditComponentOptions<EntryT>, unknown>): Vnode {
@@ -111,9 +109,8 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 			{vNode.attrs.columns.map((column) => this.getTypedInputView(this.data, column, vNode.attrs))}
 			
 			<div class="horizontal hAlignEnd vAlignCenter">
-				{LoadingSpinner(this.isLoading, true)}
 				{FeedbackIcon(this.feedback, true)}
-				<input disabled={this.hasInvalidColumns() || this.isLoading} type="submit" value={Lang.get(isEditMode ? "change" : "add")}/>
+				<input disabled={this.hasInvalidColumns() || !this.feedback.isReady()} type="submit" value={Lang.get(isEditMode ? "change" : "add")}/>
 			</div>
 		</form>
 	}

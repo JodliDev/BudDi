@@ -9,18 +9,17 @@ import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 
 export class Admin extends LoggedInBasePage {
-	private isLoading: boolean = false
-	private feedback: FeedbackCallBack = {}
+	private feedback = new FeedbackCallBack()
 	
 	private async setRegistrationAllowed(value: boolean) {
 		this.site.serverSettings.registrationAllowed = value
-		this.isLoading = true
+		this.feedback.loading(true)
 		m.redraw()
 		
 		const response: ConfirmResponseMessage = await this.site.socket.sendAndReceive(new SetServerSettingsMessage(this.site.serverSettings))
 		
-		this.feedback.feedback!(response.success)
-		this.isLoading = false
+		this.feedback.feedback(response.success)
+		this.feedback.loading(false)
 		m.redraw()
 	}
 	
@@ -40,7 +39,7 @@ export class Admin extends LoggedInBasePage {
 			<div class="surface horizontal vAlignCenter">
 				<label class="fillSpace">
 					<small>{Lang.get("enableRegistration")}</small>
-					<input type="checkbox" disabled={this.isLoading} { ...BindValueToInput(() => this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this)) }/>
+					<input type="checkbox" disabled={!this.feedback.isReady()} { ...BindValueToInput(() => this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this)) }/>
 				</label>
 				{FeedbackIcon(this.feedback, true)}
 			</div>
