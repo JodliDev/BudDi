@@ -3,7 +3,7 @@ import {Login} from "./pages/Login";
 import {Site} from "./Site";
 import {BasePage} from "./BasePage";
 
-export abstract class LoggedInBasePage extends BasePage {
+export abstract class LoggedInBasePage<T extends string = string> extends BasePage<T> {
 	private readonly loginPage: Login
 	private readonly observerId: number
 	

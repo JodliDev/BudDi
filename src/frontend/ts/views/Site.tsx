@@ -53,7 +53,7 @@ export class Site {
 			
 			await this.socket.waitUntilReady()
 			if(this.currentPage.constructor.name != page)
-				this.currentPage = await this.importPage(page)
+				this.currentPage = await this.importPage(page, variablesString)
 			else if(variablesString)
 				this.currentPage.setVariables(variablesString)
 			else
@@ -65,13 +65,13 @@ export class Site {
 		m.redraw()
 	}
 	
-	private async importPage(pageName: string): Promise<BasePage> {
+	private async importPage(pageName: string, variablesString?: string): Promise<BasePage> {
 		try {
 			const loader = await import(`./pages/${pageName}`)
 			if(!loader || !loader.hasOwnProperty(pageName))
 				throw Lang.get("errorPageDoesNotExist", pageName)
 			
-			return new loader[pageName](this) as BasePage
+			return new loader[pageName](this, variablesString) as BasePage
 		}
 		catch(error: unknown) {
 			this.errorManager.error(error)

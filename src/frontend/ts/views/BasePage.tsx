@@ -4,39 +4,52 @@ import { Site } from "./Site";
 import {LoadingSpinner} from "../widgets/LoadingSpinner";
 
 export interface PageVariables {
-	[key: string]: string | undefined
+	[key: string]: string
 }
 
-export abstract class BasePage {
-	private variables?: PageVariables
+export abstract class BasePage<T extends string = string> {
+	private readonly variables: PageVariables = {}
 	public isLoaded: boolean = false
+	public readonly isLoadedPromise: Promise<void>
 	
 	constructor(protected site: Site, variablesString: string) {
-		this.setVariables(variablesString)
+		this.setVariables(variablesString, false)
 		
-		this.loadPage()
+		// loadPage() calls load() which which might use variables from the constructor in some pages.
+		// So we have to defer this call to make sure the Page constructor was finished first
+		this.isLoadedPromise = new Promise(resolve => {
+			window.setTimeout(() => {
+				this.loadPage().then(() => {
+					resolve()
+				})
+			})
+		})
 	}
 	
-	public setVariables(variablesString?: string) {
+	public setVariables(variablesString?: string, fireChangeEvent: boolean = true): void {
 		if(!variablesString) {
-			this.variables = undefined
-			this.onVariablesChanged(undefined)
+			if(fireChangeEvent)
+				this.onVariablesChanged()
 			return
 		}
 		
-		const variables: PageVariables = {}
-		
 		for(const entry of variablesString.split(";")) {
 			const pair = entry.split("=")
-			variables[pair[0]] = pair.length > 1 ? pair[1] : "1"
+			this.variables[pair[0]] = pair.length > 1 ? pair[1] : "1"
 		}
-		this.variables = variables
 		
-		this.onVariablesChanged(variables)
+		if(fireChangeEvent)
+			this.onVariablesChanged()
 	}
 	
-	public onVariablesChanged(variables?: PageVariables): void {
+	protected onVariablesChanged(): void {
 		// needs overload
+	}
+	protected getVariable(key: T): string | undefined {
+		return this.variables[key.toString()]
+	}
+	protected getIntVariable(key: T): number | undefined {
+		return parseInt(this.getVariable(key) ?? "")
 	}
 	
 	public getLoadingView(): Vnode<any, unknown> {
@@ -48,7 +61,7 @@ export abstract class BasePage {
 		return pageView
 	}
 	
-	public async loadPage(): Promise<void> {
+	protected async loadPage(): Promise<void> {
 		try {
 			await this.load()
 			this.isLoaded = true
@@ -59,7 +72,7 @@ export abstract class BasePage {
 		}
 	}
 	
-	public async load(): Promise<void> {
+	protected async load(): Promise<void> {
 		return this.site.socket.waitUntilReady()
 	}
 	public unload(): void {
