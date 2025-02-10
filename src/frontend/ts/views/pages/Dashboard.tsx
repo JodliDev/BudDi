@@ -55,12 +55,6 @@ export class Dashboard extends LoggedInBasePage {
 				</a>
 				: BtnWidget.Empty()
 			}
-			{ entry.paymentUrl.length != 0
-				? <a href={ entry.paymentUrl } target="_blank">
-					{ BtnWidget.PopoverBtn("donate", Lang.get("paymentUrl")) }
-				</a>
-				: BtnWidget.Empty()
-			}
 			<div class="fillSpace">
 				{
 					this.possibleSpendingDropdown(
@@ -196,11 +190,6 @@ export class Dashboard extends LoggedInBasePage {
 									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 								</a>
 							}
-							{ info.budget.paymentUrl.length != 0 &&
-								<a href={ info.budget.paymentUrl } target="_blank">
-									{ BtnWidget.PopoverBtn("donate", Lang.get("paymentUrl")) }
-								</a>
-							}
 							<div class="fillSpace"></div>
 							{
 								DropdownMenu(
@@ -255,7 +244,7 @@ export class Dashboard extends LoggedInBasePage {
 						hideRefresh: true,
 						order: "budgetName",
 						addOptions: {
-							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "enabledForWaitingList", "isTaxExempt"],
+							columns: ["budgetName", "homepage", "iconDataUrl", "enabledForWaitingList", "isTaxExempt"],
 							onAdded: async () => {
 								this.waitingListCallback.reload && await this.waitingListCallback.reload()
 							},
@@ -273,7 +262,7 @@ export class Dashboard extends LoggedInBasePage {
 							}
 						},
 						editOptions: {
-							columns: ["budgetName", "homepage", "paymentUrl", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
+							columns: ["budgetName", "homepage", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
 							onChanged: async () => {
 								await this.waitingListCallback.reload()
 								await this.loadNeedsPayment()

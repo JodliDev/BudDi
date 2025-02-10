@@ -8,10 +8,6 @@ export class PubBudget extends BasePublicTable {
 		switch(key) {
 			case "budgetName":
 				return "name"
-			case "enabledForWaitingList":
-			case "homepage":
-			case "paymentUrl":
-				return key
 			default:
 				return key as LangKey
 		}
@@ -24,7 +20,6 @@ export class PubBudget extends BasePublicTable {
 	public budgetId: number | bigint = 0
 	public budgetName: string = ""
 	public homepage: string = ""
-	public paymentUrl: string = ""
 	public iconDataUrl: string = ""
 	
 	public enabledForWaitingList: boolean = true

@@ -78,7 +78,6 @@ export class DatabaseInstructions {
 		if(fromVersion <= 8) {
 			migrations.renameColumn(Budget, "lastSpending", "lastPayment")
 			migrations.renameColumn(Budget, "spendingName", "budgetName")
-			migrations.renameColumn(Budget, "spendingUrl", "paymentUrl")
 		}
 		
 		return output
