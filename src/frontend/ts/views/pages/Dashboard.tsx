@@ -39,7 +39,7 @@ export class Dashboard extends LoggedInBasePage {
 	
 	
 	private budgetLineView(budget: PubBudget, addedAt?: number): Vnode {
-		return <div class="horizontal fillSpace possibleSpendingEntry overflowHidden">
+		return <div class={`horizontal fillSpace budgetEntry overflowHidden ${budget.enabledForWaitingList ? "" : "notEnabledForWaitingList"}`}>
 			{ addedAt === undefined &&
 				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, budget)) }
 			{ addedAt === undefined &&
@@ -70,11 +70,11 @@ export class Dashboard extends LoggedInBasePage {
 	}
 	private budgetDropdown(clickElement: Vnode, entry: PubBudget, addedAt?: number): Vnode<any, unknown> {
 		return MouseOverDropdownMenu(
-			"possibleSpendingEntry",
-			<div onmousemove={this.positionBudgetDropdown.bind(this)} class="possibleSpendingDropdownClicker">
+			"budgetEntry",
+			<div onmousemove={this.positionBudgetDropdown.bind(this)} class="budgetDropdownClicker">
 				{ clickElement }
 			</div>,
-			() => <div class="surface vertical possibleSpendingDropdownContent">
+			() => <div class="surface vertical budgetDropdownContent">
 				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
 					{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
 					<span>{ entry.budgetName }</span>

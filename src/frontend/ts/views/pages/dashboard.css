@@ -1,41 +1,64 @@
-.needsSpendingBox {
-	margin: 0 29px;
+.page.Dashboard {
 	
-	.possibleSpendingDropdownClicker {
-		overflow: hidden;
+	.needsSpendingBox {
+		margin: 0 29px;
+		
+		.budgetDropdownClicker {
+			overflow: hidden;
+		}
+		
+		.needsSpendingEntry {
+			position: relative;
+			width: 150px;
+			min-width: 150px;
+			height: 150px;
+			overflow: hidden;
+			margin: 5px;
+			
+			.spendingHeader {
+				font-weight: bold;
+				font-size: x-large;
+				padding: 10px;
+			}
+			
+			.btn.remove {
+				position: absolute;
+				right: 0;
+				top: 0;
+			}
+		}
+	}
+	
+	
+	.listWidget {
+		max-width: 90vw;
+		
+		.entry:has(.notEnabledForWaitingList) {
+			outline: 2px solid var(--color-surface);
+			background-color: var(--color-surface);
+			color: var(--color-low-key-text);
+			border-radius: var(--radius);
+		}
+		
+		.budgetEntry {
+			
+			a {
+				height: var(--btnSize);
+			}
+		}
+		
+		.budgetEntry a {
+			height: var(--btnSize);
+		}
 	}
 }
-.possibleSpendingDropdownContent {
+
+.budgetDropdownContent {
 	max-width: 250px;
 	
 	.labelLike span {
 		margin: 5px;
 		padding: 10px;
-	}
-}
-
-.possibleSpendingEntry a {
-	height: var(--btnSize);
-}
-
-.needsSpendingEntry {
-	position: relative;
-	width: 150px;
-	min-width:150px;
-	height: 150px;
-	overflow: hidden;
-	margin: 5px;
-	
-	.spendingHeader {
-		font-weight: bold;
-		font-size: x-large;
-		padding: 10px;
-	}
-	
-	.btn.remove {
-		position: absolute;
-		right: 0;
-		top: 0;
 	}
 }
 
@@ -53,12 +76,4 @@
 	.page.Dashboard .listWidget {
 		width: 700px;
 	}
-}
-.spendingEntry {
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.page.Dashboard .listWidget {
-	max-width: 90vw;
 }
