@@ -27,6 +27,7 @@ class FeedbackIconComponent implements Component<FeedbackIconOptions, unknown> {
 		options.callback.feedback = (success: boolean) => {
 			this.showIcon = true
 			this.success = success
+			this.isLoading = false
 			m.redraw()
 			
 			window.clearTimeout(this.timeoutId)
