@@ -1,39 +1,32 @@
 import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
-import {LoggedInMessageAction} from "../LoggedInMessageAction";
-import {ListMessageAction} from "./ListMessageAction";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
-import {TableSettings} from "../../database/TableSettings";
 import {SqlWhere} from "../../database/SqlWhere";
+import {BaseListMessageAction} from "./BaseListMessageAction";
 
 // noinspection JSUnusedGlobalSymbols
-export class EditMessageAction extends LoggedInMessageAction<EditMessage> {
+export class EditMessageAction extends BaseListMessageAction<EditMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const publicTableClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)
-		const publicObj = new publicTableClass
-		const tableClass = await ListMessageAction.getTableClass(publicTableClass)
-		const obj = new tableClass
+		const values = await this.getValues()
+		this.checkValues(this.data.values, values.publicObj)
 		
-		ListMessageAction.checkValues(this.data.values, publicObj)
-		
-		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		settings?.onBeforeEdit(this.data.values, db, session)
-		const where = SqlWhere(tableClass).is(publicObj.getPrimaryKey() as keyof BasePublicTable, this.data.id)
+		values.settings?.onBeforeEdit(this.data.values, db, session)
+		const where = SqlWhere(values.tableClass).is(values.publicObj.getPrimaryKey() as keyof BasePublicTable, this.data.id)
 		
 		let count = 0
 		for(const _ in this.data.values) {
 			++count
 		}
 		
-		const response = count == 0 ? 1 : db.update(tableClass, { "=": this.data.values }, settings?.getWhere(session, where) ?? where, 1)
+		const response = count == 0 ? 1 : db.update(values.tableClass, { "=": this.data.values }, values.settings?.getWhere(session, where) ?? where, 1)
 		
 		const joinedResponse = await db.selectFullyJoinedPublicTable(
-			tableClass,
-			publicObj.getColumnNames(),
-			settings,
-			settings?.getWhere(session, where) ?? where,
+			values.tableClass,
+			values.publicObj.getColumnNames(),
+			values.settings,
+			values.settings?.getWhere(session, where) ?? where,
 			1
 		)
 		session.send(new ListEntryResponseMessage<BasePublicTable>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))

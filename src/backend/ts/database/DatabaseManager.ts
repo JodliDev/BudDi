@@ -7,10 +7,10 @@ import {DatabaseMigrationManager} from "./DatabaseMigrationManager";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {column} from "./column";
 import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
-import {ListMessageAction} from "../network/messageActions/ListMessageAction";
 import {TableSettings} from "./TableSettings";
 import {User} from "./dataClasses/User";
 import {SqlWhereData} from "./SqlWhere";
+import {FaultyListException} from "../exceptions/FaultyListException";
 
 
 const DB_NAME = "db.sqlite"
@@ -37,7 +37,6 @@ export type UpdateValues<T> = {
 export class DatabaseManager {
 	private readonly db: BetterSqlite3.Database
 	
-	
 	public static async access(dbInstructions: DatabaseInstructions, options: Options): Promise<DatabaseManager> {
 		const manager = new DatabaseManager(options)
 		const db = manager.db
@@ -53,6 +52,57 @@ export class DatabaseManager {
 		Options.serverSettings.registrationAllowed = manager.selectTable(User, undefined, 1).length == 0
 		return manager
 	}
+	
+	
+	public static async getPublicTableClass(tableName: string): Promise<Class<BasePublicTable>> {
+		const className = `Pub${tableName}`
+		const tableClass = await require(`../../../shared/public/${className}`);
+		if(!tableClass)
+			throw new FaultyListException()
+		
+		const c = tableClass[className] as Class<BasePublicTable>
+		if(!c)
+			throw new FaultyListException()
+		return c
+	}
+	
+	private static async getPublicJoinArray<T extends BasePublicTable>(
+		listClass: Class<T>,
+		settings: TableSettings<T>
+	): Promise<JoinedData<BasePublicTable>[]> {
+		const foreignKeys = settings?.foreignKeys
+		const joinArray: JoinedData<BasePublicTable>[] = []
+		for(const key in foreignKeys) {
+			const foreignKey = foreignKeys[key]
+			if(!foreignKey.isPublic)
+				continue
+			
+			joinArray.push(await this.getJoinArray(
+				listClass,
+				foreignKey.table,
+				foreignKey.from as keyof T,
+				foreignKey.to
+			))
+		}
+		return joinArray
+	}
+	
+	private static async getJoinArray<T extends BasePublicTable, ForeignKeyT extends BasePublicTable>(
+		listClass: Class<T>,
+		foreignKeyTable: Class<ForeignKeyT>,
+		on: keyof T,
+		to: keyof ForeignKeyT
+	): Promise<JoinedData<BasePublicTable>> {
+		const joinedPublicClass = await this.getPublicTableClass(BasePublicTable.getName(foreignKeyTable))
+		const joinedObj = new joinedPublicClass
+		
+		return {
+			joinedTable: foreignKeyTable,
+			select: joinedObj.getColumnNames(),
+			on: `${column(listClass, on)} = ${column(foreignKeyTable, to)}`
+		}
+	}
+	
 	
 	private constructor(options: Options) {
 		const path = `${options.root}/${options.sqlite}`
@@ -107,7 +157,7 @@ export class DatabaseManager {
 		order?: (keyof T | string),
 		orderType: "ASC" | "DESC" = "ASC"
 	): Promise<ListResponseEntry<T>[]> {
-		const joinArray = settings ? await ListMessageAction.getPublicJoinArray(table, settings) : []
+		const joinArray = settings ? await DatabaseManager.getPublicJoinArray(table, settings) : []
 		return this.selectJoinedTable(table, select, joinArray, where, limit, from, order, orderType) as ListResponseEntry<T>[]
 	}
 	

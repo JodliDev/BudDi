@@ -1,10 +1,9 @@
-import {ConfirmMessage} from "./ConfirmMessage";
 import {BasePublicTable} from "../BasePublicTable";
 import {Class} from "../Class";
 import {BaseListMessage} from "../BaseListMessage";
 import {ListFilter} from "../ListFilter";
 
-export class ListMessage extends ConfirmMessage implements BaseListMessage{
+export class ListMessage extends BaseListMessage {
 	public readonly listName: string
 	
 	constructor(

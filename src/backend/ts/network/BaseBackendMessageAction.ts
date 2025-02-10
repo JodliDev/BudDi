@@ -10,4 +10,7 @@ export abstract class BaseBackendMessageAction<T extends BaseMessage> {
 	protected isType(value: unknown, type: "string" | "number" | "boolean"): boolean {
 		return typeof value === type
 	}
+	protected stringIsSafe(value: string): boolean {
+		return value.match(/^([A-Za-z0-9 ])+$/) != null
+	}
 }

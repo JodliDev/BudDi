@@ -2,37 +2,32 @@ import {WebSocketSession} from "../WebSocketSession";
 import {DatabaseManager} from "../../database/DatabaseManager";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {AddMessage} from "../../../../shared/messages/AddMessage";
-import {LoggedInMessageAction} from "../LoggedInMessageAction";
-import {ListMessageAction} from "./ListMessageAction";
 import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
-import {TableSettings} from "../../database/TableSettings";
 import {SqlWhere} from "../../database/SqlWhere";
+import {BaseListMessageAction} from "./BaseListMessageAction";
 
 // noinspection JSUnusedGlobalSymbols
-export class AddMessageAction extends LoggedInMessageAction<AddMessage> {
+export class AddMessageAction extends BaseListMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const publicListClass = await ListMessageAction.getPublicTableClassFromMessage(this.data)
-		const publicObj = new publicListClass
-		const listClass = await ListMessageAction.getTableClass(publicListClass)
-		const obj = new listClass
+		const values = await this.getValues()
+		this.checkValues(this.data.values, values.publicObj)
 		
-		ListMessageAction.checkValues(this.data.values, publicObj)
+		this.checkValues(this.data.values, values.publicObj)
 		
-		const settings = obj.getSettings() as TableSettings<BasePublicTable>
-		settings?.onBeforeAdd(this.data.values, db, session)
+		values.settings?.onBeforeAdd(this.data.values, db, session)
 		
-		const response = db.insert(listClass, this.data.values)
-		const where = SqlWhere(listClass).is(publicObj.getPrimaryKey() as keyof BasePublicTable, response)
+		const response = db.insert(values.tableClass, this.data.values)
+		const where = SqlWhere(values.tableClass).is(values.publicObj.getPrimaryKey() as keyof BasePublicTable, response)
 		
 		if(response != 0)
-			settings?.onAfterAdd(this.data.values, db, response)
+			values.settings?.onAfterAdd(this.data.values, db, response)
 		
 		
 		const joinedResponse = await db.selectFullyJoinedPublicTable(
-			listClass,
-			publicObj.getColumnNames(),
-			settings,
-			settings?.getWhere(session, where) ?? where,
+			values.tableClass,
+			values.publicObj.getColumnNames(),
+			values.settings,
+			values.settings?.getWhere(session, where) ?? where,
 			1
 		)
 		session.send(new ListEntryResponseMessage<BasePublicTable>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))

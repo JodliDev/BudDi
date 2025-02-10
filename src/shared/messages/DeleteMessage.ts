@@ -1,8 +1,8 @@
 import {Class} from "../Class";
 import {BasePublicTable} from "../BasePublicTable";
-import {ConfirmMessage} from "./ConfirmMessage";
+import {BaseListMessage} from "../BaseListMessage";
 
-export class DeleteMessage extends ConfirmMessage {
+export class DeleteMessage extends BaseListMessage {
 	public readonly listName: string
 	constructor(
 		tableClass: Class<BasePublicTable>,
