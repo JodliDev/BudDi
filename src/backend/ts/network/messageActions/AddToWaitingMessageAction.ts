@@ -30,11 +30,11 @@ export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitin
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 	
-	public static createEntry(db: DatabaseManager, userId: number | bigint, possibleSpendingEntry: Budget) {
+	public static createEntry(db: DatabaseManager, userId: number | bigint, budget: Budget) {
 		db.insert(Waiting, {
 			userId: userId,
 			addedAt: Date.now(),
-			budgetId: possibleSpendingEntry.budgetId,
+			budgetId: budget.budgetId,
 		})
 		
 	}

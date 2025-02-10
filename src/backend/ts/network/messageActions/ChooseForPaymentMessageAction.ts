@@ -76,12 +76,12 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		if(entriesLeft != 0)
 			return
 		
-		const possibleSpendingEntries = db.selectTable(
+		const budgets = db.selectTable(
 			Budget,
 			SqlWhere(Budget).is("userId", userId).and().is("enabledForWaitingList", "1")
 		)
-		for(const possibleSpendingEntry of possibleSpendingEntries) {
-			AddToWaitingMessageAction.createEntry(db, userId, possibleSpendingEntry)
+		for(const budget of budgets) {
+			AddToWaitingMessageAction.createEntry(db, userId, budget)
 		}
 		
 		History.addHistory(db, userId, "historyRefillList", [])
