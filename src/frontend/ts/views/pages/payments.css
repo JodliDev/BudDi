@@ -1,7 +1,8 @@
 .page.Payments {
 	.listWidget {
-		width: 500px;
+		width: 700px;
 		max-width: 75vw;
+		overflow-y: auto;
 		
 		.content {
 			display: table;
