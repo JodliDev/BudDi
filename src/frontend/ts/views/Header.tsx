@@ -20,9 +20,9 @@ export class Header {
 				{ this.site.loginState.isLoggedIn()
 					? [
 						this.getLine(currentPage, "Dashboard", "dashboard"),
-						this.getLine(currentPage, "Schedule", "schedule"),
-						this.getLine(currentPage, "History", "history"),
 						this.getLine(currentPage, "Payments", "payments"),
+						this.getLine(currentPage, "History", "history"),
+						this.getLine(currentPage, "Schedule", "schedule"),
 						this.getLine(currentPage, "User", "user"),
 					] 
 					: [
