@@ -1,3 +1,5 @@
+import {BasePublicTable} from "./BasePublicTable";
+
 export type Operators = "=" | "<=" | ">=" | "<" | ">"
 
 interface ListFilterEntry {
@@ -7,14 +9,22 @@ interface ListFilterEntry {
 	isForeignKey?: boolean
 }
 
-export class ListFilter {
+export interface ListFilterData {
+	values: ListFilterEntry[]
+	combinator: "and" | "or"
+	
+	isSame(filter: ListFilterData): boolean
+}
+
+export class ListFilterBuilder<T extends BasePublicTable = BasePublicTable> implements ListFilterData {
 	public readonly values: ListFilterEntry[] = []
 	constructor(public readonly combinator: "and" | "or" = "and") { }
 	
-	public addRule(column: string, operator: Operators, value: unknown, isForeignKey?: boolean): void {
-		this.values.push({column: column, operator: operator, value: value, isForeignKey: isForeignKey})
+	public addRule(column: keyof T | string, operator: Operators, value: unknown, isForeignKey?: boolean): this {
+		this.values.push({column: column.toString(), operator: operator, value: value, isForeignKey: isForeignKey})
+		return this
 	}
-	public isSame(filter: ListFilter): boolean {
+	public isSame(filter: ListFilterData): boolean {
 		if(this.combinator != filter.combinator || this.values.length != filter.values.length)
 			return false
 		
@@ -27,4 +37,8 @@ export class ListFilter {
 		
 		return true
 	}
+}
+
+export function ListFilter<T extends BasePublicTable = BasePublicTable>(combinator: "and" | "or" = "and") {
+	return new ListFilterBuilder<T>(combinator)
 }

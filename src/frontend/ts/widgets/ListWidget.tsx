@@ -12,7 +12,7 @@ import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {ListEntryEditComponent} from "./ListEntryEditWidget";
-import {ListFilter} from "../../../shared/ListFilter";
+import {ListFilterData} from "../../../shared/ListFilter";
 
 const PAGE_SIZE = 25;
 
@@ -48,7 +48,7 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	pageSize?: number
 	order?: (keyof EntryT | string)
 	orderType?: "ASC" | "DESC",
-	filter?: ListFilter,
+	filter?: ListFilterData,
 	callback?: ListWidgetCallback
 }
 
@@ -67,7 +67,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 		
 		const pageSize = PAGE_SIZE
 		const response = await this.options!.site.socket.sendAndReceive(
-			new ListMessage(options.tableClass, pageNumber * pageSize, pageSize, options.order ? options.order.toString() : undefined, options.orderType, options.filter)
+			new ListMessage(options.tableClass, pageNumber * pageSize, pageSize, options.filter, options.order ? options.order.toString() : undefined, options.orderType)
 		)
 		const listMessage = response as ListResponseMessage<EntryT>
 		if(!listMessage.success) {

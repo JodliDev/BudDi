@@ -16,6 +16,7 @@ import {SessionLoginMessage} from "../../../shared/messages/SessionLoginMessage"
 import {setCookie} from "../../../shared/Cookies";
 import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
 import {BinaryDownloadMessage} from "../../../shared/messages/BinaryDownloadMessage";
+import {ListFilterData} from "../../../shared/ListFilter";
 
 export class FrontendWebSocketHelper {
 	private static readonly PATH = "websocket"
@@ -124,8 +125,8 @@ export class FrontendWebSocketHelper {
 		this.sendKeepAlive()
 	}
 	
-	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>, order?: keyof T | string, orderType?: "ASC" | "DESC"): Promise<T | null> {
-		const response = await this.site.socket.sendAndReceive(new ListMessage(table, 0, 1, order?.toString(), orderType)) as ListResponseMessage<T>
+	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>, filter?: ListFilterData, order?: keyof T | string, orderType?: "ASC" | "DESC"): Promise<T | null> {
+		const response = await this.site.socket.sendAndReceive(new ListMessage(table, 0, 1, filter, order?.toString(), orderType)) as ListResponseMessage<T>
 		
 		if(response.success && response.list.length != 0)
 			return response.list[0].item

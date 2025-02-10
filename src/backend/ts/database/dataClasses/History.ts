@@ -31,7 +31,8 @@ export class History extends PubHistory {
 		})
 		
 		settings.setListFilter(session => SqlWhere(History).is("userId", session.userId))
-		settings.setAllowedFilterColumns(["historyTime"])
+		settings.setAllowedFilterColumn(History, "budgetId")
+		settings.setAllowedFilterColumn(History, "historyTime")
 		return settings
 	}
 	

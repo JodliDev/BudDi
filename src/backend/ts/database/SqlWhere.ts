@@ -1,7 +1,7 @@
 import {Class} from "../../../shared/Class";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {column} from "./column";
-import {ListFilter, Operators} from "../../../shared/ListFilter";
+import {ListFilterData, Operators} from "../../../shared/ListFilter";
 import {FaultyInputException} from "../exceptions/FaultyInputException";
 import {TableSettings} from "./TableSettings";
 
@@ -16,7 +16,7 @@ export interface SqlWhereData {
 interface StatementBuilder<T extends BasePublicTable> extends SqlWhereData {
 	is(columnName: keyof T, value: unknown): ConnectorBuilder<T>
 	isCompared(operator: Operators, columnName: keyof T, value: unknown): ConnectorBuilder<T>
-	isComparedForeignKey(operator: Operators, columnName: string, value: unknown): ConnectorBuilder<T>
+	isComparedFromOtherTable(operator: Operators, tableClass: Class<T>, columnName: keyof T, value: unknown): ConnectorBuilder<T>
 }
 interface ConnectorBuilder<T extends BasePublicTable> extends SqlWhereData {
 	and(): StatementBuilder<T>
@@ -43,11 +43,11 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 		return this.isCompared("=", columnName, value)
 	}
 	public isCompared(operator: Operators, columnName: keyof T, value: unknown): ConnectorBuilder<T> {
-		return this.isComparedForeignKey(operator, column(this.table, columnName), value)
+		return this.isComparedFromOtherTable(operator, this.table, columnName, value)
 	}
 	
-	public isComparedForeignKey(operator: Operators, columnName: string, value: unknown): ConnectorBuilder<T> {
-		this.sql += ` ${columnName} ${operator} ?`
+	public isComparedFromOtherTable<TOther extends BasePublicTable>(operator: Operators, tableClass: Class<TOther>, columnName: keyof TOther, value: unknown): ConnectorBuilder<T> {
+		this.sql += ` ${column(tableClass, columnName)} ${operator} ?`
 		this.values.push(this.valueToSql(value))
 		return this
 	}
@@ -86,7 +86,7 @@ export function SqlWhere<T extends BasePublicTable>(table: Class<T>): SqlWhereBu
 	return new SqlWhereBuilder(table)
 }
 
-export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, settings: TableSettings<T>, filter: ListFilter): SqlWhereData | undefined {
+export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, settings: TableSettings<T>, filter: ListFilterData): SqlWhereData | undefined {
 	if(!filter.values.length)
 		return undefined
 	const builder = new SqlWhereBuilder(table)
@@ -108,10 +108,11 @@ export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, s
 				throw new FaultyInputException()
 		}
 		
-		if(!settings.isAllowedColumn(entry.column))
+		const entryTable = settings.getAllowedColumnTable(entry.column)
+		if(!entryTable)
 			throw new FaultyInputException()
-		//We are using the foreignKey variant, because both do pretty much the same and the string was checked anyway
-		builder.isComparedForeignKey(entry.operator, entry.column, entry.value)
+		
+		builder.isComparedFromOtherTable(entry.operator, entryTable, entry.column as keyof BasePublicTable, entry.value)
 		notFirstLoop = true
 	}
 	

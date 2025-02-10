@@ -4,12 +4,13 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {WebSocketSession} from "../network/WebSocketSession";
 import {SqlDataTypes} from "./SqlQueryGenerator";
 import {SqlWhereData} from "./SqlWhere";
+import {Class} from "../../../shared/Class";
 
 export class TableSettings<TableT extends BasePublicTable> {
 	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
 	public readonly floatValues = {} as Record<keyof TableT, boolean>
-	public allowedFilterColumns: (keyof TableT | string)[] = []
+	public allowedFilterColumns = {} as Record<string, Class<BasePublicTable>>
 	public hasForeignKeys: boolean = false
 	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
@@ -56,8 +57,8 @@ export class TableSettings<TableT extends BasePublicTable> {
 		this.listFilter = listFilter
 	}
 	
-	setAllowedFilterColumns(columns: (keyof TableT | string)[]): void {
-		this.allowedFilterColumns = columns
+	setAllowedFilterColumn<T extends BasePublicTable>(tableClass: Class<T>, column: keyof T): void {
+		this.allowedFilterColumns[column.toString()] = tableClass
 	}
 	
 	/**
@@ -74,7 +75,7 @@ export class TableSettings<TableT extends BasePublicTable> {
 		}
 	}
 	
-	public isAllowedColumn(column: string): boolean {
-		return this.allowedFilterColumns.indexOf(column) != -1
+	public getAllowedColumnTable(columnName: string): Class<BasePublicTable> | undefined {
+		return this.allowedFilterColumns[columnName]
 	}
 }

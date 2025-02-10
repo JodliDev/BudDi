@@ -29,7 +29,8 @@ export class Budget extends PubBudget {
 		
 		settings.setListFilter(session => SqlWhere(Budget).is("userId", session.userId))
 		settings.setFloatValues("spendingSum")
-		settings.setAllowedFilterColumns(["budgetName"])
+		settings.setAllowedFilterColumn(Budget, "budgetId")
+		settings.setAllowedFilterColumn(Budget, "budgetName")
 
 		return settings
 	}

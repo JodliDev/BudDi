@@ -46,7 +46,7 @@ export class Payments extends LoggedInBasePage {
 	}
 	
 	getView(): Vnode {
-		const filter = new ListFilter("and")
+		const filter = ListFilter<PubPayment>("and")
 		if(this.selectedYear) {
 			const year = parseInt(this.selectedYear)
 			const first = new Date(year, 0, 1, 0, 0, 0, 0)
@@ -136,6 +136,6 @@ export class Payments extends LoggedInBasePage {
 					}
 				})
 			}
-		</div>;
+		</div>
 	}
 }
