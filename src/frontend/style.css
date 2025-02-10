@@ -84,14 +84,14 @@ label, .labelLike {
 	input[type="checkbox"], input[type="radio"] {
 		margin: 20px 0 15px 5px;
 	}
-	.inputLike {
+	.mainContent, .inputLike {
 		padding: 10px;
 		margin: 5px;
+	}
+	.inputLike {
 		border: 1px solid var(--color-surface-border);
 		border-radius: var(--radius);
 		background-color: var(--color-inside-surface);
-	}
-	span, span.subSurface {
 	}
 }
 
@@ -280,6 +280,6 @@ form {
 
 .icon {
 	margin: 2px;
-	max-width: var(--maxIconSize);
-	max-height: var(--maxIconSize);
+	width: var(--maxIconSize);
+	height: var(--maxIconSize);
 }
