@@ -9,10 +9,9 @@ import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaym
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
 import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {closeDropdown, DropdownMenu, DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
+import {closeDropdown, DropdownComponentOptions, DropdownMenu, DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import "./dashboard.css"
-import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
@@ -41,38 +40,40 @@ export class Dashboard extends LoggedInBasePage {
 	private setPaidFeedback: FeedbackCallBack = {}
 	
 	
-	private positionPossibleSpendingInfo(event: MouseEvent) {
-		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
-	}
-	private possibleSpendingLineView(entry: PubBudget, addedAt?: number): Vnode {
+	private budgetLineView(budget: PubBudget, addedAt?: number): Vnode {
 		return <div class="horizontal fillSpace possibleSpendingEntry overflowHidden">
 			{ addedAt === undefined &&
-				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry)) }
-			
-			{ entry.homepage.length != 0
-				? <a href={ entry.homepage } target="_blank">
+				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, budget)) }
+			{ addedAt === undefined &&
+				this.paymentDropdown(1, budget, undefined)
+			}
+			{ budget.homepage.length != 0
+				? <a href={ budget.homepage } target="_blank">
 					{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
 				</a>
 				: BtnWidget.Empty()
 			}
 			<div class="fillSpace">
 				{
-					this.possibleSpendingDropdown(
+					this.budgetDropdown(
 						<div class="horizontal vAlignCenter">
-							{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
-							{ entry.budgetName }
+							{ budget.iconDataUrl && <img class="icon" src={ budget.iconDataUrl } alt=""/> }
+							{ budget.budgetName }
 						</div>,
-						entry,
+						budget,
 						addedAt
 					)
 				}
 			</div>
 		</div>
 	}
-	private possibleSpendingDropdown(clickElement: Vnode, entry: PubBudget, addedAt?: number): Vnode<any, unknown> {
+	private positionBudgetDropdown(event: MouseEvent) {
+		this.dropdownOptions.updatePositionCallback && this.dropdownOptions.updatePositionCallback(event.clientX, event.clientY)
+	}
+	private budgetDropdown(clickElement: Vnode, entry: PubBudget, addedAt?: number): Vnode<any, unknown> {
 		return MouseOverDropdownMenu(
 			"possibleSpendingEntry",
-			<div onmousemove={this.positionPossibleSpendingInfo.bind(this)} class="possibleSpendingDropdownClicker">
+			<div onmousemove={this.positionBudgetDropdown.bind(this)} class="possibleSpendingDropdownClicker">
 				{ clickElement }
 			</div>,
 			() => <div class="surface vertical possibleSpendingDropdownContent">
@@ -140,7 +141,7 @@ export class Dashboard extends LoggedInBasePage {
 			})
 	}
 	
-	private async setAsPaid(info: NeedsPaymentInformation, event: SubmitEvent) {
+	private async setAsPaid(budget: PubBudget, needsPayment: PubNeedsPayment | undefined, event: SubmitEvent) {
 		event.preventDefault()
 		const target = event.target as HTMLFormElement
 		const elements = target.elements
@@ -153,13 +154,37 @@ export class Dashboard extends LoggedInBasePage {
 			return
 		}
 		
-		const paidMessage = new SetAsPaidMessage(file, file?.type, file?.name, info.needsPayment, parseInt(amount.value) ?? 1)
+		const paidMessage = new SetAsPaidMessage(file, file?.type, file?.name, parseInt(amount.value) ?? 1, budget, needsPayment)
 		const response = await this.site.socket.sendAndReceive(paidMessage) as ConfirmResponseMessage
 		if(response.success) {
 			await this.loadNeedsPayment()
 			await this.allEntriesCallback.reload()
 			closeDropdown("setPaidDialog")
 		}
+	}
+	
+	private paymentDropdown(amount: number, budget: PubBudget, needsPayment: PubNeedsPayment | undefined): Vnode<DropdownComponentOptions, unknown> {
+		return DropdownMenu(
+			"setPaidDialog",
+			BtnWidget.PopoverBtn("donate", Lang.get("addPayment"), () => {
+				this.paymentAmount = amount
+			}),
+			() => <form class="vertical" onsubmit={this.setAsPaid.bind(this, budget, needsPayment)}>
+				<label>
+					<small>{Lang.get("amount")}</small>
+					<input type="number" name="amount" min="0" {...BindValueToInput(() => this.paymentAmount, (value) => this.paymentAmount = value)}/>
+				</label>
+				<label>
+					<small>{Lang.get("receipt")}</small>
+					<input type="file" name="receipt" />
+				</label>
+				<div class="horizontal hAlignEnd vAlignCenter">
+					{LoadingSpinner(this.setPaidIsLoading, true)}
+					{FeedbackIcon(this.setPaidFeedback, true)}
+					<input disabled={this.setPaidIsLoading} type="submit" value={Lang.get("save")} />
+				</div>
+			</form>
+		)
 	}
 	
 	async load(): Promise<void> {
@@ -170,14 +195,14 @@ export class Dashboard extends LoggedInBasePage {
 	getView(): Vnode {
 		return <div class="vertical">
 			<div class="horizontal vAlignStretched hAlignCenter wrapContent needsSpendingBox">
-				{ this.needsPaymentEntries.map(info => 
+				{this.needsPaymentEntries.map(info =>
 					<div class="vertical surface needsSpendingEntry hAlignStretched">
 						<div class="subSurface textCentered spendingHeader">{info.needsPayment.amount}{this.site.getCurrency()}</div>
 						{
-							this.possibleSpendingDropdown(
+							this.budgetDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
-									{ info.budget.iconDataUrl && <img class="icon" src={ info.budget.iconDataUrl } alt=""/> }
-									{ info.budget.budgetName }
+									{info.budget.iconDataUrl && <img class="icon" src={info.budget.iconDataUrl} alt=""/>}
+									{info.budget.budgetName}
 								</div>,
 								info.budget,
 								info.needsPayment.addedAt
@@ -192,27 +217,7 @@ export class Dashboard extends LoggedInBasePage {
 							}
 							<div class="fillSpace"></div>
 							{
-								DropdownMenu(
-									"setPaidDialog",
-									BtnWidget.PopoverBtn("checkCircle", Lang.get("setAsPaid"), () => {
-										this.paymentAmount = info.needsPayment.amount
-									}),
-									() => <form class="vertical" onsubmit={this.setAsPaid.bind(this, info)}>
-										<label>
-											<small>{Lang.get("amount")}</small>
-											<input type="number" name="amount" min="0" {...BindValueToInput(() => this.paymentAmount, (value) => this.paymentAmount = value)}/>
-										</label>
-										<label>
-											<small>{Lang.get("receipt")}</small>
-											<input type="file" name="receipt" />
-										</label>
-										<div class="horizontal hAlignEnd vAlignCenter">
-											{LoadingSpinner(this.setPaidIsLoading, true)}
-											{FeedbackIcon(this.setPaidFeedback, true)}
-											<input disabled={this.setPaidIsLoading} type="submit" value={Lang.get("save")} />
-										</div>
-									</form>
-								)
+								this.paymentDropdown(info.needsPayment.amount, info.budget, info.needsPayment)
 							}
 						</div>
 						{BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsPayment))}
@@ -232,7 +237,7 @@ export class Dashboard extends LoggedInBasePage {
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForPayment.bind(this)),
 						callback: this.waitingListCallback,
 						getEntryView: entry =>
-							this.possibleSpendingLineView(entry.joined.Budget as PubBudget, entry.item.addedAt)
+							this.budgetLineView(entry.joined.Budget as PubBudget, entry.item.addedAt)
 					})
 				}
 				
@@ -281,7 +286,7 @@ export class Dashboard extends LoggedInBasePage {
 							}
 						},
 						callback: this.allEntriesCallback,
-						getEntryView: entry => this.possibleSpendingLineView(entry.item)
+						getEntryView: entry => this.budgetLineView(entry.item)
 					})
 				}
 			</div>
