@@ -307,6 +307,7 @@ export class DatabaseMigrationManager {
 				continue
 			
 			const migrationEntry = migrationData[table.name]
+			const tableInfo = this.sqlGenerator.tables[table.name]
 			
 			if(!migrationEntry.recreate)
 				continue
@@ -319,7 +320,9 @@ export class DatabaseMigrationManager {
 			//load all data from table:
 			const selectSql = SqlQueryGenerator.createSelectSql(
 				migrationEntry.oldTableName ?? table.name,
-				oldColumnList.map((columnInfo => columnInfo.name))
+				oldColumnList
+					.filter((oldColumnInfo) => tableInfo.columns.find(entry => entry.name == oldColumnInfo.name))
+					.map((columnInfo => columnInfo.name))
 			)
 			const statement = backupDb.prepare(selectSql)
 			let data = statement.all() as any[]
@@ -327,8 +330,11 @@ export class DatabaseMigrationManager {
 			if(!data.length)
 				continue
 			
+			// move columns with changed names:
 			this.migrations.loopRenamedColumns(table.name, (oldColumnName, newColumnName) => {
 				for(const entry of data) {
+					if(!entry.hasOwnProperty(oldColumnName))
+						continue
 					entry[newColumnName] = entry[oldColumnName]
 					delete entry[oldColumnName]
 				}
