@@ -28,7 +28,7 @@ class DeleteEntryComponent implements Component<DeleteEntryComponentOptions, unk
 	}
 	
 	view(vNode: Vnode<DeleteEntryComponentOptions, unknown>): Vnode<any, unknown> {
-		return BtnWidget.PopoverBtn("delete", Lang.get("deleteEntryInfo"), () => this.deleteItem(vNode.attrs))
+		return BtnWidget.PopoverBtn("delete", Lang.get("deleteEntry"), () => this.deleteItem(vNode.attrs))
 	}
 }
 	

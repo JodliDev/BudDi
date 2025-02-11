@@ -151,7 +151,7 @@ export class Payments extends LoggedInBasePage {
 									PaymentEditor({
 										site: this.site,
 										iconKey: "edit",
-										langKey: "change",
+										langKey: "changeEntry",
 										amount: payment.amount,
 										fileExists: !!payment.receiptFileName,
 										getMessage: (amount, deleteExistingFile, file) => new EditPaymentMessage(amount, deleteExistingFile, file, file?.type, file?.name, payment),
