@@ -29,7 +29,7 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	title: string,
 	AddFirstLineView?: () => Vnode,
 	AddSubHeader?: () => Vnode,
-	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode | Vnode[],
+	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode<any, unknown> | Vnode<any, unknown>[],
 	hideRefresh?: boolean
 	deleteOptions?: { onDeleted?: () => void },
 	addOptions?: {

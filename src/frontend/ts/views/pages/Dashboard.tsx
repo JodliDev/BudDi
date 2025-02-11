@@ -88,22 +88,14 @@ export class Dashboard extends LoggedInBasePage {
 	
 	private budgetLineView(budget: PubBudget, addedAt?: number): Vnode {
 		return <div class={`horizontal fillSpace budgetEntry overflowHidden ${budget.enabledForWaitingList ? "" : "notEnabledForWaitingList"}`}>
-			{ addedAt === undefined &&
-				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, budget)) }
-			{ addedAt === undefined &&
-				this.getPaymentEditorView(1, budget)
-			}
-			{ budget.homepage.length != 0
-				? <a href={ budget.homepage } target="_blank">
-					{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
-				</a>
+			{budget?.iconDataUrl
+				? <img alt="" src={budget.iconDataUrl} class="icon"/>
 				: BtnWidget.Empty()
 			}
 			<div class="fillSpace">
 				{
 					this.budgetDropdown(
 						<div class="horizontal vAlignCenter">
-							{ budget.iconDataUrl && <img class="icon" src={ budget.iconDataUrl } alt=""/> }
 							<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
 								{ budget.budgetName }
 							</a>
@@ -167,7 +159,9 @@ export class Dashboard extends LoggedInBasePage {
 							this.budgetDropdown(
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
 									{info.budget.iconDataUrl && <img class="icon" src={info.budget.iconDataUrl} alt=""/>}
-									{info.budget.budgetName}
+									<a href={`#${Budget.name}/budgetId=${info.budget.budgetId}`}>
+										{ info.budget.budgetName }
+									</a>
 								</div>,
 								info.budget,
 								info.needsPayment.addedAt
@@ -231,27 +225,17 @@ export class Dashboard extends LoggedInBasePage {
 								}
 							}
 						},
-						editOptions: {
-							columns: ["budgetName", "homepage", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
-							onChanged: async () => {
-								await this.waitingListCallback.reload()
-								await this.loadNeedsPayment()
-							},
-							customInputView: (key, value, setValue) => {
-								switch(key) {
-									case "iconDataUrl":
-										return ImageUpload(value.toString(), 50, setValue)
-								}
-							}
-						},
-						deleteOptions: {
-							onDeleted: async() => {
-								await this.waitingListCallback.reload()
-								await this.loadNeedsPayment()
-							}
-						},
 						callback: this.allEntriesCallback,
-						getEntryView: entry => this.budgetLineView(entry.item)
+						getEntryView: entry => [
+							BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry.item)),
+							this.budgetLineView(entry.item),
+							entry.item.homepage.length != 0
+								? <a class="icon" href={ entry.item.homepage } target="_blank">
+									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
+								</a>
+								: BtnWidget.Empty(),
+							this.getPaymentEditorView(1, entry.item)
+						]
 					})
 				}
 			</div>
