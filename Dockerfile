@@ -4,8 +4,8 @@ ARG NODE_VERSION=20.17.0
 
 FROM node:${NODE_VERSION}-alpine as build
 
-RUN mkdir -p /budgetSpender
-WORKDIR /budgetSpender
+RUN mkdir -p /buddi
+WORKDIR /buddi
 
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
@@ -21,17 +21,17 @@ RUN touch ./dist/frontend/options.js
 FROM node:${NODE_VERSION}-alpine as main
 ENV NODE_ENV production
 
-COPY --from=build /budgetSpender/dist /budgetSpender/dist
-COPY --from=build /budgetSpender/package.json /budgetSpender/package.json
-COPY --from=build /budgetSpender/docker-entrypoint.sh /budgetSpender/docker-entrypoint.sh
+COPY --from=build /buddi/dist /buddi/dist
+COPY --from=build /buddi/package.json /buddi/package.json
+COPY --from=build /buddi/docker-entrypoint.sh /buddi/docker-entrypoint.sh
 
 # Only needed for better exception messages in run_production:
-COPY --from=build /budgetSpender/src/backend /budgetSpender/src/backend
+COPY --from=build /buddi/src/backend /buddi/src/backend
 
 # Only needed for better exception messages in run_production:
-COPY --from=build /budgetSpender/src/shared /budgetSpender/src/shared
+COPY --from=build /buddi/src/shared /buddi/src/shared
 
-WORKDIR /budgetSpender
+WORKDIR /buddi
 
 
 RUN --mount=type=bind,source=package-lock.json,target=package-lock.json \
@@ -40,7 +40,7 @@ RUN --mount=type=bind,source=package-lock.json,target=package-lock.json \
 
 #USER node
 
-VOLUME ./dist/config/
+VOLUME ./dist/buddi/config/
 EXPOSE 1304
 
 # Run the application.
