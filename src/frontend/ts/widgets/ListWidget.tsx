@@ -13,6 +13,7 @@ import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {ListEntryEditComponent} from "./ListEntryEditWidget";
 import {ListFilterData} from "../../../shared/ListFilter";
+import {DeleteEntryWidget} from "./DeleteEntryWidget";
 
 const PAGE_SIZE = 25;
 
@@ -90,29 +91,12 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 			|| (!!newOptions.filter && !oldOptions.filter?.isSame(newOptions.filter))
 	}
 	
-	private getId(entry: EntryT): number {
+	private getId(entry: EntryT): number | bigint {
 		const idColumn = this.idColumn
 		if(!idColumn)
 			return -1
 		
-		return entry[idColumn] as number
-	}
-	
-	private async deleteItem(entry: EntryT) {
-		if(!confirm(Lang.get("confirmDelete")))
-			return
-		const id = this.getId(entry)
-		const response = await this.options!.site.socket.sendAndReceive(
-			new DeleteMessage(this.options!.tableClass, id as number)
-		)
-		
-		if(response.success) {
-			this.items = this.items.filter((r) => this.getId(r.item) != id)
-			this.options?.deleteOptions?.onDeleted && this.options?.deleteOptions?.onDeleted()
-			m.redraw()
-		}
-		else
-			this.options!.site.errorManager.error(Lang.get("errorDelete"))
+		return entry[idColumn] as number | bigint
 	}
 	
 	private async addItem(newData: ListResponseEntry<EntryT>) {
@@ -210,7 +194,18 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 									)
 								
 								}
-								{ options.deleteOptions && BtnWidget.PopoverBtn("delete", Lang.get("deleteEntryInfo"), () => this.deleteItem(entry.item)) }
+								{ options.deleteOptions && 
+									DeleteEntryWidget({
+										site: options.site,
+										entryId: this.getId(entry.item),
+										tableClass: options.tableClass,
+										onDeleted: () => {
+											this.items = this.items.filter((r) => this.getId(r.item) != id)
+											this.options?.deleteOptions?.onDeleted && this.options?.deleteOptions?.onDeleted()
+											m.redraw()
+										}
+									})
+								}
 							</div>
 						})
 					]
