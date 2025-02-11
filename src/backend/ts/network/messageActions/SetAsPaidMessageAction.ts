@@ -10,6 +10,7 @@ import {Payment} from "../../database/dataClasses/Payment";
 import {SqlWhere} from "../../database/SqlWhere";
 import {PubBudget} from "../../../../shared/public/PubBudget";
 import {FaultyInputException} from "../../exceptions/FaultyInputException";
+import {PubUser} from "../../../../shared/public/PubUser";
 
 // noinspection JSUnusedGlobalSymbols
 export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
@@ -18,13 +19,17 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 			throw new FaultyInputException()
 		
 		const [budget] = db.selectTable(PubBudget, SqlWhere(PubBudget).is("budgetId", this.data.budgetId), 1)
+		//We assume that there always will be only one entry per budget: 
+		const [needsPayment] = db.selectTable(NeedsPayment, SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), 1)
 		
-		if(this.data.needsPaymentId){
-			const [needsPayment] = db.selectTable(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", this.data.needsPaymentId), 1)
+		if(needsPayment){
 			if(needsPayment.budgetId != budget.budgetId)
 				throw new FaultyInputException()
 			
-			db.delete(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", needsPayment.needsPaymentId))
+			if(this.data.amount >= needsPayment.amount)
+				db.delete(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", needsPayment.needsPaymentId))
+			else
+				db.update(NeedsPayment, {"-=": {"amount": this.data.amount}}, SqlWhere(NeedsPayment).is("needsPaymentId", needsPayment.needsPaymentId))
 		}
 		
 		
@@ -51,7 +56,9 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 		}
 		db.insert(Payment, payment)
 		
-		History.addHistory(db, session.userId!, "historyAddPayment", [this.data.amount, budget.budgetName], budget.budgetId)
+		const [user] = db.selectTable(PubUser, SqlWhere(PubUser).is("userId", session.userId), 1)
+		
+		History.addHistory(db, session.userId!, "historyAddPayment", [this.data.amount, user.currency, budget.budgetName], budget.budgetId)
 		session.send(new ConfirmResponseMessage(this.data, true))
 	}
 }
