@@ -12,6 +12,7 @@ import {BtnWidget} from "../../widgets/BtnWidget";
 import {DropdownMenu} from "../../widgets/DropdownMenu";
 import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
 import {ImageUpload} from "../../widgets/ImageUpload";
+import {DeleteEntryWidget} from "../../widgets/DeleteEntryWidget";
 
 export class Budget extends LoggedInBasePage<"budgetId"> {
 	private budget: PubBudget | null = null
@@ -62,11 +63,11 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 									<small><a class="mainContent" href={this.budget.homepage} target="_blank">{this.budget.homepage}</a></small>
 								}
 							</div>
-							<div class="vertical vAlignCenter">
-								{ this.budget &&
+							<div class="horizontal vAlignCenter">
+								{ this.budget && [
 									DropdownMenu(
 										"ChangeBudget",
-										BtnWidget.DefaultBtn("edit"),
+										BtnWidget.PopoverBtn("edit", Lang.get("changeEntry")),
 										(close) => ListEntryEditWidget<PubBudget>({
 											mode: "edit",
 											site: this.site,
@@ -85,9 +86,16 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 												this.load()
 											}
 										})
-									)
-									
-								}
+									),
+									DeleteEntryWidget({
+										site: this.site,
+										entryId: this.budget!.budgetId,
+										tableClass: PubBudget,
+										onDeleted: () => {
+											this.site.goto("Dashboard")
+										}
+									})
+								]}
 							</div>
 						</h3>
 						<div class="info vertical">
