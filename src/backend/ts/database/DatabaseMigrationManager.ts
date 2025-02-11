@@ -73,6 +73,11 @@ export class Migrations {
 		}
 	}
 	
+	public getUpdatedColumnName(tableName: string, oldColumnName: string): string {
+		const columnNames = this.migrationData[tableName].renamedColumns.find((columns) => columns[0] == oldColumnName)
+		return columnNames ? columnNames[columnNames.length - 1] : oldColumnName
+	}
+	
 	public willBeRecreated(tableName: string): boolean {
 		return this.migrationData[tableName]?.recreate
 	}
@@ -321,7 +326,9 @@ export class DatabaseMigrationManager {
 			const selectSql = SqlQueryGenerator.createSelectSql(
 				migrationEntry.oldTableName ?? table.name,
 				oldColumnList
-					.filter((oldColumnInfo) => tableInfo.columns.find(entry => entry.name == oldColumnInfo.name))
+					.filter((oldColumnInfo) => tableInfo.columns //only get columns that exist in new version
+						.find(entry => entry.name == this.migrations.getUpdatedColumnName(table.name, oldColumnInfo.name))
+					)
 					.map((columnInfo => columnInfo.name))
 			)
 			const statement = backupDb.prepare(selectSql)
