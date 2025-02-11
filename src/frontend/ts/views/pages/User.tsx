@@ -8,7 +8,7 @@ import {PASSWORD_MIN_LENGTH} from "../../Constants";
 import {DeleteAccountMessage} from "../../../../shared/messages/DeleteAccountMessage";
 import {PubUser} from "../../../../shared/public/PubUser";
 import {LoggedInBasePage} from "../LoggedInBasePage";
-import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
+import {EditEntryWidget} from "../../widgets/EditEntryWidget";
 
 export class User extends LoggedInBasePage {
 	private user = new PubUser()
@@ -57,7 +57,7 @@ export class User extends LoggedInBasePage {
 			<div class="surface vertical vAlignStart">
 				<h3>{Lang.get("settings")}</h3>
 				
-				{ListEntryEditWidget<PubUser>({
+				{EditEntryWidget<PubUser>({
 					mode: "edit",
 					site: this.site,
 					editId: this.user.userId,

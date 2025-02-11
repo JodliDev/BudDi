@@ -11,7 +11,7 @@ import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {FeedbackCallBack, FeedbackIcon} from "./FeedbackIcon";
 
-interface ListEntryEditComponentOptions<EntryT> {
+interface EditEntryComponentOptions<EntryT> {
 	mode: "edit" | "add"
 	site: Site, 
 	tableClass: Class<EntryT>
@@ -23,12 +23,12 @@ interface ListEntryEditComponentOptions<EntryT> {
 	defaults?: EntryT
 }
 
-export class ListEntryEditComponent<EntryT extends BasePublicTable> implements Component<ListEntryEditComponentOptions<EntryT>, unknown> {
+export class EditEntryComponent<EntryT extends BasePublicTable> implements Component<EditEntryComponentOptions<EntryT>, unknown> {
 	private feedback = new FeedbackCallBack()
 	private invalidColumns: Record<string, string> = {}
 	private data: Partial<EntryT> = {}
 	
-	getTypedInputView(data: Partial<EntryT>, column: keyof EntryT, options: ListEntryEditComponentOptions<EntryT>) {
+	getTypedInputView(data: Partial<EntryT>, column: keyof EntryT, options: EditEntryComponentOptions<EntryT>) {
 		const tableClass = new options.tableClass()
 		const obj = options.defaults ?? tableClass
 		const entry = data[column] ?? obj[column]
@@ -78,7 +78,7 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 		return false
 	}
 	
-	private async onSubmit(options: ListEntryEditComponentOptions<EntryT>, e: SubmitEvent): Promise<void> {
+	private async onSubmit(options: EditEntryComponentOptions<EntryT>, e: SubmitEvent): Promise<void> {
 		e.preventDefault()
 		this.feedback.loading(true)
 		m.redraw()
@@ -91,7 +91,7 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 		m.redraw()
 	}
 	
-	private async sendEntry(options: ListEntryEditComponentOptions<EntryT>, message: ConfirmMessage, errorKey: LangKey): Promise<void> {
+	private async sendEntry(options: EditEntryComponentOptions<EntryT>, message: ConfirmMessage, errorKey: LangKey): Promise<void> {
 		const response = await options.site.socket.sendAndReceive(message) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success)
@@ -102,7 +102,7 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 		this.feedback.feedback(response.success)
 	}
 	
-	view(vNode: Vnode<ListEntryEditComponentOptions<EntryT>, unknown>): Vnode {
+	view(vNode: Vnode<EditEntryComponentOptions<EntryT>, unknown>): Vnode {
 		const isEditMode = vNode.attrs.mode == "edit"
 		
 		return <form onsubmit={this.onSubmit.bind(this, vNode.attrs)} class="vertical">
@@ -115,7 +115,7 @@ export class ListEntryEditComponent<EntryT extends BasePublicTable> implements C
 		</form>
 	}
 }
-	
-export function ListEntryEditWidget<EntryT extends BasePublicTable>(options: ListEntryEditComponentOptions<EntryT>): Vnode<ListEntryEditComponentOptions<EntryT>, unknown> {
-	return m(ListEntryEditComponent<EntryT>, options)
+
+export function EditEntryWidget<EntryT extends BasePublicTable>(options: EditEntryComponentOptions<EntryT>): Vnode<EditEntryComponentOptions<EntryT>, unknown> {
+	return m(EditEntryComponent<EntryT>, options)
 }

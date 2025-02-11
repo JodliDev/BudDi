@@ -11,7 +11,7 @@ import {ListResponseEntry, ListResponseMessage} from "../../../shared/messages/L
 import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
-import {ListEntryEditComponent} from "./ListEntryEditWidget";
+import {EditEntryComponent} from "./EditEntryWidget";
 import {ListFilterData} from "../../../shared/ListFilter";
 import {DeleteEntryWidget} from "./DeleteEntryWidget";
 
@@ -152,7 +152,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 					DropdownMenu(
 						`Add~${BasePublicTable.getName(options.tableClass)}`,
 						BtnWidget.PopoverBtn("add", Lang.get("addEntry")),
-						() => m(ListEntryEditComponent<EntryT>, {
+						() => m(EditEntryComponent<EntryT>, {
 							mode: "add",
 							site: options.site,
 							tableClass: options.tableClass,
@@ -180,7 +180,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 									DropdownMenu(
 										`Edit~${BasePublicTable.getName(options.tableClass)}`,
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
-										() => m(ListEntryEditComponent<EntryT>, {
+										() => m(EditEntryComponent<EntryT>, {
 											mode: "edit",
 											site: options.site,
 											editId: id,

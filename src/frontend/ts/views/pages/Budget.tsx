@@ -10,7 +10,7 @@ import {History} from "./History";
 import {Lang} from "../../../../shared/Lang";
 import {BtnWidget} from "../../widgets/BtnWidget";
 import {DropdownMenu} from "../../widgets/DropdownMenu";
-import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
+import {EditEntryWidget} from "../../widgets/EditEntryWidget";
 import {ImageUpload} from "../../widgets/ImageUpload";
 import {DeleteEntryWidget} from "../../widgets/DeleteEntryWidget";
 
@@ -68,7 +68,7 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 									DropdownMenu(
 										"ChangeBudget",
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntry")),
-										(close) => ListEntryEditWidget<PubBudget>({
+										(close) => EditEntryWidget<PubBudget>({
 											mode: "edit",
 											site: this.site,
 											editId: this.budget!.budgetId,

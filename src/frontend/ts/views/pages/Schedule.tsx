@@ -6,7 +6,7 @@ import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessa
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {LoggedInBasePage} from "../LoggedInBasePage";
-import {ListEntryEditWidget} from "../../widgets/ListEntryEditWidget";
+import {EditEntryWidget} from "../../widgets/EditEntryWidget";
 
 export class Schedule extends LoggedInBasePage {
 	private scheduleEnabled: boolean = false
@@ -78,7 +78,7 @@ export class Schedule extends LoggedInBasePage {
 							}
 						</form>
 						
-						{ListEntryEditWidget<PubSchedule>({
+						{EditEntryWidget<PubSchedule>({
 							mode: "edit",
 							site: this.site,
 							editId: this.schedule.scheduleId,
