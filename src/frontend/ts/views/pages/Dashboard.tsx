@@ -19,6 +19,7 @@ import {ImageUpload} from "../../widgets/ImageUpload";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
 import {PubPayment} from "../../../../shared/public/PubPayment";
+import {Budget} from "./Budget";
 
 interface NeedsPaymentInformation {
 	budget: PubBudget
@@ -56,7 +57,9 @@ export class Dashboard extends LoggedInBasePage {
 					this.budgetDropdown(
 						<div class="horizontal vAlignCenter">
 							{ budget.iconDataUrl && <img class="icon" src={ budget.iconDataUrl } alt=""/> }
-							{ budget.budgetName }
+							<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
+								{ budget.budgetName }
+							</a>
 						</div>,
 						budget,
 						addedAt
@@ -77,24 +80,24 @@ export class Dashboard extends LoggedInBasePage {
 			() => <div class="surface vertical budgetDropdownContent">
 				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
 					{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
-					<span>{ entry.budgetName }</span>
+					<span class="mainContent">{ entry.budgetName }</span>
 				</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("paymentCount")}</small>
-					<span>{entry.spendingTimes}</span>
+					<span class="mainContent">{entry.spendingTimes}</span>
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("totalSpending")}</small>
-					<span>{entry.spendingSum}{this.site.getCurrency()}</span>
+					<span class="mainContent">{entry.spendingSum}{this.site.getCurrency()}</span>
 				</div>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("lastPayment")}</small>
-					<span>{entry.lastPayment ? (new Date(entry.lastPayment)).toLocaleDateString() : Lang.get("nothingYet")}</span>
+					<span class="mainContent">{entry.lastPayment ? (new Date(entry.lastPayment)).toLocaleDateString() : Lang.get("nothingYet")}</span>
 				</div>
 				{ !!addedAt &&
 					<div class="subSurface labelLike">
 						<small>{Lang.get("addedAt")}</small>
-						<span>{(new Date(addedAt)).toLocaleDateString()}</span>
+						<span class="mainContent">{(new Date(addedAt)).toLocaleDateString()}</span>
 					</div>
 				}
 			</div>,

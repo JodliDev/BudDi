@@ -5,8 +5,18 @@ import {LoggedInBasePage} from "../LoggedInBasePage";
 import {PubHistory} from "../../../../shared/public/PubHistory";
 import "./history.css"
 import {PubBudget} from "../../../../shared/public/PubBudget";
+import {Site} from "../Site";
+import {ListFilter} from "../../../../shared/ListFilter";
 
 export class History extends LoggedInBasePage {
+	constructor(
+		site: Site,
+		variableString: string,
+		public budgetId?: number | bigint
+	) {
+		super(site, variableString)
+	}
+	
 	getView(): Vnode {
 		return <div class="vertical hAlignCenter">
 			{
@@ -16,6 +26,7 @@ export class History extends LoggedInBasePage {
 					order: "historyTime",
 					orderType: "DESC",
 					site: this.site,
+					filter: this.budgetId ? ListFilter<PubHistory>().addRule("budgetId", "=", this.budgetId) : undefined,
 					getEntryView: entry => {
 						const budget = entry.joined["Budget"] as PubBudget
 						return <div class="historyLine labelLike fillSpace">

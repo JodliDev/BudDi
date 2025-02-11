@@ -1,0 +1,15 @@
+.page.Budget {
+	.budget {
+		.surface {
+			width: 700px;
+			max-width: 75vw;
+		}
+		.header {
+			flex: 1 1;
+		}
+		.info .labelLike {
+			flex: 1 1;
+			min-width: 100px;
+		}
+	}
+}

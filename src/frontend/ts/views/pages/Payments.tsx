@@ -9,6 +9,7 @@ import {DownloadReceiptMessage} from "../../../../shared/messages/DownloadReceip
 import "./payments.css"
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {ListFilter} from "../../../../shared/ListFilter";
+import {Site} from "../Site";
 
 export class Payments extends LoggedInBasePage {
 	private isTaxExempt: boolean = false;
@@ -16,8 +17,15 @@ export class Payments extends LoggedInBasePage {
 	private selectedYear: string = ""
 	private paymentsCallback: ListWidgetCallback = new ListWidgetCallback()
 	
+	constructor(
+		site: Site,
+		variableString: string,
+		public budgetId?: number | bigint
+	) {
+		super(site, variableString)
+	}
 	async load(): Promise<void> {
-		const payment = await this.site.socket.getSingleEntry(PubPayment, "paymentTime", "ASC")
+		const payment = await this.site.socket.getSingleEntry(PubPayment, undefined, "paymentTime", "ASC")
 		
 		if(payment) {
 			const last = new Date(payment.paymentTime).getFullYear()
@@ -56,6 +64,8 @@ export class Payments extends LoggedInBasePage {
 		}
 		if(this.isTaxExempt)
 			filter.addRule("isTaxExempt", "=", true)
+		if(this.budgetId)
+			filter.addRule("budgetId", "=", this.budgetId)
 		
 		return <div class="vertical hAlignCenter">
 			{
@@ -91,42 +101,43 @@ export class Payments extends LoggedInBasePage {
 						</label>
 					</form>,
 				AddFirstLineView: () => <tr>
-						<th></th>
-						<th>{Lang.get("budget")}</th>
-						<th>{Lang.get("date")}</th>
-						<th>{Lang.get("time")}</th>
-						<th>{Lang.get("amount")}</th>
-						<th></th>
+						<th class="name">{Lang.get("budget")}</th>
+						<th class="date">{Lang.get("date")}</th>
+						<th class="time">{Lang.get("time")}</th>
+						<th class="amount">{Lang.get("amount")}</th>
+						<th class="recipes"></th>
 					</tr>,
 					getEntryView: entry => {
 						const payment = entry.item
 						const budget = entry.joined["Budget"] as PubBudget
 						
 						return [
-							<td>{budget?.iconDataUrl
-								? <img alt="" src={budget.iconDataUrl}/>
-								: BtnWidget.Empty()
-							}</td>,
-							<td class="textLeft">
+							<td class="name overflowHidden">
+								<div class="horizontal vAlignCenter">
+								{budget?.iconDataUrl
+									? <img alt="" src={budget.iconDataUrl} class="icon"/>
+									: BtnWidget.Empty()
+								}
 								{budget.budgetName}
+								</div>
 							</td>,
-							<td>
+							<td class="date">
 								{(new Date(payment.paymentTime)).toLocaleDateString(undefined, {
 									year: "numeric",
 									month: "2-digit",
 									day: "2-digit"
 								})}
 							</td>,
-							<td>
+							<td class="time">
 								{(new Date(payment.paymentTime)).toLocaleTimeString(undefined, {
 									timeStyle: "short"
 								})}
 							</td>,
-							<td>
+							<td class="amount">
 								{payment.amount}
 								{this.site.getCurrency()}
 							</td>,
-							<td>
+							<td class="recipes">
 								{payment.receiptFileName
 									? BtnWidget.PopoverBtn("receipt", Lang.get("downloadReceipt"), this.downloadReceipt.bind(this, payment))
 									: BtnWidget.Empty()

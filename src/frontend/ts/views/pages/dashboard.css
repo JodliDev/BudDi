@@ -55,11 +55,6 @@
 
 .budgetDropdownContent {
 	max-width: 250px;
-	
-	.labelLike span {
-		margin: 5px;
-		padding: 10px;
-	}
 }
 
 @media (width <= 800px) {

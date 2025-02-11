@@ -1,11 +1,13 @@
-.page.Payments {
+.Payments {
 	.listWidget {
 		width: 700px;
 		max-width: 75vw;
-		overflow-y: auto;
 		
 		.content {
 			display: table;
+			table-layout: fixed;
+			width: 95%;
+			align-self: center;
 			
 			.entry {
 				display: table-row;
@@ -16,8 +18,31 @@
 					border-top: 1px solid var(--color-surface-border);
 				}
 				
-				td.textLeft {
+				td.name {
 					text-align: left;
+				}
+			}
+			.date {
+				width: 110px;
+			}
+			.time {
+				width: 65px;
+			}
+			.amount {
+				width: 50px;
+			}
+			.recipes {
+				width: 35px;
+			}
+			
+			@media (width <= 450px) {
+				.time {
+					display: none;
+				}
+			}
+			@media (width <= 350px) {
+				.date {
+					display: none;
 				}
 			}
 		}

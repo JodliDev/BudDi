@@ -66,6 +66,7 @@
 	"name": "Name",
 	"newPassword": "New password",
 	"nextScheduleLoop": "Next run",
+	"no": "No",
 	"noEntries": "No entries",
 	"nothingYet": "Nothing yet",
 	"paymentCount": "Number of Payments",
@@ -89,5 +90,6 @@
 	"username": "Username",
 	"user": "User",
 	"waitingToBeChosen": "Waiting to be chosen",
-	"year": "Year"
+	"year": "Year",
+	"yes": "Yes"
 }

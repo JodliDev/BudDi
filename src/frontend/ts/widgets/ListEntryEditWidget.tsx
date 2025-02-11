@@ -16,7 +16,7 @@ interface ListEntryEditComponentOptions<EntryT> {
 	site: Site, 
 	tableClass: Class<EntryT>
 	columns: (keyof EntryT)[],
-	customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode | undefined,
+	customInputView?: (key: keyof EntryT, value: EntryT[keyof EntryT], setValue: (value: EntryT[keyof EntryT]) => void) => Vnode<any, any> | undefined,
 	editId?: number | bigint,
 	onFinish?: (newData: ListResponseEntry<EntryT>) => void,
 	getValueError?: (key: keyof EntryT, value: unknown) => string | undefined
