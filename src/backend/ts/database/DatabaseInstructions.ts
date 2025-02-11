@@ -52,7 +52,6 @@ export class DatabaseInstructions {
 			
 			migrations.renameColumn(Budget, "donationEntryId", "possibleSpendingEntryId")
 			migrations.renameColumn(Budget, "donationName", "spendingName")
-			migrations.renameColumn(Budget, "donationUrl", "spendingUrl")
 			migrations.renameColumn(Budget, "donationsSum", "spendingSum")
 			migrations.renameColumn(Budget, "donationTimes", "spendingTimes")
 			migrations.renameColumn(Budget, "lastDonation", "lastSpending")
