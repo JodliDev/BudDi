@@ -10,6 +10,9 @@ import "./payments.css"
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {ListFilter} from "../../../../shared/ListFilter";
 import {Site} from "../Site";
+import {Budget} from "./Budget";
+import {PaymentEditor} from "../elements/PaymentEditor";
+import {EditPaymentMessage} from "../../../../shared/messages/EditPaymentMessage";
 
 export class Payments extends LoggedInBasePage {
 	private isTaxExempt: boolean = false;
@@ -100,7 +103,7 @@ export class Payments extends LoggedInBasePage {
 							<input type="checkbox" {...BindValueToInput(() => this.isTaxExempt, (value) => this.isTaxExempt = value)} />
 						</label>
 					</form>,
-				AddFirstLineView: () => <tr>
+					AddFirstLineView: () => <tr>
 						<th class="name">{Lang.get("budget")}</th>
 						<th class="date">{Lang.get("date")}</th>
 						<th class="time">{Lang.get("time")}</th>
@@ -114,11 +117,13 @@ export class Payments extends LoggedInBasePage {
 						return [
 							<td class="name overflowHidden">
 								<div class="horizontal vAlignCenter">
-								{budget?.iconDataUrl
-									? <img alt="" src={budget.iconDataUrl} class="icon"/>
-									: BtnWidget.Empty()
-								}
-								{budget.budgetName}
+									{budget?.iconDataUrl
+										? <img alt="" src={budget.iconDataUrl} class="icon"/>
+										: BtnWidget.Empty()
+									}
+									<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
+										{ budget.budgetName }
+									</a>
 								</div>
 							</td>,
 							<td class="date">
@@ -137,10 +142,26 @@ export class Payments extends LoggedInBasePage {
 								{payment.amount}
 								{this.site.getCurrency()}
 							</td>,
-							<td class="recipes">
-								{payment.receiptFileName
+							<td class="recipes horizontal">
+								{!!payment.receiptFileName
 									? BtnWidget.PopoverBtn("receipt", Lang.get("downloadReceipt"), this.downloadReceipt.bind(this, payment))
 									: BtnWidget.Empty()
+								}
+								{
+									PaymentEditor({
+										site: this.site,
+										iconKey: "edit",
+										langKey: "change",
+										amount: payment.amount,
+										fileExists: !!payment.receiptFileName,
+										getMessage: (amount, deleteExistingFile, file) => new EditPaymentMessage(amount, deleteExistingFile, file, file?.type, file?.name, payment),
+										onFinish: async (response, _) => {
+											if(response.success) {
+												await this.paymentsCallback.reload()
+												m.redraw()
+											}
+										}
+									})
 								}
 							</td>
 						]

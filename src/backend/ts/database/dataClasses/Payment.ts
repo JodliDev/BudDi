@@ -6,6 +6,8 @@ import {SqlWhere} from "../SqlWhere";
 
 
 export class Payment extends PubPayment {
+	static readonly RECIPE_FILE_NAME_MIN_LENGTH: number = 3
+	
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		

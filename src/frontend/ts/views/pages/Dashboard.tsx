@@ -8,18 +8,15 @@ import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
 import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaymentMessage";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
-import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
-import {closeDropdown, DropdownComponentOptions, DropdownMenu, DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
-import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
+import {DropdownOptions, MouseOverDropdownMenu} from "../../widgets/DropdownMenu";
 import "./dashboard.css"
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessage";
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ImageUpload} from "../../widgets/ImageUpload";
-import {BindValueToInput} from "../../widgets/BindValueToInput";
-import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
-import {PubPayment} from "../../../../shared/public/PubPayment";
 import {Budget} from "./Budget";
+import {PaymentEditor} from "../elements/PaymentEditor";
+import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 
 interface NeedsPaymentInformation {
 	budget: PubBudget
@@ -35,16 +32,66 @@ export class Dashboard extends LoggedInBasePage {
 		disableMenuPointerEvents: true
 	}
 	
-	private paymentAmount: number = 0
-	private setPaidFeedback = new FeedbackCallBack()
+	private async addToWaitList(entry: PubBudget): Promise<void> {
+		const response = await this.site.socket.sendAndReceive(new AddToWaitingMessage(entry))
+		if(response.success)
+			await this.waitingListCallback.reload()
+	}
 	
+	private async chooseForPayment(): Promise<void> {
+		const amount = prompt(Lang.get("promptSpendingAmount"), "1")
+		if(!amount || Number.isNaN(amount))
+			return
+		const response = await this.site.socket.sendAndReceive(new ChooseForPaymentMessage(parseFloat(amount)))
+		if(!response.success)
+			return
+		
+		await this.loadNeedsPayment()
+		await this.waitingListCallback.reload()
+	}
+	
+	private async removeFromSpending(entry: PubNeedsPayment): Promise<void> {
+		if(!confirm(Lang.get("confirmDelete")))
+			return
+		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsPayment, entry.needsPaymentId))
+		
+		await this.loadNeedsPayment()
+	}
+	
+	private async loadNeedsPayment(): Promise<void> {
+		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsPayment, 0, 100)) as ListResponseMessage<PubNeedsPayment>
+		if(response.success)
+			this.needsPaymentEntries = response.list.map(entry => {
+				return {
+					budget: entry.joined["Budget"] as PubBudget,
+					needsPayment: entry.item
+				}
+			})
+	}
+	
+	private getPaymentEditorView(amount: number, budget: PubBudget): Vnode<any, unknown> {
+		return PaymentEditor({
+			site: this.site,
+			iconKey: "donate",
+			langKey: "addPayment",
+			amount: amount,
+			getMessage: (amount, _, file) => new AddPaymentMessage(amount, file, file?.type, file?.name, budget),
+			onFinish: async (response, amount) => {
+				if(response.success) {
+					await this.loadNeedsPayment()
+					await this.allEntriesCallback.reload()
+					this.site.errorManager.log(Lang.get("historyAddPayment", amount, this.site.getCurrency(), budget.budgetName))
+				}
+			}
+		})
+	}
 	
 	private budgetLineView(budget: PubBudget, addedAt?: number): Vnode {
 		return <div class={`horizontal fillSpace budgetEntry overflowHidden ${budget.enabledForWaitingList ? "" : "notEnabledForWaitingList"}`}>
 			{ addedAt === undefined &&
 				BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, budget)) }
 			{ addedAt === undefined &&
-				this.paymentDropdown(1, budget, undefined)
+				this.getPaymentEditorView(1, budget)
 			}
 			{ budget.homepage.length != 0
 				? <a href={ budget.homepage } target="_blank">
@@ -105,88 +152,6 @@ export class Dashboard extends LoggedInBasePage {
 		)
 	}
 	
-	private async addToWaitList(entry: PubBudget): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new AddToWaitingMessage(entry))
-		if(response.success)
-			await this.waitingListCallback.reload()
-	}
-	
-	private async chooseForPayment(): Promise<void> {
-		const amount = prompt(Lang.get("promptSpendingAmount"), "1")
-		if(!amount || Number.isNaN(amount))
-			return
-		const response = await this.site.socket.sendAndReceive(new ChooseForPaymentMessage(parseFloat(amount)))
-		if(!response.success)
-			return
-		
-		await this.loadNeedsPayment()
-		await this.waitingListCallback.reload()
-	}
-	
-	private async removeFromSpending(entry: PubNeedsPayment): Promise<void> {
-		if(!confirm(Lang.get("confirmDelete")))
-			return
-		await this.site.socket.sendAndReceive(new DeleteMessage(PubNeedsPayment, entry.needsPaymentId))
-		
-		await this.loadNeedsPayment()
-	}
-	
-	private async loadNeedsPayment(): Promise<void> {
-		const response = await this.site.socket.sendAndReceive(new ListMessage(PubNeedsPayment, 0, 100)) as ListResponseMessage<PubNeedsPayment>
-		if(response.success)
-			this.needsPaymentEntries = response.list.map(entry => {
-				return {
-					budget: entry.joined["Budget"] as PubBudget,
-					needsPayment: entry.item
-				}
-			})
-	}
-	
-	private async setAsPaid(budget: PubBudget, needsPayment: PubNeedsPayment | undefined, event: SubmitEvent) {
-		event.preventDefault()
-		const target = event.target as HTMLFormElement
-		const elements = target.elements
-		const amount = elements.namedItem("amount") as HTMLInputElement
-		const receipt = elements.namedItem("receipt") as HTMLInputElement
-		const file = receipt.files ? receipt.files[0] as File : undefined
-		
-		if(file && file.size > PubPayment.RECEIPT_MAX_SIZE) {
-			this.site.errorManager.error(Lang.get("errorFileTooBig", PubPayment.RECEIPT_MAX_SIZE / 1e+6))
-			return
-		}
-		
-		const paidMessage = new SetAsPaidMessage(file, file?.type, file?.name, parseInt(amount.value) ?? 1, budget, needsPayment)
-		const response = await this.site.socket.sendAndReceive(paidMessage) as ConfirmResponseMessage
-		if(response.success) {
-			await this.loadNeedsPayment()
-			await this.allEntriesCallback.reload()
-			closeDropdown("setPaidDialog")
-		}
-	}
-	
-	private paymentDropdown(amount: number, budget: PubBudget, needsPayment: PubNeedsPayment | undefined): Vnode<DropdownComponentOptions, unknown> {
-		return DropdownMenu(
-			"setPaidDialog",
-			BtnWidget.PopoverBtn("donate", Lang.get("addPayment"), () => {
-				this.paymentAmount = amount
-			}),
-			() => <form class="vertical" onsubmit={this.setAsPaid.bind(this, budget, needsPayment)}>
-				<label>
-					<small>{Lang.get("amount")}</small>
-					<input type="number" name="amount" min="0" {...BindValueToInput(() => this.paymentAmount, (value) => this.paymentAmount = value)}/>
-				</label>
-				<label>
-					<small>{Lang.get("receipt")}</small>
-					<input type="file" name="receipt" />
-				</label>
-				<div class="horizontal hAlignEnd vAlignCenter">
-					{FeedbackIcon(this.setPaidFeedback, true)}
-					<input disabled={!this.setPaidFeedback.isReady()} type="submit" value={Lang.get("save")} />
-				</div>
-			</form>
-		)
-	}
-	
 	async load(): Promise<void> {
 		await super.load()
 		await this.loadNeedsPayment()
@@ -217,7 +182,7 @@ export class Dashboard extends LoggedInBasePage {
 							}
 							<div class="fillSpace"></div>
 							{
-								this.paymentDropdown(info.needsPayment.amount, info.budget, info.needsPayment)
+								this.getPaymentEditorView(info.needsPayment.amount, info.budget)
 							}
 						</div>
 						{BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsPayment))}

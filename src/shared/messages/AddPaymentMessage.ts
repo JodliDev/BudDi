@@ -1,21 +1,17 @@
-import {PubNeedsPayment} from "../public/PubNeedsPayment";
 import {BinaryUploadMessage} from "./BinaryUploadMessage";
 import {PubBudget} from "../public/PubBudget";
 
-export class SetAsPaidMessage extends BinaryUploadMessage {
+export class AddPaymentMessage extends BinaryUploadMessage {
 	public readonly budgetId: number | bigint
-	public readonly needsPaymentId?: number | bigint
 	
 	constructor(
+		public readonly amount: number,
 		sendFile: Blob | undefined,
 		public readonly receiptFileType: string | undefined,
 		public readonly receiptFileName: string | undefined,
-		public readonly amount: number,
-		budget: PubBudget,
-		payment?: PubNeedsPayment
+		budget: PubBudget
 	) {
 		super(sendFile)
 		this.budgetId = budget.budgetId
-		this.needsPaymentId = payment?.needsPaymentId
 	}
 }

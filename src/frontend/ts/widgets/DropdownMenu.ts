@@ -233,6 +233,10 @@ export function NativeDropdownMenu(
 	})
 }
 
+export function dropdownIsOpened(id: string): boolean {
+	return openedMenus.hasOwnProperty(id)
+}
+
 export function closeDropdown(id: string): void {
 	openedMenus[id]?.close()
 }

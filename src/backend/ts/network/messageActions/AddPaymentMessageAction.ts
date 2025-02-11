@@ -4,25 +4,24 @@ import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {Budget} from "../../database/dataClasses/Budget";
 import {NeedsPayment} from "../../database/dataClasses/NeedsPayment";
-import {SetAsPaidMessage} from "../../../../shared/messages/SetAsPaidMessage";
+import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 import {History} from "../../database/dataClasses/History";
 import {Payment} from "../../database/dataClasses/Payment";
 import {SqlWhere} from "../../database/SqlWhere";
-import {PubBudget} from "../../../../shared/public/PubBudget";
 import {FaultyInputException} from "../../exceptions/FaultyInputException";
 import {PubUser} from "../../../../shared/public/PubUser";
 
 // noinspection JSUnusedGlobalSymbols
-export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessage> {
+export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		if(!this.isType(this.data.amount, "number"))
+		if(!this.isType(this.data.amount, "number") || (this.data.receiptFileName && this.data.receiptFileName.length < Payment.RECIPE_FILE_NAME_MIN_LENGTH))
 			throw new FaultyInputException()
 		
-		const [budget] = db.selectTable(PubBudget, SqlWhere(PubBudget).is("budgetId", this.data.budgetId), 1)
+		const [budget] = db.selectTable(Budget, SqlWhere(Budget).is("budgetId", this.data.budgetId), 1)
 		//We assume that there always will be only one entry per budget: 
 		const [needsPayment] = db.selectTable(NeedsPayment, SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), 1)
 		
-		if(needsPayment){
+		if(needsPayment) {
 			if(needsPayment.budgetId != budget.budgetId)
 				throw new FaultyInputException()
 			
@@ -36,10 +35,10 @@ export class SetAsPaidMessageAction extends LoggedInMessageAction<SetAsPaidMessa
 		db.update(
 			Budget, 
 			{
-				"+=": {
+				"=": {
 					lastPayment: Date.now(),
-					spendingSum: this.data.amount,
-					spendingTimes: 1
+					spendingSum: budget.spendingSum + this.data.amount,
+					spendingTimes: budget.spendingTimes + 1
 				}
 			},
 			SqlWhere(Budget).is("budgetId", budget.budgetId)
