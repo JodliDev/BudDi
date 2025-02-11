@@ -18,18 +18,18 @@ console.log("Backend is starting...")
 
 const optionsFile = `${options.root}/${options.frontend}/options.js`
 console.log(`Write options to ${optionsFile}`)
-writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), { encoding: 'utf-8' })
+writeFileSync(optionsFile, JSON.stringify(new PublicOptions(options)), {encoding: 'utf-8'})
 
 DatabaseManager.access(new DatabaseInstructions(), options)
 	.then((dbManager) => {
 		const scheduler = new DailyScheduleManager()
 		
-		scheduler.addSchedule({ repeatDays: 1 }, () => {
+		scheduler.addSchedule({repeatDays: 1}, () => {
 			const oldestLoginSession = Date.now() - LOGIN_SESSION_MAX_AGE
 			dbManager.delete(LoginSession, SqlWhere(LoginSession).is("lastLogin", oldestLoginSession))
 		})
 		
-		scheduler.addSchedule({ repeatDays: 1 }, () => {
+		scheduler.addSchedule({repeatDays: 1}, () => {
 			const now = Date.now()
 			const schedules = dbManager.selectTable(Schedule, SqlWhere(Schedule).is("enabled", "1").and().isCompared("<=", "nextLoop", now))
 			console.log(`Found ${schedules.length} Schedules that will run now`)
@@ -42,7 +42,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 				const newTimestamp = DailyScheduleManager.considerOptions(schedule, now)
 				dbManager.update(
 					Schedule,
-					{ "=": { nextLoop: newTimestamp, lastLoop: now } },
+					{"=": {nextLoop: newTimestamp, lastLoop: now}},
 					SqlWhere(Schedule).is("scheduleId", schedule.scheduleId)
 				)
 			}

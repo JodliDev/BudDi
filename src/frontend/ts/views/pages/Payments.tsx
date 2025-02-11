@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {LoggedInBasePage} from "../LoggedInBasePage";
@@ -122,7 +122,7 @@ export class Payments extends LoggedInBasePage {
 										: BtnWidget.Empty()
 									}
 									<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
-										{ budget.budgetName }
+										{budget.budgetName}
 									</a>
 								</div>
 							</td>,

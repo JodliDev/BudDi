@@ -1,9 +1,9 @@
 import m, {ComponentTypes} from "mithril";
-import { FrontendWebSocketHelper } from "../network/FrontendWebSocketHelper";
+import {FrontendWebSocketHelper} from "../network/FrontendWebSocketHelper";
 import "../../style.css"
-import { BasePage } from "./BasePage";
-import { ErrorManager } from "./ErrorManager";
-import { Header } from "./Header";
+import {BasePage} from "./BasePage";
+import {ErrorManager} from "./ErrorManager";
+import {Header} from "./Header";
 import "./site.css"
 import {Lang} from "../../../shared/Lang";
 import {LogoutMessage} from "../../../shared/messages/LogoutMessage";
@@ -108,10 +108,11 @@ export class Site {
 		const site: ComponentTypes = {
 			view: () => {
 				return <div class="siteContent">
-					{ this.header.getView(this.currentPage.constructor.name) }
-					{ this.currentPage.isLoaded
+					{this.header.getView(this.currentPage.constructor.name)}
+					{this.currentPage.isLoaded
 						? this.currentPage.getFullView()
-						: this.currentPage.getLoadingView() }
+						: this.currentPage.getLoadingView()
+					}
 				</div>
 			}
 		}

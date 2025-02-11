@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {ListWidget} from "../../widgets/ListWidget";
 import {LoggedInBasePage} from "../LoggedInBasePage";

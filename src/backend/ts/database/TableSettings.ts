@@ -28,7 +28,7 @@ export class TableSettings<TableT extends BasePublicTable> {
 	
 	
 	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">): void {
-		this.foreignKeys[column] = { from: column.toString(), ...info }
+		this.foreignKeys[column] = {from: column.toString(), ...info}
 		this.hasForeignKeys = true
 	}
 	

@@ -20,7 +20,7 @@ export interface JoinedData<JoinedT extends BasePublicTable> {
 	on: string,
 	select: (keyof JoinedT)[]
 }
-type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = { [K in keyof JoinedT]: JoinedData<JoinedT[K]> };
+type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = {[K in keyof JoinedT]: JoinedData<JoinedT[K]>};
 
 export interface JoinedResponseEntry<T extends BasePublicTable> extends ListResponseEntry<Partial<T>>{
 	item: Partial<T>,
@@ -40,7 +40,7 @@ export class DatabaseManager {
 	public static async access(dbInstructions: DatabaseInstructions, options: Options): Promise<DatabaseManager> {
 		const manager = new DatabaseManager(options)
 		const db = manager.db
-		const version = db.pragma("user_version", { simple: true }) as number
+		const version = db.pragma("user_version", {simple: true}) as number
 		if(dbInstructions.version != version) {
 			const migrationManager = new DatabaseMigrationManager(db, dbInstructions)
 			if(version == 0)
@@ -175,7 +175,7 @@ export class DatabaseManager {
 		const joinSqlArray = []
 		for(const join of joinArray) {
 			selectWithTable = selectWithTable.concat(join.select.map(entry => column(join.joinedTable, entry)))
-			joinSqlArray.push({ joinedTableName: BasePublicTable.getName(join.joinedTable), on: join.on })
+			joinSqlArray.push({joinedTableName: BasePublicTable.getName(join.joinedTable), on: join.on})
 		}
 		
 		const lines = this.unsafeSelect(
@@ -222,7 +222,7 @@ export class DatabaseManager {
 		from?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
-		join?: { joinedTableName: string, on: string }[]
+		join?: {joinedTableName: string, on: string}[]
 	) {
 		const query = SqlQueryGenerator.createSelectSql(tableName, select, where?.getSql(), limit, from, order, orderType, join)
 		const statement = this.db.prepare(query)

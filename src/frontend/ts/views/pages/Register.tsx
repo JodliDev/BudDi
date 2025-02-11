@@ -1,6 +1,6 @@
-import { BasePage } from "../BasePage";
-import m, { Vnode } from "mithril";
-import { LoadingSpinner } from "../../widgets/LoadingSpinner";
+import {BasePage} from "../BasePage";
+import m, {Vnode} from "mithril";
+import {LoadingSpinner} from "../../widgets/LoadingSpinner";
 import {RegisterMessage} from "../../../../shared/messages/RegisterMessage";
 import {PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH} from "../../Constants";
 import {Lang} from "../../../../shared/Lang";
@@ -46,7 +46,7 @@ export class Register extends BasePage {
 	
 	public getView(): Vnode {
 		return <div class="vertical hAlignCenter vAlignCenter">
-			<form name="registerForm" onsubmit={ this.onSubmit.bind(this) } class="surface vertical">
+			<form name="registerForm" onsubmit={this.onSubmit.bind(this)} class="surface vertical">
 				
 				<label>
 					<small>{Lang.get("username")}</small>
@@ -62,8 +62,8 @@ export class Register extends BasePage {
 				</label>
 				<div class="entry horizontal vAlignCenter fullLine">
 					<div class="fillSpace"></div>
-					{ LoadingSpinner(this.isLoading) }
-					<input type="submit" value={Lang.get("register")} disabled={ this.isLoading || !this.formIsValid }/>
+					{LoadingSpinner(this.isLoading)}
+					<input type="submit" value={Lang.get("register")} disabled={this.isLoading || !this.formIsValid}/>
 				</div>
 			</form>
 		</div>

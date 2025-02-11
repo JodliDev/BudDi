@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
 import {Lang} from "../../../../shared/Lang";
 import {PubWaiting} from "../../../../shared/public/PubWaiting";
@@ -97,7 +97,7 @@ export class Dashboard extends LoggedInBasePage {
 					this.budgetDropdown(
 						<div class="horizontal vAlignCenter">
 							<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
-								{ budget.budgetName }
+								{budget.budgetName}
 							</a>
 						</div>,
 						budget,
@@ -114,12 +114,12 @@ export class Dashboard extends LoggedInBasePage {
 		return MouseOverDropdownMenu(
 			"budgetEntry",
 			<div onmousemove={this.positionBudgetDropdown.bind(this)} class="budgetDropdownClicker">
-				{ clickElement }
+				{clickElement}
 			</div>,
 			() => <div class="surface vertical budgetDropdownContent">
 				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
-					{ entry.iconDataUrl && <img class="icon" src={ entry.iconDataUrl } alt=""/> }
-					<span class="mainContent">{ entry.budgetName }</span>
+					{entry.iconDataUrl && <img class="icon" src={entry.iconDataUrl} alt=""/>}
+					<span class="mainContent">{entry.budgetName}</span>
 				</h3>
 				<div class="subSurface labelLike">
 					<small>{Lang.get("paymentCount")}</small>
@@ -133,7 +133,7 @@ export class Dashboard extends LoggedInBasePage {
 					<small>{Lang.get("lastPayment")}</small>
 					<span class="mainContent">{entry.lastPayment ? (new Date(entry.lastPayment)).toLocaleDateString() : Lang.get("nothingYet")}</span>
 				</div>
-				{ !!addedAt &&
+				{!!addedAt &&
 					<div class="subSurface labelLike">
 						<small>{Lang.get("addedAt")}</small>
 						<span class="mainContent">{(new Date(addedAt)).toLocaleDateString()}</span>
@@ -160,7 +160,7 @@ export class Dashboard extends LoggedInBasePage {
 								<div class="horizontal fullLine vAlignCenter hAlignCenter">
 									{info.budget.iconDataUrl && <img class="icon" src={info.budget.iconDataUrl} alt=""/>}
 									<a href={`#${Budget.name}/budgetId=${info.budget.budgetId}`}>
-										{ info.budget.budgetName }
+										{info.budget.budgetName}
 									</a>
 								</div>,
 								info.budget,
@@ -169,9 +169,9 @@ export class Dashboard extends LoggedInBasePage {
 						}
 						<div class="fillSpace"></div>
 						<div class="horizontal subSurface">
-							{ info.budget.homepage.length != 0 &&
-								<a href={ info.budget.homepage } target="_blank">
-									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
+							{info.budget.homepage.length != 0 &&
+								<a href={info.budget.homepage} target="_blank">
+									{BtnWidget.PopoverBtn("home", Lang.get("homepage"))}
 								</a>
 							}
 							<div class="fillSpace"></div>
@@ -191,7 +191,7 @@ export class Dashboard extends LoggedInBasePage {
 						site: this.site,
 						hideRefresh: true,
 						order: "budgetName",
-						deleteOptions: { onDeleted: () => this.waitingListCallback.reload() },
+						deleteOptions: {onDeleted: () => this.waitingListCallback.reload()},
 						customHeaderOptions: this.waitingListCallback.isEmpty() ? undefined :
 							BtnWidget.PopoverBtn("luck", Lang.get("selectRandomSpendingNow"), this.chooseForPayment.bind(this)),
 						callback: this.waitingListCallback,
@@ -230,8 +230,8 @@ export class Dashboard extends LoggedInBasePage {
 							BtnWidget.PopoverBtn("arrowCircleLeft", Lang.get("manuallyAddToWaitingList"), this.addToWaitList.bind(this, entry.item)),
 							this.budgetLineView(entry.item),
 							entry.item.homepage.length != 0
-								? <a class="icon" href={ entry.item.homepage } target="_blank">
-									{ BtnWidget.PopoverBtn("home", Lang.get("homepage")) }
+								? <a class="icon" href={entry.item.homepage} target="_blank">
+									{BtnWidget.PopoverBtn("home", Lang.get("homepage"))}
 								</a>
 								: BtnWidget.Empty(),
 							this.getPaymentEditorView(1, entry.item)

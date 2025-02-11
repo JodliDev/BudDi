@@ -1,14 +1,13 @@
-import { PagesHelper } from "./PagesHelper";
-import { BtnWidget } from "./BtnWidget";
-import { Lang } from "../../../shared/Lang";
-import { LoadingSpinner } from "./LoadingSpinner";
+import {PagesHelper} from "./PagesHelper";
+import {BtnWidget} from "./BtnWidget";
+import {Lang} from "../../../shared/Lang";
+import {LoadingSpinner} from "./LoadingSpinner";
 import "./ListWidget.css"
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {Class} from "../../../shared/Class";
 import {Site} from "../views/Site";
 import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseEntry, ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
-import {DeleteMessage} from "../../../shared/messages/DeleteMessage";
 import {closeDropdown, DropdownMenu} from "./DropdownMenu";
 import m, {Component, Vnode, VnodeDOM} from "mithril";
 import {EditEntryComponent} from "./EditEntryWidget";
@@ -32,7 +31,7 @@ interface ListComponentOptions<EntryT extends BasePublicTable> {
 	AddSubHeader?: () => Vnode,
 	getEntryView: (entry: ListResponseEntry<EntryT>) => Vnode<any, unknown> | Vnode<any, unknown>[],
 	hideRefresh?: boolean
-	deleteOptions?: { onDeleted?: () => void },
+	deleteOptions?: {onDeleted?: () => void},
 	addOptions?: {
 		columns: (keyof EntryT)[],
 		onAdded?: () => void,
@@ -143,12 +142,12 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 		const options = vNode.attrs
 		return <div class="listWidget surface vertical">
 			<h3 class="header horizontal hAlignCenter vAlignCenter">
-				<b class="fillSpace horizontal hAlignCenter">{ options.title }</b>
-					{ this.isLoading
+				<b class="fillSpace horizontal hAlignCenter">{options.title}</b>
+					{this.isLoading
 						? LoadingSpinner(this.isLoading)
 						: (options.hideRefresh ? "" : BtnWidget.DefaultBtn("reload", this.loadPage.bind(this, this.pagesHelper.getCurrentPage())))
 					}
-				{ options.addOptions &&
+				{options.addOptions &&
 					DropdownMenu(
 						`Add~${BasePublicTable.getName(options.tableClass)}`,
 						BtnWidget.PopoverBtn("add", Lang.get("addEntry")),
@@ -163,11 +162,11 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 						})
 					)
 				}
-				{ options.customHeaderOptions && options.customHeaderOptions }
+				{options.customHeaderOptions && options.customHeaderOptions}
 			</h3>
-			{ options.AddSubHeader && options.AddSubHeader() }
-			<div class={ `${this.isLoading ? "opacity" : ""} content fillSpace subSurface vertical hAlignStretched textCentered` }>
-				{ this.pagesHelper.isEmpty()
+			{options.AddSubHeader && options.AddSubHeader()}
+			<div class={`${this.isLoading ? "opacity" : ""} content fillSpace subSurface vertical hAlignStretched textCentered`}>
+				{this.pagesHelper.isEmpty()
 					? Lang.get("noEntries")
 					: [
 						options.AddFirstLineView && options.AddFirstLineView(), 
@@ -175,8 +174,8 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 							const id = this.getId(entry.item)
 						
 							return <div class="horizontal entry vAlignCenter">
-								{ options.getEntryView(entry) }
-								{ options.editOptions &&
+								{options.getEntryView(entry)}
+								{options.editOptions &&
 									DropdownMenu(
 										`Edit~${BasePublicTable.getName(options.tableClass)}`,
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
@@ -194,7 +193,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 									)
 								
 								}
-								{ options.deleteOptions && 
+								{options.deleteOptions && 
 									DeleteEntryWidget({
 										site: options.site,
 										entryId: this.getId(entry.item),
@@ -211,7 +210,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 					]
 				}
 			</div>
-			{ this.pagesHelper.isNeeded() && this.pagesHelper.getView() }
+			{this.pagesHelper.isNeeded() && this.pagesHelper.getView()}
 		</div>
 	}
 }

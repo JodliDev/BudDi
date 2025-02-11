@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril"
+import m, {Vnode} from "mithril"
 import addSvg from "../../img/icons/add.svg";
 import arrowCircleLeft from "../../img/icons/arrowCircleLeft.svg";
 import cancelSvg from "../../img/icons/cancel.svg";
@@ -38,8 +38,8 @@ export const ButtonType = {
 export class BtnWidget {
 	public static DefaultBtn(iconKey: keyof typeof ButtonType, onClick: () => void = () => {}) : Vnode {
 		return (
-			<div class={`btn ${iconKey} clickable horizontal hAlignCenter`} onclick={ onClick }>
-				{ m.trust(ButtonType[iconKey]) }
+			<div class={`btn ${iconKey} clickable horizontal hAlignCenter`} onclick={onClick}>
+				{m.trust(ButtonType[iconKey])}
 			</div>
 		)
 	}
@@ -47,7 +47,7 @@ export class BtnWidget {
 		return MouseOverDropdownMenu(
 			"btnWidget",
 			BtnWidget.DefaultBtn(iconKey, onClick),
-			() => <div class="textCentered">{ text }</div>,
+			() => <div class="textCentered">{text}</div>,
 		)
 	}
 	

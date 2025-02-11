@@ -45,6 +45,6 @@ export class History extends PubHistory {
 		values: unknown[],
 		budgetId: number | bigint | null = null
 	) {
-		db.insert(History, { userId: userId, langKey: langKey, langValues: JSON.stringify(values), historyTime: Date.now(), budgetId: budgetId })
+		db.insert(History, {userId: userId, langKey: langKey, langValues: JSON.stringify(values), historyTime: Date.now(), budgetId: budgetId})
 	}
 }

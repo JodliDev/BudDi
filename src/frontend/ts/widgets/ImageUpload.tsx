@@ -79,11 +79,11 @@ class ImageUploadComponent implements Component<ImageUploadComponentOptions, unk
 		const options = vNode.attrs
 		
 		return <label>
-			<small>{ Lang.get("iconDataUrl") }</small>
+			<small>{Lang.get("iconDataUrl")}</small>
 			<div class="imageUploadEditor horizontal vAlignCenter">
-				{ this.value && <img src={ this.value } alt="icon" class="icon"/> }
-				<input type="file" accept="image/*" onchange={ this.imageToBase64.bind(this, options.callback, options.maxSize) }/>
-				{ this.error && <small class="warn">{this.error}</small> }
+				{this.value && <img src={this.value} alt="icon" class="icon"/>}
+				<input type="file" accept="image/*" onchange={this.imageToBase64.bind(this, options.callback, options.maxSize)}/>
+				{this.error && <small class="warn">{this.error}</small>}
 			</div>
 		</label>
 	}

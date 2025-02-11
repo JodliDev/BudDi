@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import "./budget.css"
 import {PubBudget} from "../../../../shared/public/PubBudget";
@@ -64,7 +64,7 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 								}
 							</div>
 							<div class="horizontal vAlignCenter">
-								{ this.budget && [
+								{this.budget && [
 									DropdownMenu(
 										"ChangeBudget",
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntry")),

@@ -45,7 +45,7 @@ export class FrontendWebSocketHelper {
 	
 	private createSocket(): WebSocket {
 		const protocol = location.protocol === "http:" ? "ws" : "wss"
-		const socket = new WebSocket(`${ protocol }://${ document.location.hostname }:${ document.location.port }/${ FrontendWebSocketHelper.PATH }`)
+		const socket = new WebSocket(`${protocol}://${document.location.hostname}:${document.location.port}/${FrontendWebSocketHelper.PATH}`)
 		this.socket = socket
 		this.waitPromise = new Promise<void>((resolve, reject) => {
 			socket.addEventListener("open", () => resolve())

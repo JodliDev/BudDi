@@ -65,8 +65,8 @@ export class EditEntryComponent<EntryT extends BasePublicTable> implements Compo
 			<small>{Lang.get(titleKey)}</small>
 			{<input type={inputType} {...BindValueToInput(() => entry, setValue)}/>}
 			<small class="vertical">
-				{ Lang.has(descKey) && <div>{ Lang.getDynamic(descKey) }</div> }
-				{ this.invalidColumns.hasOwnProperty(column) && <div class="warn">{ this.invalidColumns[column.toString()] }</div> }
+				{Lang.has(descKey) && <div>{Lang.getDynamic(descKey)}</div>}
+				{this.invalidColumns.hasOwnProperty(column) && <div class="warn">{this.invalidColumns[column.toString()]}</div>}
 			</small>
 		</label>
 	}

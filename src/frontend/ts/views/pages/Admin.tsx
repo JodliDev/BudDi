@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {PubUser} from "../../../../shared/public/PubUser";
 import {ListWidget} from "../../widgets/ListWidget";
@@ -39,7 +39,7 @@ export class Admin extends LoggedInBasePage {
 			<div class="surface horizontal vAlignCenter">
 				<label class="fillSpace">
 					<small>{Lang.get("enableRegistration")}</small>
-					<input type="checkbox" disabled={!this.feedback.isReady()} { ...BindValueToInput(() => this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this)) }/>
+					<input type="checkbox" disabled={!this.feedback.isReady()} {...BindValueToInput(() => this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this))}/>
 				</label>
 				{FeedbackIcon(this.feedback, true)}
 			</div>

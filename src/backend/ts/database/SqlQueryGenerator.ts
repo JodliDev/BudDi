@@ -169,7 +169,7 @@ export class SqlQueryGenerator {
 		from?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
-		joinArray?: { joinedTableName: string, on: string }[]
+		joinArray?: {joinedTableName: string, on: string}[]
 	): string {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
 		if(joinArray)

@@ -20,7 +20,7 @@ export class EditMessageAction extends BaseListMessageAction<EditMessage> {
 			++count
 		}
 		
-		const response = count == 0 ? 1 : db.update(values.tableClass, { "=": this.data.values }, values.settings?.getWhere(session, where) ?? where, 1)
+		const response = count == 0 ? 1 : db.update(values.tableClass, {"=": this.data.values}, values.settings?.getWhere(session, where) ?? where, 1)
 		
 		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			values.tableClass,

@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 
 function toTimeString(until: number) {
 	const seconds = Math.floor((until - Date.now()) / 1000)
@@ -32,5 +32,5 @@ export function Countdown(until: number): Vnode {
 	if(now < until && !timoutId)
 		timoutId = setTimeout(() => onTimeout(), 1000, null)
 	
-	return <div class="countdown">{ toTimeString(until) }</div>
+	return <div class="countdown">{toTimeString(until)}</div>
 }

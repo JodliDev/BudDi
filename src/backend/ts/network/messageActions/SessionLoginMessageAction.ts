@@ -19,7 +19,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		if(this.data.sessionTimestamp < Date.now() - 1000 * 60 * 30 || timedHash != this.data.sessionHash)
 			return
 		
-		db.update(LoginSession, { "=": { lastLogin: Date.now()} }, sqlConstraint, 1)
+		db.update(LoginSession, {"=": {lastLogin: Date.now()}}, sqlConstraint, 1)
 		
 		const [user] = db.selectTable(User, SqlWhere(User).is("userId", loginSession.userId), 1)
 		

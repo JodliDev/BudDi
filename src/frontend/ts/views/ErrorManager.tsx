@@ -1,6 +1,6 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import "./errorManager.css"
-import { Lang } from "../../../shared/Lang";
+import {Lang} from "../../../shared/Lang";
 
 interface Entry {
 	date: Date
@@ -17,9 +17,9 @@ export class ErrorManager {
 	private isOpened: boolean = false
 	
 	private getEntryView(entry: Entry, index: number = 0): Vnode {
-		return <div class={ `subSurface ${entry.type} labelLike ${entry.hiding && !this.isOpened ? "hiding" : ""}` } style={`animation-duration: ${ Math.min(300 + index * 25, 1000)}ms`}>
-			<small>{ entry.date.toLocaleTimeString() }</small>
-			<pre class="messageContent">{ entry.message }</pre>
+		return <div class={`subSurface ${entry.type} labelLike ${entry.hiding && !this.isOpened ? "hiding" : ""}`} style={`animation-duration: ${Math.min(300 + index * 25, 1000)}ms`}>
+			<small>{entry.date.toLocaleTimeString()}</small>
+			<pre class="messageContent">{entry.message}</pre>
 		</div>
 	}
 	
@@ -74,12 +74,12 @@ export class ErrorManager {
 			return <div></div>
 		
 		return <div class="errorBox">
-			<div class={`opener clickable ${this.isOpened ? "opened" : ""}`} onclick={ this.onToggleOpen.bind(this) }>{ Lang.get("logs") }</div>
+			<div class={`opener clickable ${this.isOpened ? "opened" : ""}`} onclick={this.onToggleOpen.bind(this)}>{Lang.get("logs")}</div>
 			<div class={`list ${this.isOpened ? "opened" : ""}`}>
 				<div class="listContent">
 					<div class="vertical reversed">
-						{ this.isOpened && this.entries.map((entry, i) => this.getEntryView(entry, this.entries.length - i)) }
-						{ this.recentEntries.map((entry) => this.getEntryView(entry)) }
+						{this.isOpened && this.entries.map((entry, i) => this.getEntryView(entry, this.entries.length - i))}
+						{this.recentEntries.map((entry) => this.getEntryView(entry))}
 					</div>
 				</div>
 			</div>

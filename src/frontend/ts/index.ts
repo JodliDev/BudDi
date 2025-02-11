@@ -1,5 +1,5 @@
-import { Site } from "./views/Site";
-import { Lang } from "../../shared/Lang";
+import {Site} from "./views/Site";
+import {Lang} from "../../shared/Lang";
 import {IPublicOptions} from "../../shared/IPublicOptions";
 
 async function init() {

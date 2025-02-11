@@ -1,6 +1,6 @@
-import m, { Vnode } from "mithril"
+import m, {Vnode} from "mithril"
 import "./pagesHelper.css"
-import { BtnWidget } from "./BtnWidget";
+import {BtnWidget} from "./BtnWidget";
 
 
 export class PagesHelper {
@@ -44,22 +44,22 @@ export class PagesHelper {
 	
 	public getView(): Vnode {
 		return <div class="horizontal hAlignCenter vAlignCenter subSurface pagesHelper">
-				{ this.currentPage > 1
+				{this.currentPage > 1
 					? BtnWidget.DefaultBtn("toStart", () => this.onPageChange(0))
 					: BtnWidget.Empty()
 				}
-				{ this.currentPage > 0
+				{this.currentPage > 0
 					? BtnWidget.DefaultBtn("prev", () => this.onPageChange(this.currentPage - 1))
 					: BtnWidget.Empty()
 				}
 				
 				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.maxPages + 1}</span>
 				
-				{ this.currentPage < this.maxPages
+				{this.currentPage < this.maxPages
 					? BtnWidget.DefaultBtn("next", () => this.onPageChange(this.currentPage + 1))
 					: BtnWidget.Empty()
 				}
-				{ this.currentPage + 1 < this.maxPages
+				{this.currentPage + 1 < this.maxPages
 					? BtnWidget.DefaultBtn("toEnd", () => this.onPageChange(this.maxPages))
 					: BtnWidget.Empty()
 				}

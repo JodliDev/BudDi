@@ -211,7 +211,7 @@ export function MouseOverDropdownMenu(
 	if(options)
 		options.eventName = "mouseenter"
 	else
-		options = { eventName: "mouseenter" }
+		options = {eventName: "mouseenter"}
 	return m(DropdownComponent, {
 		id: id,
 		clickElement: clickElement,

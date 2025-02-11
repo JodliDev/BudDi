@@ -16,7 +16,7 @@ export class ChangePasswordMessageAction extends LoggedInMessageAction<ChangePas
 		db.update(
 			User,
 			{
-				"=": { hashedPassword: hash }
+				"=": {hashedPassword: hash}
 			},
 			SqlWhere(User).is("userId", session.userId)
 		)

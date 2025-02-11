@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {ChangePasswordMessage} from "../../../../shared/messages/ChangePasswordMessage";

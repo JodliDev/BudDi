@@ -87,7 +87,7 @@ export class DatabaseMigrationManager {
 	constructor(
 		private readonly db: BetterSqlite3.Database,
 		private readonly dbInstructions: DatabaseInstructions
-	) { 
+	) {
 		this.sqlGenerator = new SqlQueryGenerator(this.dbInstructions)
 	}
 	

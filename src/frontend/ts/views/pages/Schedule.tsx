@@ -1,4 +1,4 @@
-import m, { Vnode } from "mithril";
+import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
@@ -20,7 +20,7 @@ export class Schedule extends LoggedInBasePage {
 		this.isLoading = true
 		m.redraw()
 		
-		const data: Partial<PubSchedule> = { enabled: this.scheduleEnabled }
+		const data: Partial<PubSchedule> = {enabled: this.scheduleEnabled}
 		await this.site.socket.sendAndReceive(new EditMessage(PubSchedule, this.schedule.scheduleId, data))
 		this.isLoading = false
 		m.redraw()
