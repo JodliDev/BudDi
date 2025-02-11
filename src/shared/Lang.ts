@@ -38,14 +38,15 @@ class LangClass {
 		}
 		
 		if(replacers.length) {
+			let i = 1
 			for(const replace of replacers) {
 				let search
 				switch(typeof replace) {
 					case "number":
-						search = "%d"
+						search = `%${i++}$d`
 						break;
 					case "string":
-						search = "%s"
+						search = `%${i++}$s`
 						break;
 				}
 				value = value.replace(search, replace?.toString() ?? "")
