@@ -8,6 +8,7 @@ import {TableSettings} from "./TableSettings";
 export interface SqlWhereData {
 	getSql(): string
 	getValues(): unknown[]
+	getJoinedTables(): Class<BasePublicTable>[]
 	isNotEmpty(): boolean
 	getBuilder(): SqlWhereBuilder<BasePublicTable>
 	concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<BasePublicTable>
@@ -27,6 +28,7 @@ interface ConnectorBuilder<T extends BasePublicTable> extends SqlWhereData {
 export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuilder<T>, ConnectorBuilder<T> {
 	private sql: string = ""
 	private values: unknown[] = []
+	private joinedTables: Class<BasePublicTable>[] = []
 	
 	constructor(private table: Class<T>) { }
 	
@@ -49,11 +51,14 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 	public isComparedFromOtherTable<TOther extends BasePublicTable>(operator: Operators, tableClass: Class<TOther>, columnName: keyof TOther, value: unknown): ConnectorBuilder<T> {
 		this.sql += `${column(tableClass, columnName)} ${operator} ?`
 		this.values.push(this.valueToSql(value))
+		if(tableClass.name != this.table.name && !this.joinedTables.find((t => t.name == tableClass.name)))
+			this.joinedTables.push(tableClass)
 		return this
 	}
 	public concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<T> {
 		this.sql = `(${this.sql}) ${connector} (${sqlWhere.getSql()})`
 		this.values = this.values.concat(sqlWhere.getValues())
+		this.joinedTables = this.joinedTables.concat(sqlWhere.getJoinedTables())
 		return this
 	}
 	
@@ -75,6 +80,9 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 	}
 	public getValues(): unknown[] {
 		return this.values
+	}
+	public getJoinedTables(): Class<BasePublicTable>[] {
+		return this.joinedTables
 	}
 	
 	public getBuilder(): SqlWhereBuilder<BasePublicTable> {

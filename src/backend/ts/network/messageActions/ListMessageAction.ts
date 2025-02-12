@@ -46,7 +46,7 @@ export class ListMessageAction extends BaseListMessageAction<ListMessage> {
 			true,
 			joinedResponse,
 			values.publicObj.getPrimaryKey().toString(),
-			db.getCount(values.tableClass, where)
+			where ? db.getJoinedCount(values.tableClass, where, values.settings) : db.getCount(values.tableClass)
 		))
 	}
 }

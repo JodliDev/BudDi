@@ -4,7 +4,7 @@ import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {Class} from "../../../shared/Class";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {TableSettings} from "./TableSettings";
-import {UpdateValues} from "./DatabaseManager";
+import {SqlJoinData, UpdateValues} from "./DatabaseManager";
 
 const MAX_LIMIT = 100000
 
@@ -169,7 +169,7 @@ export class SqlQueryGenerator {
 		offset?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
-		joinArray?: {joinedTableName: string, on: string}[]
+		joinArray?: SqlJoinData[]
 	): string {
 		let query = `SELECT ${select ? select.join(",") : "*"} FROM ${tableName}`
 		if(joinArray)

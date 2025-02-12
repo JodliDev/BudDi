@@ -16,12 +16,17 @@ import {FileDataStore} from "../FileDataStore";
 
 const DB_NAME = "db.sqlite"
 
-export interface JoinedData<JoinedT extends BasePublicTable> {
+interface JoinedAndSelectData<JoinedT extends BasePublicTable> {
 	joinedTable: Class<JoinedT>,
 	on: string,
 	select: (keyof JoinedT)[]
 }
-type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = {[K in keyof JoinedT]: JoinedData<JoinedT[K]>};
+export interface SqlJoinData {
+	joinedTableName: string
+	on: string
+}
+
+type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = {[K in keyof JoinedT]: JoinedAndSelectData<JoinedT[K]>};
 
 export interface JoinedResponseEntry<T extends BasePublicTable> extends ListResponseEntry<Partial<T>>{
 	item: Partial<T>,
@@ -71,15 +76,15 @@ export class DatabaseManager {
 	private static async getPublicJoinArray<T extends BasePublicTable>(
 		listClass: Class<T>,
 		settings: TableSettings<T>
-	): Promise<JoinedData<BasePublicTable>[]> {
+	): Promise<JoinedAndSelectData<BasePublicTable>[]> {
 		const foreignKeys = settings?.foreignKeys
-		const joinArray: JoinedData<BasePublicTable>[] = []
+		const joinArray: JoinedAndSelectData<BasePublicTable>[] = []
 		for(const key in foreignKeys) {
 			const foreignKey = foreignKeys[key]
 			if(!foreignKey.isPublic)
 				continue
 			
-			joinArray.push(await this.getJoinArray(
+			joinArray.push(await this.getJoinAndSelectData(
 				listClass,
 				foreignKey.table,
 				foreignKey.from as keyof T,
@@ -89,12 +94,39 @@ export class DatabaseManager {
 		return joinArray
 	}
 	
-	private static async getJoinArray<T extends BasePublicTable, ForeignKeyT extends BasePublicTable>(
+	private static getSqlJoinData<T extends BasePublicTable>(
+		listClass: Class<T>,
+		settings: TableSettings<T>,
+		joinedTables: Class<BasePublicTable>[]
+	): SqlJoinData[] {
+		const foreignKeys = settings?.foreignKeys
+		const joinArray: SqlJoinData[] = []
+		
+		for(const joinedTable of joinedTables) {
+			if(joinedTable.name == listClass.name)
+				continue
+			
+			for(const key in foreignKeys) {
+				const foreignKey = foreignKeys[key]
+				if(foreignKey.table.name == joinedTable.name) {
+					joinArray.push({
+						joinedTableName: BasePublicTable.getName(foreignKey.table),
+						on: `${column(listClass, foreignKey.from as keyof BasePublicTable)} = ${column(foreignKey.table, foreignKey.to)}`
+					})
+					break
+				}
+			}
+		}
+		
+		return joinArray
+	}
+	
+	private static async getJoinAndSelectData<T extends BasePublicTable, ForeignKeyT extends BasePublicTable>(
 		listClass: Class<T>,
 		foreignKeyTable: Class<ForeignKeyT>,
 		on: keyof T,
 		to: keyof ForeignKeyT
-	): Promise<JoinedData<BasePublicTable>> {
+	): Promise<JoinedAndSelectData<BasePublicTable>> {
 		const joinedPublicClass = await this.getPublicTableClass(BasePublicTable.getName(foreignKeyTable))
 		const joinedObj = new joinedPublicClass
 		
@@ -224,7 +256,7 @@ export class DatabaseManager {
 		offset?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
-		join?: {joinedTableName: string, on: string}[]
+		join?: SqlJoinData[]
 	) {
 		const query = SqlQueryGenerator.createSelectSql(tableName, select, where?.getSql(), limit, offset, order, orderType, join)
 		const statement = this.db.prepare(query)
@@ -232,7 +264,24 @@ export class DatabaseManager {
 	}
 	
 	public getCount<T extends BasePublicTable>(table: Class<T>, where?: SqlWhereData): number {
-		const query = SqlQueryGenerator.createSelectSql(table.name, ["COUNT(*)"], where?.getSql())
+		return this.getInternalJoinedCount(table, where)
+	}
+	
+	public getJoinedCount<T extends BasePublicTable>(table: Class<T>, where: SqlWhereData, settings: TableSettings<T>): number {
+		const joinTables = where.getJoinedTables()
+		return this.getInternalJoinedCount(table, where, joinTables?.length ? DatabaseManager.getSqlJoinData(table, settings, joinTables) : undefined)
+	}
+	private getInternalJoinedCount<T extends BasePublicTable>(table: Class<T>, where?: SqlWhereData, joinData?: SqlJoinData[]): number {
+		const query = SqlQueryGenerator.createSelectSql(
+			table.name,
+			["COUNT(*)"],
+			where?.getSql(),
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			joinData
+		)
 		const statement = this.db.prepare(query)
 		const result = statement.get(...where?.getValues() ?? []) as Record<string, number>
 		return result["COUNT(*)"]
