@@ -98,10 +98,12 @@ export class Payments extends LoggedInBasePage {
 								}
 							</select>
 						</label>
-						<label>
-							<small>{Lang.get("isTaxExempt")}</small>
-							<input type="checkbox" {...BindValueToInput(() => this.isTaxExempt, (value) => this.isTaxExempt = value)} />
-						</label>
+						{ !this.budgetId &&
+							<label>
+								<small>{Lang.get("isTaxExempt")}</small>
+								<input type="checkbox" {...BindValueToInput(() => this.isTaxExempt, (value) => this.isTaxExempt = value)} />
+							</label>
+						}
 					</form>,
 					AddFirstLineView: () => <tr>
 						<th class="name">{Lang.get("budget")}</th>
