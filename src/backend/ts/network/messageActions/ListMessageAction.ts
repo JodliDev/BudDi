@@ -29,11 +29,12 @@ export class ListMessageAction extends BaseListMessageAction<ListMessage> {
 		)
 			throw new FaultyInputException()
 		
+		const where = values.settings.getWhere(session, this.data.filter ? SqlWhereFromFilter(values.tableClass, values.settings, this.data.filter) : undefined)
 		const joinedResponse = await db.selectFullyJoinedPublicTable(
 			values.tableClass,
 			values.publicObj.getColumnNames(),
 			values.settings,
-			values.settings?.getWhere(session, this.data.filter ? SqlWhereFromFilter(values.tableClass, values.settings, this.data.filter) : undefined),
+			where,
 			this.data.limit,
 			this.data.from,
 			order,
@@ -45,7 +46,7 @@ export class ListMessageAction extends BaseListMessageAction<ListMessage> {
 			true,
 			joinedResponse,
 			values.publicObj.getPrimaryKey().toString(),
-			db.getCount(values.tableClass, values.settings.getWhere(session))
+			db.getCount(values.tableClass, where)
 		))
 	}
 }
