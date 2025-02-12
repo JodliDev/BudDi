@@ -15,7 +15,7 @@ import {AddToWaitingMessage} from "../../../../shared/messages/AddToWaitingMessa
 import {DeleteMessage} from "../../../../shared/messages/DeleteMessage";
 import {ImageUpload} from "../../widgets/ImageUpload";
 import {Budget} from "./Budget";
-import {PaymentEditor} from "../elements/PaymentEditor";
+import {PaymentEditor} from "../PaymentEditor";
 import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 
 interface NeedsPaymentInformation {

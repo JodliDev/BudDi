@@ -1,13 +1,13 @@
 import m, {Component, Vnode} from "mithril";
-import {closeDropdown, dropdownIsOpened, DropdownMenu} from "../../widgets/DropdownMenu";
-import {BtnWidget, ButtonType} from "../../widgets/BtnWidget";
-import {Lang, LangKey} from "../../../../shared/Lang";
-import {BindValueToInput} from "../../widgets/BindValueToInput";
-import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
-import {PubPayment} from "../../../../shared/public/PubPayment";
-import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
-import {Site} from "../Site";
-import {BinaryUploadMessage} from "../../../../shared/messages/BinaryUploadMessage";
+import {closeDropdown, dropdownIsOpened, DropdownMenu} from "../widgets/DropdownMenu";
+import {BtnWidget, ButtonType} from "../widgets/BtnWidget";
+import {Lang, LangKey} from "../../../shared/Lang";
+import {BindValueToInput} from "../widgets/BindValueToInput";
+import {FeedbackCallBack, FeedbackIcon} from "../widgets/FeedbackIcon";
+import {PubPayment} from "../../../shared/public/PubPayment";
+import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
+import {Site} from "./Site";
+import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
 
 
 interface PaymentEditorComponentOptions {

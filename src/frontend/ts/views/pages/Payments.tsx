@@ -11,7 +11,7 @@ import {BindValueToInput} from "../../widgets/BindValueToInput";
 import {ListFilter} from "../../../../shared/ListFilter";
 import {Site} from "../Site";
 import {Budget} from "./Budget";
-import {PaymentEditor} from "../elements/PaymentEditor";
+import {PaymentEditor} from "../PaymentEditor";
 import {EditPaymentMessage} from "../../../../shared/messages/EditPaymentMessage";
 
 export class Payments extends LoggedInBasePage {
