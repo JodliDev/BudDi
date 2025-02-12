@@ -1,12 +1,14 @@
-.errorBox {
+.errorManager {
 	.opener {
+		height: 18px;
 		padding: 5px 10px;
-		margin: 0 0 -1px 0;
+		margin: 0 5px;
 		border: 1px solid transparent;
 		
 		&::after {
 			content: "\25C2";
 			margin-left: 3px;
+			vertical-align: middle;
 		}
 		
 		&.opened {
@@ -20,15 +22,13 @@
 				content: "\25BE";
 			}
 		}
-		
-		
 	}
 	.list {
 		z-index: 10;
 		position: fixed;
 		top: 50px;
 		bottom: 0;
-		left: 0;
+		right: 0;
 		pointer-events: none;
 		
 		.listContent {
@@ -49,9 +49,10 @@
 			
 			.listContent {
 				border: 1px solid var(--color-surface-border);
+				border-right-width: 0;
 				background-color: var(--color-surface);
-				border-top-right-radius: var(--radius);
-				border-bottom-right-radius: var(--radius);
+				border-bottom-left-radius: var(--radius);
+				box-shadow: var(--color-shadow) 0 0 5px 1px;
 				overflow: auto;
 			}
 		}

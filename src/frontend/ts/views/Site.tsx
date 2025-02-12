@@ -12,6 +12,7 @@ import {IPublicOptions} from "../../../shared/IPublicOptions";
 import {Dashboard} from "./pages/Dashboard";
 import {LoginState} from "../LoginState";
 import {LoginData} from "../../../shared/LoginData";
+import {closeDropdown} from "../widgets/DropdownMenu";
 
 export class Site {
 	private readonly view: HTMLElement
@@ -32,6 +33,7 @@ export class Site {
 		
 		window.onhashchange = async () => {
 			await this.gotoImpl(this.getHashName())
+			closeDropdown("dropdownNavigation") //close fallback navigation for small screens
 		}
 		this.currentPage = new Dashboard(this, "")
 		this.renderSite()

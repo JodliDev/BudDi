@@ -7,6 +7,7 @@ import donateSvg from "../../img/icons/donate.svg";
 import editSvg from "../../img/icons/edit.svg";
 import homeSvg from "../../img/icons/home.svg";
 import luckSvg from "../../img/icons/luck.svg"
+import menuSvg from "../../img/icons/menu.svg"
 import nextSvg from "../../img/icons/next.svg"
 import prevSvg from "../../img/icons/prev.svg"
 import receiptSvg from "../../img/icons/receipt.svg";
@@ -25,6 +26,7 @@ export const ButtonType = {
 	donate: donateSvg,
 	edit: editSvg,
 	home: homeSvg,
+	menu: menuSvg,
 	next: nextSvg,
 	prev: prevSvg,
 	remove: cancelSvg,

@@ -2,36 +2,89 @@
 	max-width: 100%;
 	min-height: 40px;
 	padding-top: 10px;
-	display: flex;
-	align-items: flex-end;
 	background-color: var(--color-surface);
 	border-bottom: 1px solid var(--color-surface-border);
+	box-shadow: var(--color-shadow) 0 0 5px 1px;
 	overflow-x: auto;
 	overflow-y: hidden;
 	
-	.navigation {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex: 1 1 auto;
-		
-		> a {
-			padding: 5px 10px;
-			margin-bottom: -1px;
-			border: 1px solid transparent;
-			
-			&.selected {
-				background-color: var(--color-background);
-				border: 1px solid var(--color-surface-border);
-				border-bottom-color: var(--color-background);
-				border-top-left-radius: var(--radius);
-				border-top-right-radius: var(--radius);
-			}
-		}
+	.icon {
+		margin: 0 10px 5px 10px;
+	}
+	
+	.secondaryNavigation {
+		margin-left: 20px;
 	}
 	
 	.logoutBtn {
 		padding: 5px 10px;
-		margin-left: 20px;
+		color: var(--color-accent-dark);
+	}
+	.logoutBtn:hover {
+		color: var(--color-accent-light);
+	}
+	
+	.menuButton, .fillSpace {
+		display: none;
+	}
+	
+	@media (width <= 700px) {
+		.navigation {
+			display: none !important;
+		}
+		.menuButton, .fillSpace {
+			display: block;
+		}
+	}
+}
+
+
+.siteHeader .navigation, .dropdown.dropdownNavigation .navigation {
+	display: flex;
+	align-items: center;
+	justify-content: start;
+	flex: 1 1 auto;
+	
+	> a {
+		padding: 5px 10px;
+		margin-bottom: -1px;
+		border: 1px solid transparent;
+		
+		&.selected {
+			background-color: var(--color-background);
+			border: 1px solid var(--color-surface-border);
+			border-bottom-color: var(--color-background);
+			border-top-left-radius: var(--radius);
+			border-top-right-radius: var(--radius);
+			color: var(--color-accent-dark)
+		}
+	}
+}
+
+
+/*Used when screen is too small (width <= 700)*/
+.dropdown.dropdownNavigation {
+	left: 0 !important;
+	top: 50px !important;
+	padding-right: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left-width: 0;
+	border-top-width: 0;
+	
+	
+	.navigation {
+		flex-direction: column;
+		align-items: end;
+		
+		> a {
+			&.selected {
+				border-bottom-left-radius: var(--radius);
+				border-top-right-radius: 0;
+				border-bottom-color: var(--color-surface-border);
+				border-right-color: var(--color-surface);
+			}
+		}
 	}
 }

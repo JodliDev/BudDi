@@ -73,7 +73,7 @@ export class ErrorManager {
 		if(this.entries.length == 0 && this.recentEntries.length == 0)
 			return <div></div>
 		
-		return <div class="errorBox">
+		return <div class="errorManager">
 			<div class={`opener clickable ${this.isOpened ? "opened" : ""}`} onclick={this.onToggleOpen.bind(this)}>{Lang.get("logs")}</div>
 			<div class={`list ${this.isOpened ? "opened" : ""}`}>
 				<div class="listContent">

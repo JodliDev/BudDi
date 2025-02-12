@@ -1,10 +1,11 @@
 :root {
 	--color-background: white;
-	--color-surface: #e8e8e8;
+	--color-surface: #f8faff;
+	--color-shadow: #0002;
 	--color-inside-surface: white;
 	--color-surface-border: #cecdcd;
-	--color-accent-dark: #b8661f;
-	--color-accent-light: #fdd6b2;
+	--color-accent-dark: #0b6a0d;
+	--color-accent-light: #86a886;
 	--color-low-key-text: gray;
 	--radius: 10px;
 	--btnSize: 24px;
@@ -56,7 +57,7 @@ a, .clickable {
 	cursor: pointer;
 	
 	&:hover {
-		color: var(--color-accent-dark);
+		color: var(--color-accent-light);
 	}
 }
 
@@ -75,12 +76,15 @@ label, .labelLike {
 		color: var(--color-low-key-text);
 		background-color: var(--color-inside-surface);
 		border-radius: 5px;
-		box-shadow: var(--color-surface) 0 0 5px 1px;
+		box-shadow: var(--color-shadow) 0 0 5px 1px;
 	}
 	> small:last-child {
 		margin: -3px 0 10px 5px;
 		font-size: x-small;
 		color: gray;
+	}
+	input {
+		accent-color: var(--color-accent-dark);
 	}
 	input[type="checkbox"], input[type="radio"] {
 		margin: 20px 0 15px 5px;
@@ -162,10 +166,6 @@ form {
 	opacity: 0.5;
 }
 
-.selected {
-	text-decoration: underline;
-}
-
 .overflowHidden {
 	overflow: hidden;
 }
@@ -193,14 +193,14 @@ form {
 	flex-direction: row;
 	
 	
-	&.hAlignEnd {
-		justify-content: flex-end;
-	}
 	&.vAlignCenter {
 		align-items: center;
 	}
 	&.vAlignStretched {
 		align-items: stretch;
+	}
+	&.vAlignEnd {
+		align-items: flex-end;
 	}
 	
 	&.hAlignSpaced {
@@ -208,6 +208,9 @@ form {
 	}
 	&.hAlignCenter {
 		justify-content: center;
+	}
+	&.hAlignEnd {
+		justify-content: flex-end;
 	}
 	
 	&.wrapContent {
@@ -256,6 +259,7 @@ form {
 	background: var(--color-surface);
 	border: 1px solid var(--color-surface-border);
 	border-radius: var(--radius);
+	box-shadow: var(--color-shadow) 0 0 5px 1px;
 	padding: 5px;
 	
 	.entry, .subSurface {
