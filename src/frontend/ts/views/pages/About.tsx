@@ -27,7 +27,7 @@ export class About extends BasePage {
 					
 					<div class="labelLike">
 						<small>{Lang.getWithColon("homepage")}</small>
-						<span class="mainContent"><a href="https://github.com/JodliDev/BudDi">https://github.com/JodliDev/BudDi</a></span>
+						<span class="mainContent"><a href="https://github.com/JodliDev/BudDi" target="_blank">https://github.com/JodliDev/BudDi</a></span>
 					</div>
 				</div>
 			</div>
