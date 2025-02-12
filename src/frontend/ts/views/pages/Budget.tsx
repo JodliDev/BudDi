@@ -13,6 +13,8 @@ import {DropdownMenu} from "../../widgets/DropdownMenu";
 import {EditEntryWidget} from "../../widgets/EditEntryWidget";
 import {ImageUpload} from "../../widgets/ImageUpload";
 import {DeleteEntryWidget} from "../../widgets/DeleteEntryWidget";
+import {PaymentEditor} from "../PaymentEditor";
+import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 
 export class Budget extends LoggedInBasePage<"budgetId"> {
 	private budget: PubBudget | null = null
@@ -65,6 +67,17 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 							</div>
 							<div class="horizontal vAlignCenter">
 								{this.budget && [
+									PaymentEditor({
+										site: this.site,
+										iconKey: "donate",
+										langKey: "addPayment",
+										amount: 1,
+										getMessage: (amount, _, file) => new AddPaymentMessage(amount, file, file?.type, file?.name, this.budget!),
+										onFinish: async (response) => {
+											if(response.success)
+												await this.load()
+										}
+									}),
 									DropdownMenu(
 										"ChangeBudget",
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntry")),
@@ -81,9 +94,9 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 														return ImageUpload(value.toString(), 50, setValue)
 												}
 											},
-											onFinish: () => {
+											onFinish: async () => {
 												close()
-												this.load()
+												await this.load()
 											}
 										})
 									),
