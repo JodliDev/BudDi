@@ -6,7 +6,7 @@ BudDi is an open source project intended to keep track of multiple budgets that 
 
 For example: You can use it to organize all projects or organisations you want to donate money to. BudDi will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to.
 
-> Note: I developed this project mostly for my personal use. Until it runs bug free for a while, I will consider this project feature complete. I might add features if new needs arise or if somebody has interesting ideas (please open a new issue).
+> Note: I developed this project mostly for my personal use. When it has been running bug free for a while, I will consider this project feature complete. I might add features if new needs arise or if somebody has interesting ideas (please open a new issue).
 
 ## How does it work?
 BudDi keeps two lists: "All budgets" and "Waiting to be chosen".
