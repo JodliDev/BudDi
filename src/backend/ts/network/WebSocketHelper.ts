@@ -12,8 +12,10 @@ import {ServerSettingsMessage} from "../../../shared/messages/ServerSettingsMess
 import {Server} from "node:http";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
 import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
+import {FaultyInputException} from "../exceptions/FaultyInputException";
 
 export class WebSocketHelper {
+	public static readonly MAX_JSON_LENGTH = 1e+6 // 1 MB
 	private readonly wss: WebSocketServer;
 	
 	constructor(options: Options, server: Server, onMessage: (message: BaseBackendMessageAction<BaseMessage>, session: WebSocketSession) => Promise<void>) {
@@ -52,7 +54,11 @@ export class WebSocketHelper {
 						binaryMessage = null
 					}
 					else {
-						message = JSON.parse(data.toString())
+						const stringData = data.toString()
+						if(stringData.length > WebSocketHelper.MAX_JSON_LENGTH)
+							throw new FaultyInputException()
+						
+						message = JSON.parse(stringData)
 						if(BinaryUploadMessage.isBinaryMessage(message)) {
 							binaryMessage = message //store message until actual binary data arrives
 							session.send(new ConfirmResponseMessage(binaryMessage.initialConfirm, true)) //send a response that binary data can be sent
