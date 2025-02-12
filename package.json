@@ -1,12 +1,17 @@
 {
 	"name": "buddi",
 	"version": "1.3.0",
-	"description": "",
+	"description": "BudDi is an open source project intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.",
 	"private": true,
 	"keywords": [
-		""
+		"Open Source",
+		"Budget",
+		"Randomizer",
+		"Distribution",
+		"Scheduler",
+		"Donations"
 	],
-	"license": "",
+	"license": "MIT",
 	"author": "JodliDev",
 	"scripts": {
 		"dev_backend": "npm run prepare_dist & node --watch -r ts-node/register src/backend/ts/index.ts -- sqlite=dist/config frontend=dist/frontend",
