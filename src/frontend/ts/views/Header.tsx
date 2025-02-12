@@ -9,7 +9,6 @@ import {BtnWidget} from "../widgets/BtnWidget";
 export class Header {
 	constructor(private site: Site) { }
 	
-	
 	private getLine(currentPage: string, target: string, title: LangKey): Vnode {
 		return <a class={currentPage == target ? "selected" : ""} href={`#${target}`}>{Lang.get(title)}</a>
 	}
@@ -26,6 +25,7 @@ export class Header {
 				]
 				: [
 					this.getLine(currentPage, "Login", "login"),
+					this.getLine(currentPage, "About", "about"),
 					this.site.serverSettings.registrationAllowed && this.getLine(currentPage, "Register", "register"),
 				]
 			}
@@ -39,8 +39,13 @@ export class Header {
 		return <div class="siteHeader horizontal vAlignEnd">
 			
 			<div class="icon">
-				{MouseOverDropdownMenu("appName", <div>{m.trust(logoSvg)}</div>, () =>
-					<div>{`${Lang.get("appName")} - ${Lang.get("appTitle")}`}</div>)}
+				<a href="#About">
+					{MouseOverDropdownMenu(
+						"appName",
+						<div>{m.trust(logoSvg)}</div>,
+						() => <div>{`${Lang.get("appName")} - ${Lang.get("appTitle")}`}</div>
+					)}
+				</a>
 			</div>
 			<div class="menuButton">
 				{DropdownMenu(

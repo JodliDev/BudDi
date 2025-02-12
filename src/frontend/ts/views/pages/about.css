@@ -1,0 +1,15 @@
+.page.About {
+	.surface {
+		width: 400px;
+		max-width: 90%;
+		.content {
+			min-width: unset;
+			padding: 10px 20px;
+			gap: 10px;
+			
+			.labelLike {
+				max-width: unset;
+			}
+		}
+	}
+}

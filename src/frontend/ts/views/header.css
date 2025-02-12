@@ -1,5 +1,5 @@
 .siteHeader {
-	max-width: 100%;
+	width: 100%;
 	min-height: 40px;
 	padding-top: 10px;
 	background-color: var(--color-surface);
