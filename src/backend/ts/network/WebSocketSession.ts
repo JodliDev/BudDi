@@ -5,6 +5,7 @@ import {IsAdminMessage} from "../../../shared/messages/IsAdminMessage";
 export class WebSocketSession {
 	public isLoggedIn: boolean = false
 	public isAdmin: boolean = false
+	public isAlive: boolean = true
 	public userId?: number | bigint
 	
 	constructor(private ws: WebSocket) { }

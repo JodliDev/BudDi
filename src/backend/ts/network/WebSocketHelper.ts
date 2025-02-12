@@ -14,6 +14,10 @@ import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMe
 import {BinaryUploadMessage} from "../../../shared/messages/BinaryUploadMessage";
 import {FaultyInputException} from "../exceptions/FaultyInputException";
 
+interface OwnWebSocket {
+	session?: WebSocketSession
+}
+
 export class WebSocketHelper {
 	public static readonly MAX_JSON_LENGTH = 1e+6 // 1 MB
 	private readonly wss: WebSocketServer;
@@ -27,6 +31,9 @@ export class WebSocketHelper {
 		
 		this.wss.on('connection', async (ws, connection) => {
 			const session = new WebSocketSession(ws)
+			const ownWebSocket = ws as unknown as OwnWebSocket
+			ownWebSocket.session = session
+			
 			session.send(new ServerSettingsMessage(Options.serverSettings))
 			
 			const cookies = connection.headers.cookie
@@ -38,8 +45,8 @@ export class WebSocketHelper {
 				if(sessionHash && sessionId && sessionTimestamp)
 					await onMessage(new SessionLoginMessageAction(new SessionLoginMessage(parseInt(sessionId), sessionHash, parseInt(sessionTimestamp))), session)
 			}
-			ws.on('error', console.error)
 			
+			ws.on('error', console.error)
 			let binaryMessage: BinaryUploadMessage | null = null
 			ws.on('message', async (data, isBinary) => {
 				let confirmMessage: ConfirmMessage | null = null
@@ -88,6 +95,25 @@ export class WebSocketHelper {
 					)
 				}
 			})
+			
+			ws.on('pong', () => {
+				session.isAlive = true
+			})
+		})
+		
+		const interval = setInterval(() => {
+			for(const ws of this.wss.clients) {
+				const ownWebSocket = ws as unknown as OwnWebSocket
+				if(!ownWebSocket.session?.isAlive)
+					return ws.terminate()
+				
+				ownWebSocket.session.isAlive = false
+				ws.ping()
+			}
+		}, options.keepAliveTimeoutMs)
+		
+		this.wss.on('close', () => {
+			clearInterval(interval);
 		})
 	}
 }

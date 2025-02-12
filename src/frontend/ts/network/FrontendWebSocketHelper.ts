@@ -5,7 +5,6 @@ import {Site} from "../views/Site";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {ConfirmResponseMessage} from "../../../shared/messages/ConfirmResponseMessage";
 import {Lang} from "../../../shared/Lang";
-import {KeepAliveMessage} from "../../../shared/messages/KeepAliveMessage";
 import {IPublicOptions} from "../../../shared/IPublicOptions";
 import {ListMessage} from "../../../shared/messages/ListMessage";
 import {ListResponseMessage} from "../../../shared/messages/ListResponseMessage";
@@ -23,12 +22,9 @@ export class FrontendWebSocketHelper {
 	private expectedResponseManager: ExpectedResponseManager
 	private waitPromise?: Promise<void>
 	private isReconnecting = false
-	private keepAliveTimeoutId = 0
-	private readonly keepAliveTimeoutMs: number
 	private readonly path: string
 	
 	constructor(private site: Site, options: IPublicOptions) {
-		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
 		this.path = options.pathWs
 		this.expectedResponseManager = new ExpectedResponseManager(site.errorManager)
 	}
@@ -55,13 +51,6 @@ export class FrontendWebSocketHelper {
 		socket.addEventListener("close", this.onClose.bind(this))
 		
 		return socket
-	}
-	
-	private sendKeepAlive(): void {
-		window.clearTimeout(this.keepAliveTimeoutId)
-		this.keepAliveTimeoutId = window.setTimeout(() => {
-			this.send(new KeepAliveMessage())
-		}, this.keepAliveTimeoutMs)
 	}
 	
 	async onMessage(event: MessageEvent): Promise<void> {
@@ -122,7 +111,6 @@ export class FrontendWebSocketHelper {
 		
 		const json = JSON.stringify(message)
 		this.socket?.send(json)
-		this.sendKeepAlive()
 	}
 	
 	public async getSingleEntry<T extends BasePublicTable>(table: Class<T>, filter?: ListFilterData, order?: keyof T | string, orderType?: "ASC" | "DESC"): Promise<T | null> {

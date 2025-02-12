@@ -50,12 +50,10 @@ export class Options {
 
 export class PublicOptions implements IPublicOptions {
 	public readonly lang: string
-	public readonly keepAliveTimeoutMs: number
 	public readonly pathWs: string
 	
 	constructor(options: Options) {
 		this.lang = options.lang
-		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
 		this.pathWs = options.pathWs
 	}
 }
