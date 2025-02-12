@@ -5,8 +5,8 @@
 	.entry {
 		border-bottom: 1px solid var(--color-surface-border);
 		
-		.historyLine img {
-			margin-right: 10px;
+		.historyLine {
+			max-width: unset;
 		}
 	}
 }

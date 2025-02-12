@@ -3,9 +3,6 @@
 		min-height: var(--btnSize)
 	}
 	
-	.entry {
-		white-space: nowrap;
-	}
 	.selected {
 		text-decoration: underline;
 	}

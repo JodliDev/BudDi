@@ -35,12 +35,12 @@ export class History extends LoggedInBasePage {
 								&nbsp;
 								{(new Date(entry.item.historyTime)).toLocaleTimeString()}
 							</small>
-							<div class="mainContent horizontal">
+							<div class="mainContent horizontal vAlignCenter">
 								{budget?.iconDataUrl
 									? <img alt="" src={budget.iconDataUrl} class="icon"/>
 									: <div class="icon"></div>
 								}
-								{Lang.get(entry.item.langKey, ...JSON.parse(entry.item.langValues))}
+								<span>{Lang.get(entry.item.langKey, ...JSON.parse(entry.item.langValues))}</span>
 							</div>
 						</div>
 					}
