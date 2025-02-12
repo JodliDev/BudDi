@@ -43,8 +43,8 @@ class DropdownMenuImpl {
 			const x = options?.dontCenter ? rect.left - 6 : rect.left + rect.width / 2 //6 is for padding (5) and border width (1)
 			const y = Math.max(0, rect.top + rect.height + 1)
 			
-			const maxWidth = window.innerWidth / 2
-			const maxHeight = window.innerHeight / 2
+			const maxWidth = window.innerWidth
+			const maxHeight = window.innerHeight
 			
 			let transform = "translate(-50%)"
 			if(options?.dontCenter)
