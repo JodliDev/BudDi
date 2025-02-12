@@ -19,17 +19,17 @@ import {BinaryDownloadMessage} from "../../../shared/messages/BinaryDownloadMess
 import {ListFilterData} from "../../../shared/ListFilter";
 
 export class FrontendWebSocketHelper {
-	private static readonly PATH = "websocket"
-	
 	private socket?: WebSocket
 	private expectedResponseManager: ExpectedResponseManager
 	private waitPromise?: Promise<void>
 	private isReconnecting = false
 	private keepAliveTimeoutId = 0
 	private readonly keepAliveTimeoutMs: number
+	private readonly path: string
 	
 	constructor(private site: Site, options: IPublicOptions) {
 		this.keepAliveTimeoutMs = options.keepAliveTimeoutMs
+		this.path = options.pathWs
 		this.expectedResponseManager = new ExpectedResponseManager(site.errorManager)
 	}
 	
@@ -45,7 +45,7 @@ export class FrontendWebSocketHelper {
 	
 	private createSocket(): WebSocket {
 		const protocol = location.protocol === "http:" ? "ws" : "wss"
-		const socket = new WebSocket(`${protocol}://${document.location.hostname}:${document.location.port}/${FrontendWebSocketHelper.PATH}`)
+		const socket = new WebSocket(`${protocol}://${document.location.hostname}:${document.location.port}${this.path}`)
 		this.socket = socket
 		this.waitPromise = new Promise<void>((resolve, reject) => {
 			socket.addEventListener("open", () => resolve())
