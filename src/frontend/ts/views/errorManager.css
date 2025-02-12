@@ -49,10 +49,11 @@
 			
 			.listContent {
 				border: 1px solid var(--color-surface-border);
+				border-top-width: 0;
 				border-right-width: 0;
 				background-color: var(--color-surface);
 				border-bottom-left-radius: var(--radius);
-				box-shadow: var(--color-shadow) 0 0 5px 1px;
+				box-shadow: var(--color-shadow) -3px 3px 5px -2px;
 				overflow: auto;
 			}
 		}
