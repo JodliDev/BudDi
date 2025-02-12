@@ -4,6 +4,7 @@ import {LoadingSpinner} from "../../widgets/LoadingSpinner";
 import {Lang} from "../../../../shared/Lang";
 import {LoginMessage} from "../../../../shared/messages/LoginMessage";
 import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMessage";
+import headerSvg from "../../../img/header.svg";
 
 export class Login extends BasePage {
 	private isLoading: boolean = false;
@@ -35,6 +36,9 @@ export class Login extends BasePage {
 		return <div class="vertical hAlignCenter vAlignCenter">
 			<form onsubmit={this.onSubmit.bind(this)} class="surface vertical">
 				
+				<div class="textCentered">
+					{m.trust(headerSvg)}
+				</div>
 				<label>
 					<small>Username:</small>
 					<input type="text" name="username"/>
