@@ -20,7 +20,7 @@ export class Payment extends PubPayment {
 		settings.setForeignKey("budgetId", {
 			table: Budget,
 			to: "budgetId",
-			on_delete: "CASCADE",
+			on_delete: "SET NULL",
 			isPublic: true
 		})
 		

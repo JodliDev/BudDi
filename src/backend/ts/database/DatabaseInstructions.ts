@@ -13,7 +13,7 @@ import {column} from "./column";
 import {Payment} from "./dataClasses/Payment";
 
 export class DatabaseInstructions {
-	public version: number = 12
+	public version: number = 13
 	
 	/**
 	 * Order needs to reflect foreign keys
@@ -78,6 +78,11 @@ export class DatabaseInstructions {
 		if(fromVersion <= 8) {
 			migrations.renameColumn(Budget, "lastSpending", "lastPayment")
 			migrations.renameColumn(Budget, "spendingName", "budgetName")
+		}
+		
+		if(fromVersion <= 12) {
+			migrations.recreateTable(Payment)
+			migrations.recreateTable(History)
 		}
 		
 		return output
