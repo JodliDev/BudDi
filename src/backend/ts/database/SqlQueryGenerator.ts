@@ -6,7 +6,7 @@ import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {TableSettings} from "./TableSettings";
 import {UpdateValues} from "./DatabaseManager";
 
-const MAX_LIMIT = 100
+const MAX_LIMIT = 100000
 
 export interface TableStructure<T extends BasePublicTable> {
 	table: Class<T>
@@ -180,8 +180,7 @@ export class SqlQueryGenerator {
 			query += ` WHERE ${where}`
 		if(order)
 			query += ` ORDER BY ${order} ${orderType}`
-		if(limit)
-			query += ` LIMIT ${Math.min(limit, MAX_LIMIT)}`
+		query += ` LIMIT ${limit ? Math.min(limit, MAX_LIMIT) : MAX_LIMIT}`
 		if(offset)
 			query += ` OFFSET ${offset}`
 		
