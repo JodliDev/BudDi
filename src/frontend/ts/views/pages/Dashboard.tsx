@@ -116,7 +116,7 @@ export class Dashboard extends LoggedInBasePage {
 			<div onmousemove={this.positionBudgetDropdown.bind(this)} class="budgetDropdownClicker">
 				{clickElement}
 			</div>,
-			() => <div class="surface vertical budgetDropdownContent">
+			() => <div class="vertical budgetDropdownContent">
 				<h3 class="textCentered horizontal vAlignCenter hAlignCenter">
 					{entry.iconDataUrl && <img class="icon" src={entry.iconDataUrl} alt=""/>}
 					<span class="mainContent">{entry.budgetName}</span>

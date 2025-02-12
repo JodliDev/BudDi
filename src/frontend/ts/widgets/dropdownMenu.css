@@ -9,6 +9,6 @@
 	border: 1px solid var(--color-surface-border);
 	border-radius: var(--radius);
 	text-align: left;
-	box-shadow: 3px 3px 5px #0002;
+	box-shadow: 3px 3px 5px var(--color-shadow);
 	overflow: auto;
 }
