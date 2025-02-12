@@ -30,7 +30,7 @@ export class PagesHelper {
 	
 	public setTotalCount(totalCount: number): void {
 		this.totalCount = totalCount
-		this.maxPages = Math.floor(totalCount / this.pageSize)
+		this.maxPages = Math.ceil(totalCount / this.pageSize)
 	}
 	
 	public load(): Promise<void> {
@@ -53,13 +53,13 @@ export class PagesHelper {
 					: BtnWidget.Empty()
 				}
 				
-				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.maxPages + 1}</span>
+				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.maxPages}</span>
 				
-				{this.currentPage < this.maxPages
+				{this.currentPage + 1 < this.maxPages
 					? BtnWidget.DefaultBtn("next", () => this.onPageChange(this.currentPage + 1))
 					: BtnWidget.Empty()
 				}
-				{this.currentPage + 1 < this.maxPages
+				{this.currentPage + 2 < this.maxPages
 					? BtnWidget.DefaultBtn("toEnd", () => this.onPageChange(this.maxPages))
 					: BtnWidget.Empty()
 				}
