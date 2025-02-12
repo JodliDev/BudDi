@@ -44,12 +44,16 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 			SqlWhere(Budget).is("budgetId", budget.budgetId)
 		)
 		
+		let fileId: number | bigint = 0
+		if(this.data.receiveFile)
+			fileId = db.fileDataStore.saveFile(this.data.receiveFile)
+		
 		const payment: Partial<Payment> = {
 			userId: session.userId,
 			budgetId: budget.budgetId,
 			paymentTime: Date.now(),
 			amount: this.data.amount,
-			receipt: this.data.receiveFile,
+			receiptFileId: fileId,
 			receiptFileType: this.data.receiptFileType,
 			receiptFileName: this.data.receiptFileName
 		}

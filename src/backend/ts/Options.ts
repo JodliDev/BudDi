@@ -7,6 +7,7 @@ export class Options {
 	public readonly root: string = process.cwd()
 	public readonly frontend: string = "dist/frontend"
 	public readonly sqlite: string = "dist/config"
+	public readonly files: string = "dist/config/files"
 	public readonly portHttp: number = 1304
 	public readonly pathHttp: string = "/"
 	public readonly pathWs: string = "/websocket"

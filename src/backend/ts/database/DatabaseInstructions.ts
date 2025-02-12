@@ -13,7 +13,7 @@ import {column} from "./column";
 import {Payment} from "./dataClasses/Payment";
 
 export class DatabaseInstructions {
-	public version: number = 11
+	public version: number = 12
 	
 	/**
 	 * Order needs to reflect foreign keys
@@ -32,6 +32,7 @@ export class DatabaseInstructions {
 	/**
 	 * Custom migrations that will run before the MigrationManager does its thing
 	 * @param db link to current database for database operations
+	 * @param migrations The migrations object that will be validated after this
 	 * @param fromVersion Version of current database
 	 * @param toVersion Version of database after update
 	 */

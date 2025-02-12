@@ -14,7 +14,10 @@ export class DownloadReceiptMessageAction extends LoggedInMessageAction<Download
 		if(payment.userId != session.userId)
 			throw new NoPermissionException()
 		
-		if(payment.receipt)
-			session.sendBinary(payment.receipt)
+		if(payment.receiptFileId) {
+			const file = db.fileDataStore.getFile(payment.receiptFileId)
+			if(file)
+				session.sendBinary(file)
+		}
 	}
 }

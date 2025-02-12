@@ -42,19 +42,23 @@ export class EditPaymentMessageAction extends LoggedInMessageAction<EditPaymentM
 		)
 		
 		//update payment entry:
+		
+		if(this.data.deleteExistingReceipt)
+			db.fileDataStore.deleteFile(payment.receiptFileId)
+		
+		let fileId: number | bigint = 0
+		if(this.data.receiveFile)
+			fileId = db.fileDataStore.saveFile(this.data.receiveFile)
+		
 		db.update(
 			Payment,
 			{
-				"=": this.data.deleteExistingReceipt
-					? {
-						amount: this.data.amount,
-						receipt: this.data.receiveFile,
-						receiptFileType: this.data.receiptFileType,
-						receiptFileName: this.data.receiptFileName
-					}
-					: {
-						amount: this.data.amount
-					}
+				"=": {
+					amount: this.data.amount,
+					receiptFileId: fileId,
+					receiptFileType: this.data.receiptFileType,
+					receiptFileName: this.data.receiptFileName
+				}
 			},
 			SqlWhere(Payment).is("paymentId", payment.paymentId)
 		)

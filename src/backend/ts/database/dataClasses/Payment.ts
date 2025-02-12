@@ -11,8 +11,6 @@ export class Payment extends PubPayment {
 	getSettings(): TableSettings<this> {
 		const settings = new TableSettings<this>()
 		
-		settings.setDataType("receipt", "blob")
-		
 		settings.setForeignKey("userId", {
 			table: User,
 			to: "userId",
@@ -38,5 +36,5 @@ export class Payment extends PubPayment {
 	}
 	
 	public userId: number | bigint = 0
-	public receipt: ArrayBuffer | Buffer | Buffer[] | null = null
+	public receiptFileId: number | bigint = 0
 }

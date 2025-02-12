@@ -11,6 +11,7 @@ import {TableSettings} from "./TableSettings";
 import {User} from "./dataClasses/User";
 import {SqlWhereData} from "./SqlWhere";
 import {FaultyListException} from "../exceptions/FaultyListException";
+import {FileDataStore} from "../FileDataStore";
 
 
 const DB_NAME = "db.sqlite"
@@ -36,6 +37,7 @@ export type UpdateValues<T> = {
 
 export class DatabaseManager {
 	private readonly db: BetterSqlite3.Database
+	public readonly fileDataStore: FileDataStore
 	
 	public static async access(dbInstructions: DatabaseInstructions, options: Options): Promise<DatabaseManager> {
 		const manager = new DatabaseManager(options)
@@ -108,7 +110,7 @@ export class DatabaseManager {
 		const path = `${options.root}/${options.sqlite}`
 		console.log(`Loading Database ${path}/${DB_NAME}`)
 		this.db = new BetterSqlite3(`${path}/${DB_NAME}`)
-		
+		this.fileDataStore = new FileDataStore(options)
 	}
 	
 	private correctValues<T extends BasePublicTable>(
