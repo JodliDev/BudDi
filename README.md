@@ -2,10 +2,11 @@
 <img alt="" src="images/header.png"/>
 </p>
 
-BudDi is intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.
+BudDi is an open source project intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.
 
 For example: You can use it to organize all projects or organisations you want to donate money to. BudDi will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to.
 
+> Note: I developed this project mostly for my personal use. Until it runs bug free for a while, I will consider this project feature complete. I might add features if new needs arise or if somebody has interesting ideas (please open a new issue).
 
 ## How does it work?
 BudDi keeps two lists: "All budgets" and "Waiting to be chosen".
@@ -14,6 +15,41 @@ Every time you press the "Select a random spending now" button (or when the sche
 
 When "Waiting to be chosen" is empty, it will automatically be refilled with the entries von "All budgets" and the cycle restarts.
 
+## Features
+- Create budgets and randomly chose them for payment (in an equally distributed fashion).
+- A Scheduler that randomly chooses X budgets every Y days (add 00:30) for payment.
+- Upload recipes for payments.
+- Filter payments for a specific year, by budget or tax-exempt state.
+- Rudimentary user management.
+
+## Screenshots
+
+<p align="center">
+	<a href="images/screenshots/about.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/about.png"/>
+	</a>
+	<a href="images/screenshots/admin.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/admin.png"/>
+	</a>
+	<a href="images/screenshots/budget.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/budget.png"/>
+	</a>
+	<a href="images/screenshots/dashboard.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/dashboard.png"/>
+	</a>
+	<a href="images/screenshots/history.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/history.png"/>
+	</a>
+	<a href="images/screenshots/payments.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/payments.png"/>
+	</a>
+	<a href="images/screenshots/schedule.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/schedule.png"/>
+	</a>
+	<a href="images/screenshots/user.png" target="_blank">
+		<img alt="" width="200" src="images/screenshots/user.png"/>
+	</a>
+</p>
 
 ## How to install?
 Use docker compose.
@@ -35,7 +71,11 @@ docker compose up -d
 ```
 
 
-### Using a reverse Proxy (e.g. Nginx)
+Then open <http://localhost:1304>.
+- The first user that is created, will have admin permissions.
+- If you want to register other users, you have to enable registrations in the admin section (<http://localhost:1304#Admin>)
+
+### (Optional) Using a reverse Proxy (e.g. Nginx)
 Use the following configuration (assuming, that you use SSL and you want you use **Let's Encrypt**):
 > **Note 1:** Replace SERVERNAME with your domain:
 
@@ -91,13 +131,12 @@ server {
 
 ```
 
-
 ## Options
 Can be set in the environment section in `docker-compose.yml`:
-- **portHttp**: Internal port on which the application should run in the docker image (default: 1304).
+- **keepAliveTimeoutMs**: Milliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g. nginx closes connections after one minute) (default: 50000).
 - **lang**: Language code to select a translation for the frontend (currently there is only "en") (default: "en").
 - **pathWs**: Relative path on which the websocket should be accessible (default: "/websocket").
-- **keepAliveTimeoutMs**: Milliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g. nginx closes connections after one minute) (default: 50000).
+- **portHttp**: Internal port on which the application should run in the docker image (default: 1304).
 
 
 ## How to update?
@@ -117,5 +156,5 @@ docker image prune
 
 ## What is it made of?
 The backend is written in TypeScript using Node.js which starts an HTTP and WebSocket server using Express. Data is saved using SQLite.
-
-The frontend is written in TypeScript using Mithril.js and is packed by Webpack.
+The frontend is written in TypeScript using Mithril.js.
+Both backend and frontend are packed by Webpack.
