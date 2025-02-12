@@ -142,11 +142,11 @@ export class DatabaseManager {
 		table: Class<T>,
 		where?: SqlWhereData,
 		limit?: number,
-		from?: number,
+		offset?: number,
 		order?: keyof T | "RANDOM()",
 		orderType: "ASC" | "DESC" = "ASC"
 	): T[] {
-		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, from, order?.toString(), orderType) as Partial<T>[]) as T[]
+		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, offset, order?.toString(), orderType) as Partial<T>[]) as T[]
 	}
 	
 	public async selectFullyJoinedPublicTable<T extends BasePublicTable>(
@@ -155,12 +155,12 @@ export class DatabaseManager {
 		settings?: TableSettings<T>,
 		where?: SqlWhereData,
 		limit?: number,
-		from?: number,
+		offset?: number,
 		order?: (keyof T | string),
 		orderType: "ASC" | "DESC" = "ASC"
 	): Promise<ListResponseEntry<T>[]> {
 		const joinArray = settings ? await DatabaseManager.getPublicJoinArray(table, settings) : []
-		return this.selectJoinedTable(table, select, joinArray, where, limit, from, order, orderType) as ListResponseEntry<T>[]
+		return this.selectJoinedTable(table, select, joinArray, where, limit, offset, order, orderType) as ListResponseEntry<T>[]
 	}
 	
 	public selectJoinedTable<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
@@ -169,7 +169,7 @@ export class DatabaseManager {
 		joinArray: MapToJoinedDataArray<JoinedT>,
 		where?: SqlWhereData,
 		limit?: number,
-		from?: number,
+		offset?: number,
 		order?: (keyof T | string),
 		orderType: "ASC" | "DESC" = "ASC"
 	): JoinedResponseEntry<T>[] {
@@ -185,7 +185,7 @@ export class DatabaseManager {
 			selectWithTable,
 			where,
 			limit,
-			from,
+			offset,
 			order?.toString(),
 			orderType,
 			joinSqlArray
@@ -221,12 +221,12 @@ export class DatabaseManager {
 		select?: string[],
 		where?: SqlWhereData,
 		limit?: number,
-		from?: number,
+		offset?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
 		join?: {joinedTableName: string, on: string}[]
 	) {
-		const query = SqlQueryGenerator.createSelectSql(tableName, select, where?.getSql(), limit, from, order, orderType, join)
+		const query = SqlQueryGenerator.createSelectSql(tableName, select, where?.getSql(), limit, offset, order, orderType, join)
 		const statement = this.db.prepare(query)
 		return statement.all(...where?.getValues() ?? [])
 	}

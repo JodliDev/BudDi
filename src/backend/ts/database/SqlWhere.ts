@@ -47,7 +47,7 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 	}
 	
 	public isComparedFromOtherTable<TOther extends BasePublicTable>(operator: Operators, tableClass: Class<TOther>, columnName: keyof TOther, value: unknown): ConnectorBuilder<T> {
-		this.sql += ` ${column(tableClass, columnName)} ${operator} ?`
+		this.sql += `${column(tableClass, columnName)} ${operator} ?`
 		this.values.push(this.valueToSql(value))
 		return this
 	}

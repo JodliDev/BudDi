@@ -166,7 +166,7 @@ export class SqlQueryGenerator {
 		select?: string[],
 		where?: string,
 		limit?: number,
-		from?: number,
+		offset?: number,
 		order?: string,
 		orderType: "ASC" | "DESC" = "ASC",
 		joinArray?: {joinedTableName: string, on: string}[]
@@ -180,10 +180,10 @@ export class SqlQueryGenerator {
 			query += ` WHERE ${where}`
 		if(order)
 			query += ` ORDER BY ${order} ${orderType}`
-		if(from)
-			query += ` FROM ${from}`
 		if(limit)
 			query += ` LIMIT ${Math.min(limit, MAX_LIMIT)}`
+		if(offset)
+			query += ` OFFSET ${offset}`
 		
 		return `${query};\n`
 	}
