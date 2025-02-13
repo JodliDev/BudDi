@@ -3,10 +3,7 @@ import {ScheduleRepeatOptions} from "../ScheduleRepeatOptions";
 import {LangKey} from "../Lang";
 
 export class PubSchedule extends BasePublicTable implements ScheduleRepeatOptions {
-	getPrimaryKey(): keyof this {
-		return "scheduleId"
-	}
-	getTranslation(key: keyof PubSchedule): LangKey {
+	getTranslation(key: keyof this): LangKey {
 		switch(key) {
 			case "count":
 				return "paymentCount"

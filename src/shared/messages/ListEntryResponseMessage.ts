@@ -1,5 +1,4 @@
 import {ConfirmResponseMessage} from "./ConfirmResponseMessage";
-import {ListMessage} from "./ListMessage";
 import {BasePublicTable} from "../BasePublicTable";
 import {ConfirmMessage} from "./ConfirmMessage";
 import {ListResponseEntry} from "./ListResponseMessage";

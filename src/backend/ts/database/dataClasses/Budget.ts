@@ -4,10 +4,11 @@ import {PubBudget} from "../../../../shared/public/PubBudget";
 import {Waiting} from "./Waiting";
 import {History} from "./History";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
-export class Budget extends PubBudget {
+export class Budget extends PubBudget implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("budgetId")
 
 		settings.setForeignKey("userId", {
 			table: User,

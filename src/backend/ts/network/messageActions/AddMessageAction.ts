@@ -10,23 +10,21 @@ import {BaseListMessageAction} from "./BaseListMessageAction";
 export class AddMessageAction extends BaseListMessageAction<AddMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const values = await this.getValues()
-		this.checkValues(this.data.values, values.publicObj)
+		this.checkValues(this.data.values, values.publicObj, values.settings)
 		
-		this.checkValues(this.data.values, values.publicObj)
-		
-		values.settings?.onBeforeAdd(this.data.values, db, session)
+		values.settings.onBeforeAddToList(this.data.values, db, session)
 		
 		const response = db.insert(values.tableClass, this.data.values)
-		const where = SqlWhere(values.tableClass).is(values.publicObj.getPrimaryKey() as keyof BasePublicTable, response)
+		const where = SqlWhere(values.tableClass).is(values.settings.primaryKey, response)
 		
 		if(response != 0)
-			values.settings?.onAfterAdd(this.data.values, db, response)
+			values.settings.onAfterAddToList(this.data.values, db, response)
 		
 		
 		const joinedResponse = db.selectJoinedTable(
 			values.tableClass,
 			{
-				where: values.settings?.getWhere(session, where) ?? where,
+				where: values.settings.getWhere(session, where) ?? where,
 				limit: 1
 			}
 		)

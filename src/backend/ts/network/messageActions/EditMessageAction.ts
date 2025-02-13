@@ -10,10 +10,10 @@ import {BaseListMessageAction} from "./BaseListMessageAction";
 export class EditMessageAction extends BaseListMessageAction<EditMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const values = await this.getValues()
-		this.checkValues(this.data.values, values.publicObj)
+		this.checkValues(this.data.values, values.publicObj, values.settings)
 		
-		values.settings?.onBeforeEdit(this.data.values, db, session)
-		const where = SqlWhere(values.tableClass).is(values.publicObj.getPrimaryKey() as keyof BasePublicTable, this.data.id)
+		values.settings.onBeforeEditList(this.data.values, db, session)
+		const where = SqlWhere(values.tableClass).is(values.settings.primaryKey, this.data.id)
 		
 		let count = 0
 		for(const _ in this.data.values) {

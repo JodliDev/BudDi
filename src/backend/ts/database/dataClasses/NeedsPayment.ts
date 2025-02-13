@@ -3,10 +3,11 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {PubNeedsPayment} from "../../../../shared/public/PubNeedsPayment";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
-export class NeedsPayment extends PubNeedsPayment {
+export class NeedsPayment extends PubNeedsPayment implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("needsPaymentId")
 		
 		settings.setForeignKey("budgetId", {
 			table: Budget,

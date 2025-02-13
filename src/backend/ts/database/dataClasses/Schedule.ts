@@ -3,10 +3,11 @@ import {TableSettings} from "../TableSettings";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
 import {DailyScheduleManager} from "../../DailyScheduleManager";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
-export class Schedule extends PubSchedule {
+export class Schedule extends PubSchedule implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("scheduleId")
 		
 		settings.setForeignKey("userId", {
 			table: User,

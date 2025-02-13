@@ -3,11 +3,12 @@ import {PubUser} from "../../../../shared/public/PubUser";
 import {UsernameAlreadyExistsException} from "../../exceptions/UsernameAlreadyExistsException";
 import {NoPermissionException} from "../../exceptions/NoPermissionException";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
 
-export class User extends PubUser {
+export class User extends PubUser implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("userId")
 		
 		settings.setOnBeforeEdit((data, db, session) => {
 			if(Object.prototype.hasOwnProperty.call(data, "username")) {

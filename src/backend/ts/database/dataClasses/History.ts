@@ -5,11 +5,12 @@ import {DatabaseManager} from "../DatabaseManager";
 import {Budget} from "./Budget";
 import {User} from "./User";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
 
-export class History extends PubHistory {
+export class History extends PubHistory implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("historyId")
 		
 		settings.setDataType("budgetId", "number")
 		

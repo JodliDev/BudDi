@@ -4,16 +4,13 @@ import {LangKey} from "../Lang";
 export class PubBudget extends BasePublicTable {
 	public static readonly BUDGET_NAME_MIN_LENGTH = 3
 	
-	getTranslation(key: keyof PubBudget): LangKey {
+	getTranslation(key: keyof this): LangKey {
 		switch(key) {
 			case "budgetName":
 				return "name"
 			default:
 				return key as LangKey
 		}
-	}
-	getPrimaryKey(): keyof this {
-		return "budgetId"
 	}
 	
 	

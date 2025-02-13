@@ -11,6 +11,13 @@ import {Waiting} from "./dataClasses/Waiting";
 import {Budget} from "./dataClasses/Budget";
 import {column} from "./column";
 import {Payment} from "./dataClasses/Payment";
+import {TableSettings} from "./TableSettings";
+
+export type BackendTable = BackendTableMethods & BasePublicTable
+
+export interface BackendTableMethods {
+	getSettings(): TableSettings<any>
+}
 
 export class DatabaseInstructions {
 	public version: number = 13
@@ -18,7 +25,7 @@ export class DatabaseInstructions {
 	/**
 	 * Order needs to reflect foreign keys
 	 */
-	public tables: Class<BasePublicTable>[] = [
+	public tables: Class<BackendTable>[] = [
 		User,
 		LoginSession,
 		Budget,

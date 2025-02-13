@@ -2,14 +2,11 @@ import {User} from "./User";
 import {TableSettings} from "../TableSettings";
 import {randomBytes} from "node:crypto";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
-export class LoginSession extends BasePublicTable {
-	getPrimaryKey(): keyof this {
-		return "loginSessionId"
-	}
-	
+export class LoginSession extends BasePublicTable implements BackendTableMethods {
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("loginSessionId")
 		
 		settings.setForeignKey("userId", {
 			table: User,

@@ -1,23 +1,25 @@
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
 import {DatabaseManager} from "./DatabaseManager";
-import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {WebSocketSession} from "../network/WebSocketSession";
 import {SqlDataTypes} from "./SqlQueryGenerator";
 import {SqlWhereData} from "./SqlWhere";
 import {Class} from "../../../shared/Class";
+import {BackendTable} from "./DatabaseInstructions";
 
-export class TableSettings<TableT extends BasePublicTable> {
-	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
+export class TableSettings<TableT extends BackendTable> {
 	public readonly foreignKeys = {} as Record<keyof TableT, ForeignKeyInfo<any>>
-	public readonly floatValues = {} as Record<keyof TableT, boolean>
-	public allowedFilterColumns = {} as Record<string, Class<BasePublicTable>>
 	public hasForeignKeys: boolean = false
-	public onBeforeAdd: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
-	public onAfterAdd: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
-	public onBeforeEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
-	public onBeforeDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
-	public onAfterDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public readonly dataTypes = {} as Record<keyof TableT, SqlDataTypes>
+	public readonly floatValues = {} as Record<keyof TableT, boolean>
+	public allowedFilterColumns = {} as Record<string, Class<BackendTable>>
+	public onBeforeAddToList: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public onAfterAddToList: (data: Partial<TableT>, db: DatabaseManager, addedId: number | bigint) => void = () => { }
+	public onBeforeEditList: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public onBeforeDeleteFromList: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
+	public onAfterDeleteFromList: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void = () => { }
 	private listFilter?: (session: WebSocketSession) => SqlWhereData = undefined
+	
+	constructor(public readonly primaryKey: keyof TableT) { }
 	
 	public getWhere(session: WebSocketSession, where?: SqlWhereData): SqlWhereData | undefined {
 		if(this.listFilter && this.listFilter(session).isNotEmpty())
@@ -27,37 +29,37 @@ export class TableSettings<TableT extends BasePublicTable> {
 	}
 	
 	
-	setForeignKey<ColumnT extends BasePublicTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">): void {
+	setForeignKey<ColumnT extends BackendTable>(column: keyof TableT, info: Pick<ForeignKeyInfo<ColumnT>, "table" | "to" | "isPublic" | "on_delete" | "on_update">): void {
 		this.foreignKeys[column] = {from: column.toString(), ...info}
 		this.hasForeignKeys = true
 	}
 	
 	setOnBeforeDelete(onDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void): void {
-		this.onBeforeDelete = onDelete
+		this.onBeforeDeleteFromList = onDelete
 	}
 	setOnAfterDelete(onDelete: (id: number | bigint, db: DatabaseManager, session: WebSocketSession) => void): void {
-		this.onAfterDelete = onDelete
+		this.onAfterDeleteFromList = onDelete
 	}
 	setOnBeforeEdit(onEdit: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void): void {
-		this.onBeforeEdit = onEdit
+		this.onBeforeEditList = onEdit
 	}
 	
 	setOnBeforeAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, session: WebSocketSession) => void): void {
-		this.onBeforeAdd = onAdd
+		this.onBeforeAddToList = onAdd
 	}
 	setOnAfterAdd(onAdd: (data: Partial<TableT>, db: DatabaseManager, userId: number | bigint) => void): void {
-		this.onAfterAdd = onAdd
+		this.onAfterAddToList = onAdd
 	}
 	
 	/**
-	 * Adds where conditions whenever the table is used  in {@Link ListMessageAction} / {@link ListWidget}
+	 * Adds where conditions whenever the table is used in {@Link ListMessageAction} / {@link ListWidget}
 	 * @param listFilter
 	 */
 	setListFilter(listFilter: (session: WebSocketSession) => SqlWhereData): void {
 		this.listFilter = listFilter
 	}
 	
-	setAllowedFilterColumn<T extends BasePublicTable>(tableClass: Class<T>, column: keyof T): void {
+	setAllowedFilterColumn<T extends BackendTable>(tableClass: Class<T>, column: keyof T): void {
 		this.allowedFilterColumns[column.toString()] = tableClass
 	}
 	
@@ -75,7 +77,7 @@ export class TableSettings<TableT extends BasePublicTable> {
 		}
 	}
 	
-	public getAllowedColumnTable(columnName: string): Class<BasePublicTable> | undefined {
+	public getAllowedColumnTable(columnName: string): Class<BackendTable> | undefined {
 		return this.allowedFilterColumns[columnName]
 	}
 }

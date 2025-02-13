@@ -3,13 +3,14 @@ import {PubPayment} from "../../../../shared/public/PubPayment";
 import {Budget} from "./Budget";
 import {User} from "./User";
 import {SqlWhere} from "../SqlWhere";
+import {BackendTableMethods} from "../DatabaseInstructions";
 
 
-export class Payment extends PubPayment {
+export class Payment extends PubPayment implements BackendTableMethods {
 	static readonly RECIPE_FILE_NAME_MIN_LENGTH: number = 3
 	
 	getSettings(): TableSettings<this> {
-		const settings = new TableSettings<this>()
+		const settings = new TableSettings<this>("paymentId")
 		
 		settings.setForeignKey("userId", {
 			table: User,

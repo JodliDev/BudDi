@@ -103,7 +103,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 		
 		this.items.push(newData)
 		options.addOptions?.onAdded && options.addOptions?.onAdded()
-		closeDropdown(`Add~${BasePublicTable.getName(options.tableClass)}`)
+		closeDropdown(`Add~${options.tableClass.name}`)
 		m.redraw()
 	}
 	
@@ -113,7 +113,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 		const index = this.items.findIndex(entry => this.getId(entry.item) == id)
 		this.items[index] = newData
 		options.editOptions?.onChanged && options.editOptions?.onChanged()
-		closeDropdown(`Edit~${BasePublicTable.getName(options.tableClass)}`)
+		closeDropdown(`Edit~${options.tableClass.name}`)
 		m.redraw()
 	}
 	
@@ -149,7 +149,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 					}
 				{options.addOptions &&
 					DropdownMenu(
-						`Add~${BasePublicTable.getName(options.tableClass)}`,
+						`Add~${options.tableClass.name}`,
 						BtnWidget.PopoverBtn("add", Lang.get("addEntry")),
 						() => m(EditEntryComponent<EntryT>, {
 							mode: "add",
@@ -177,7 +177,7 @@ class ListComponent<EntryT extends BasePublicTable> implements Component<ListCom
 								{options.getEntryView(entry)}
 								{options.editOptions &&
 									DropdownMenu(
-										`Edit~${BasePublicTable.getName(options.tableClass)}`,
+										`Edit~${options.tableClass.name}`,
 										BtnWidget.PopoverBtn("edit", Lang.get("changeEntryInfo")),
 										() => m(EditEntryComponent<EntryT>, {
 											mode: "edit",

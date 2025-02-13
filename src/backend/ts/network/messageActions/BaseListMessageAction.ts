@@ -5,21 +5,22 @@ import {FaultyListException} from "../../exceptions/FaultyListException";
 import {Class} from "../../../../shared/Class";
 import {TableSettings} from "../../database/TableSettings";
 import {FaultyInputException} from "../../exceptions/FaultyInputException";
+import {BackendTable} from "../../database/DatabaseInstructions";
 
 interface ListValues {
-	tableClass: Class<BasePublicTable>
+	tableClass: Class<BackendTable>
 	publicObj: BasePublicTable
-	settings: TableSettings<BasePublicTable>
+	settings: TableSettings<BackendTable>
 }
 
 export abstract class BaseListMessageAction<T extends BaseListMessage> extends LoggedInMessageAction<T> {
 	protected async getValues(): Promise<ListValues> {
 		const publicTableClass = await this.getPublicTableClassFromMessage(this.data)
 		const publicObj = new publicTableClass
-		const tableClass = await this.getTableClass(publicTableClass)
+		const tableClass = await this.getTableClass(this.data.listName)
 		const obj = new tableClass
 		
-		const settings = obj.getSettings() as TableSettings<BasePublicTable>
+		const settings = obj.getSettings() as TableSettings<BackendTable>
 		
 		return {
 			tableClass: tableClass,
@@ -28,8 +29,8 @@ export abstract class BaseListMessageAction<T extends BaseListMessage> extends L
 		}
 	}
 	
-	protected checkValues(values: Partial<BasePublicTable>, publicObj: BasePublicTable) {
-		const primaryKey = publicObj.getPrimaryKey()
+	protected checkValues(values: Partial<BasePublicTable>, publicObj: BasePublicTable, settings: TableSettings<BackendTable>): void {
+		const primaryKey = settings.primaryKey
 		if(Object.prototype.hasOwnProperty.call(publicObj, primaryKey))
 			delete values[primaryKey as keyof BasePublicTable]
 		for(const key in values) {
@@ -56,13 +57,12 @@ export abstract class BaseListMessageAction<T extends BaseListMessage> extends L
 		return c
 	}
 	
-	private async getTableClass(publicTableClass: Class<BasePublicTable>): Promise<Class<BasePublicTable>> {
-		const tableName = BasePublicTable.getName(publicTableClass)
+	private async getTableClass(tableName: string): Promise<Class<BackendTable>> {
 		const tableClass = await require(`../../database/dataClasses/${tableName}`);
 		if(!tableClass)
 			throw new FaultyListException()
 		
-		const c = tableClass[tableName] as Class<BasePublicTable>
+		const c = tableClass[tableName] as Class<BackendTable>
 		if(!c)
 			throw new FaultyListException()
 		return c

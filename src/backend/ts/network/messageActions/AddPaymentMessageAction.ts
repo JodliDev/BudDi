@@ -9,7 +9,7 @@ import {History} from "../../database/dataClasses/History";
 import {Payment} from "../../database/dataClasses/Payment";
 import {SqlWhere} from "../../database/SqlWhere";
 import {FaultyInputException} from "../../exceptions/FaultyInputException";
-import {PubUser} from "../../../../shared/public/PubUser";
+import {User} from "../../database/dataClasses/User";
 
 // noinspection JSUnusedGlobalSymbols
 export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMessage> {
@@ -59,7 +59,7 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 		}
 		db.insert(Payment, payment)
 		
-		const [user] = db.selectTable(PubUser, {where: SqlWhere(PubUser).is("userId", session.userId), limit: 1})
+		const [user] = db.selectTable(User, {where: SqlWhere(User).is("userId", session.userId), limit: 1})
 		
 		History.addHistory(db, session.userId!, "historyAddPayment", [this.data.amount, user.currency, budget.budgetName], budget.budgetId)
 		session.send(new ConfirmResponseMessage(this.data, true))

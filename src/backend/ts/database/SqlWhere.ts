@@ -1,34 +1,34 @@
 import {Class} from "../../../shared/Class";
-import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {column} from "./column";
 import {ListFilterData, Operators} from "../../../shared/ListFilter";
 import {FaultyInputException} from "../exceptions/FaultyInputException";
 import {TableSettings} from "./TableSettings";
+import {BackendTable} from "./DatabaseInstructions";
 
 export interface SqlWhereData {
 	getSql(): string
 	getValues(): unknown[]
-	getJoinedTables(): Class<BasePublicTable>[]
+	getJoinedTables(): Class<BackendTable>[]
 	isNotEmpty(): boolean
-	getBuilder(): SqlWhereBuilder<BasePublicTable>
-	concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<BasePublicTable>
+	getBuilder(): SqlWhereBuilder<BackendTable>
+	concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<BackendTable>
 }
 
-interface StatementBuilder<T extends BasePublicTable> extends SqlWhereData {
+interface StatementBuilder<T extends BackendTable> extends SqlWhereData {
 	is(columnName: keyof T, value: unknown): ConnectorBuilder<T>
 	isCompared(operator: Operators, columnName: keyof T, value: unknown): ConnectorBuilder<T>
 	isComparedFromOtherTable(operator: Operators, tableClass: Class<T>, columnName: keyof T, value: unknown): ConnectorBuilder<T>
 }
-interface ConnectorBuilder<T extends BasePublicTable> extends SqlWhereData {
+interface ConnectorBuilder<T extends BackendTable> extends SqlWhereData {
 	and(): StatementBuilder<T>
 	or(): StatementBuilder<T>
 	concat(connector: "AND" | "OR", sqlWhere: SqlWhereData): ConnectorBuilder<T>
 }
 
-export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuilder<T>, ConnectorBuilder<T> {
+export class SqlWhereBuilder<T extends BackendTable> implements StatementBuilder<T>, ConnectorBuilder<T> {
 	private sql: string = ""
 	private values: unknown[] = []
-	private joinedTables: Class<BasePublicTable>[] = []
+	private joinedTables: Class<BackendTable>[] = []
 	
 	constructor(private table: Class<T>) { }
 	
@@ -48,7 +48,7 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 		return this.isComparedFromOtherTable(operator, this.table, columnName, value)
 	}
 	
-	public isComparedFromOtherTable<TOther extends BasePublicTable>(operator: Operators, tableClass: Class<TOther>, columnName: keyof TOther, value: unknown): ConnectorBuilder<T> {
+	public isComparedFromOtherTable<TOther extends BackendTable>(operator: Operators, tableClass: Class<TOther>, columnName: keyof TOther, value: unknown): ConnectorBuilder<T> {
 		this.sql += `${column(tableClass, columnName)} ${operator} ?`
 		this.values.push(this.valueToSql(value))
 		if(tableClass.name != this.table.name && !this.joinedTables.find((t => t.name == tableClass.name)))
@@ -81,20 +81,20 @@ export class SqlWhereBuilder<T extends BasePublicTable> implements StatementBuil
 	public getValues(): unknown[] {
 		return this.values
 	}
-	public getJoinedTables(): Class<BasePublicTable>[] {
+	public getJoinedTables(): Class<BackendTable>[] {
 		return this.joinedTables
 	}
 	
-	public getBuilder(): SqlWhereBuilder<BasePublicTable> {
+	public getBuilder(): SqlWhereBuilder<BackendTable> {
 		return this
 	}
 }
 
-export function SqlWhere<T extends BasePublicTable>(table: Class<T>): SqlWhereBuilder<T> {
+export function SqlWhere<T extends BackendTable>(table: Class<T>): SqlWhereBuilder<T> {
 	return new SqlWhereBuilder(table)
 }
 
-export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, settings: TableSettings<T>, filter: ListFilterData): SqlWhereData | undefined {
+export function SqlWhereFromFilter<T extends BackendTable>(table: Class<T>, settings: TableSettings<T>, filter: ListFilterData): SqlWhereData | undefined {
 	if(!filter.values.length)
 		return undefined
 	const builder = new SqlWhereBuilder(table)
@@ -120,7 +120,7 @@ export function SqlWhereFromFilter<T extends BasePublicTable>(table: Class<T>, s
 		if(!entryTable)
 			throw new FaultyInputException()
 		
-		builder.isComparedFromOtherTable(entry.operator, entryTable, entry.column as keyof BasePublicTable, entry.value)
+		builder.isComparedFromOtherTable(entry.operator, entryTable, entry.column as keyof BackendTable, entry.value)
 		notFirstLoop = true
 	}
 	

@@ -1,9 +1,8 @@
-import {DatabaseInstructions} from "./DatabaseInstructions";
-import {SqlQueryGenerator, TableStructure} from "./SqlQueryGenerator";
+import {BackendTable, DatabaseInstructions} from "./DatabaseInstructions";
+import {SqlQueryGenerator} from "./SqlQueryGenerator";
 import {ColumnInfo} from "./ColumnInfo";
 import BetterSqlite3 from "better-sqlite3";
 import {ForeignKeyInfo} from "./ForeignKeyInfo";
-import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {Options} from "../Options";
 import {Class} from "../../../shared/Class";
 
@@ -20,8 +19,8 @@ interface MigrationInstructions {
 export class Migrations {
 	private readonly migrationData: Record<string, MigrationInstructions> = {}
 	
-	private getEntry(newTable: Class<BasePublicTable>): MigrationInstructions {
-		const newTableName = BasePublicTable.getName(newTable)
+	private getEntry(newTable: Class<BackendTable>): MigrationInstructions {
+		const newTableName = newTable.name
 		if(!this.migrationData.hasOwnProperty(newTableName)) {
 			this.migrationData[newTableName] = {
 				recreate: false,
@@ -31,7 +30,7 @@ export class Migrations {
 		return this.migrationData[newTableName]
 	}
 	
-	public renameTable(oldTableName: string, newTable: Class<BasePublicTable>) {
+	public renameTable(oldTableName: string, newTable: Class<BackendTable>) {
 		const entry = this.getEntry(newTable)
 		entry.recreate = true
 		if(!entry.oldTableName)
@@ -39,12 +38,12 @@ export class Migrations {
 	}
 	
 	
-	public recreateTable(newTable: Class<BasePublicTable>) {
+	public recreateTable(newTable: Class<BackendTable>) {
 		const entry = this.getEntry(newTable)
 		entry.recreate = true
 	}
 	
-	public renameColumn(table: Class<BasePublicTable>, oldColumn: string, newColumn: string): void {
+	public renameColumn(table: Class<BackendTable>, oldColumn: string, newColumn: string): void {
 		const entry = this.getEntry(table)
 		const existingColumnEntry = entry.renamedColumns.find((entry) => entry[entry.length - 1] == oldColumn)
 		
@@ -196,7 +195,7 @@ export class DatabaseMigrationManager {
 			const structure = tableStructure.tables[tableName]
 			const newForeignKeys = structure.foreignKeys
 			
-			const oldForeignKeys = this.db.pragma(`foreign_key_list(${tableName})`) as ForeignKeyInfo<BasePublicTable>[]
+			const oldForeignKeys = this.db.pragma(`foreign_key_list(${tableName})`) as ForeignKeyInfo<BackendTable>[]
 			
 			if(!newForeignKeys) {
 				if(oldForeignKeys?.length) {

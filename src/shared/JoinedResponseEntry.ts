@@ -1,6 +1,4 @@
-import {BasePublicTable} from "./BasePublicTable";
-
-export interface JoinedResponseEntry<T extends BasePublicTable> {
+export interface JoinedResponseEntry<T> {
 	item: Partial<T>,
 	joined: Record<string, unknown>
 }
