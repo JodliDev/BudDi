@@ -30,15 +30,15 @@ export class ListMessageAction extends BaseListMessageAction<ListMessage> {
 			throw new FaultyInputException()
 		
 		const where = values.settings.getWhere(session, this.data.filter ? SqlWhereFromFilter(values.tableClass, values.settings, this.data.filter) : undefined)
-		const joinedResponse = await db.selectFullyJoinedPublicTable(
+		const joinedResponse = db.selectJoinedTable(
 			values.tableClass,
-			values.publicObj.getColumnNames(),
-			values.settings,
-			where,
-			this.data.limit,
-			this.data.from,
-			order,
-			this.data.orderType
+			{
+				where: where,
+				limit: this.data.limit,
+				offset: this.data.from,
+				order: order,
+				orderType: this.data.orderType,
+			}
 		)
 		
 		session.send(new ListResponseMessage(

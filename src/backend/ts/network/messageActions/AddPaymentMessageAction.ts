@@ -17,9 +17,9 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 		if(!this.isType(this.data.amount, "number") || (this.data.receiptFileName && this.data.receiptFileName.length < Payment.RECIPE_FILE_NAME_MIN_LENGTH))
 			throw new FaultyInputException()
 		
-		const [budget] = db.selectTable(Budget, SqlWhere(Budget).is("budgetId", this.data.budgetId), 1)
+		const [budget] = db.selectTable(Budget, {where: SqlWhere(Budget).is("budgetId", this.data.budgetId), limit: 1})
 		//We assume that there always will be only one entry per budget: 
-		const [needsPayment] = db.selectTable(NeedsPayment, SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), 1)
+		const [needsPayment] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), limit: 1})
 		
 		if(needsPayment) {
 			if(needsPayment.budgetId != budget.budgetId)
@@ -59,7 +59,7 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 		}
 		db.insert(Payment, payment)
 		
-		const [user] = db.selectTable(PubUser, SqlWhere(PubUser).is("userId", session.userId), 1)
+		const [user] = db.selectTable(PubUser, {where: SqlWhere(PubUser).is("userId", session.userId), limit: 1})
 		
 		History.addHistory(db, session.userId!, "historyAddPayment", [this.data.amount, user.currency, budget.budgetName], budget.budgetId)
 		session.send(new ConfirmResponseMessage(this.data, true))

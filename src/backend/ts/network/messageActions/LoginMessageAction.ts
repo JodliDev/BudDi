@@ -11,7 +11,7 @@ import {SqlWhere} from "../../database/SqlWhere";
 // noinspection JSUnusedGlobalSymbols
 export class LoginMessageAction extends BaseBackendMessageAction<LoginMessage> {
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [user] = db.selectTable(User, SqlWhere(User).is("username", this.data.username), 1)
+		const [user] = db.selectTable(User, {where: SqlWhere(User).is("username", this.data.username), limit: 1})
 		if(!user) {
 			session.send(new LoginResponseMessage(this.data, false))
 			return

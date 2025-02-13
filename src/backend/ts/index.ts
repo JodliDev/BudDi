@@ -31,7 +31,7 @@ DatabaseManager.access(new DatabaseInstructions(), options)
 		
 		scheduler.addSchedule({repeatDays: 1}, () => {
 			const now = Date.now()
-			const schedules = dbManager.selectTable(Schedule, SqlWhere(Schedule).is("enabled", "1").and().isCompared("<=", "nextLoop", now))
+			const schedules = dbManager.selectTable(Schedule, {where: SqlWhere(Schedule).is("enabled", "1").and().isCompared("<=", "nextLoop", now)})
 			console.log(`Found ${schedules.length} Schedules that will run now`)
 			
 			for(const schedule of schedules) {

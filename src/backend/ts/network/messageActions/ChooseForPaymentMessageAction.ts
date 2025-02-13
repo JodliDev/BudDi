@@ -22,18 +22,18 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 	public static addNewChoice(db: DatabaseManager, userId: number | bigint, amount: number): boolean {
 		const [data] = db.selectJoinedTable(
 			Waiting,
-			["budgetId", "waitingId"],
-			[
-				{
-					joinedTable: Budget,
-					select: ["budgetName"],
-					on: `${column(Waiting, "budgetId")} = ${column(Budget, "budgetId")}`,
-				}
-			],
-			SqlWhere(Waiting).is("userId", userId),
-			1,
-			undefined,
-			"RANDOM()"
+			{
+				select: ["budgetId", "waitingId"],
+				joinArray: [
+					{
+						joinedTable: Budget,
+						select: ["budgetName"],
+					}
+				],
+				where: SqlWhere(Waiting).is("userId", userId),
+				limit: 1,
+				order: "RANDOM()"
+			}
 		)
 		const waitingEntry = data.item
 		const budget = data.joined["Budget"] as Budget
@@ -41,11 +41,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		if(!waitingEntry)
 			return false
 		
-		const [needsSpendingEntry] = db.selectTable(
-			NeedsPayment,
-			SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId),
-			1
-		)
+		const [needsSpendingEntry] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId), limit:1})
 		
 		if(needsSpendingEntry) {
 			db.update(
@@ -76,10 +72,7 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		if(entriesLeft != 0)
 			return
 		
-		const budgets = db.selectTable(
-			Budget,
-			SqlWhere(Budget).is("userId", userId).and().is("enabledForWaitingList", "1")
-		)
+		const budgets = db.selectTable(Budget, {where: SqlWhere(Budget).is("userId", userId).and().is("enabledForWaitingList", "1")})
 		for(const budget of budgets) {
 			AddToWaitingMessageAction.createEntry(db, userId, budget)
 		}

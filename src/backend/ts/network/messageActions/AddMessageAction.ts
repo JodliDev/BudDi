@@ -23,12 +23,12 @@ export class AddMessageAction extends BaseListMessageAction<AddMessage> {
 			values.settings?.onAfterAdd(this.data.values, db, response)
 		
 		
-		const joinedResponse = await db.selectFullyJoinedPublicTable(
+		const joinedResponse = db.selectJoinedTable(
 			values.tableClass,
-			values.publicObj.getColumnNames(),
-			values.settings,
-			values.settings?.getWhere(session, where) ?? where,
-			1
+			{
+				where: values.settings?.getWhere(session, where) ?? where,
+				limit: 1
+			}
 		)
 		session.send(new ListEntryResponseMessage<BasePublicTable>(this.data, response != 0 && joinedResponse.length != 0, joinedResponse[0]))
 	}

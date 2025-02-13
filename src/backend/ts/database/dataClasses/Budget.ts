@@ -23,7 +23,7 @@ export class Budget extends PubBudget {
 			History.addHistory(db, data.userId!, "historyAddBudget", [data.budgetName], addedId)
 		})
 		settings.setOnBeforeDelete((id, db, session) => {
-			const [budget] = db.selectTable(Budget, SqlWhere(Budget).is("budgetId", id), 1)
+			const [budget] = db.selectTable(Budget, {where: SqlWhere(Budget).is("budgetId", id), limit: 1})
 			History.addHistory(db, session.userId!, "historyDeleteBudget", [budget.budgetName])
 		})
 		

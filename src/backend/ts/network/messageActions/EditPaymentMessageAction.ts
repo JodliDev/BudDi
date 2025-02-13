@@ -15,13 +15,13 @@ export class EditPaymentMessageAction extends LoggedInMessageAction<EditPaymentM
 		if(!this.isType(this.data.amount, "number") || (this.data.receiptFileName && this.data.receiptFileName.length < Payment.RECIPE_FILE_NAME_MIN_LENGTH))
 			throw new FaultyInputException()
 		
-		const [payment] = db.selectTable(Payment, SqlWhere(Payment).is("paymentId", this.data.paymentId), 1)
+		const [payment] = db.selectTable(Payment, {where: SqlWhere(Payment).is("paymentId", this.data.paymentId), limit: 1})
 		if(!payment)
 			throw new FaultyInputException()
 		const diffAmount = payment.amount - this.data.amount
 		
 		//correct needsPayment:
-		const [needsPayment] = db.selectTable(NeedsPayment, SqlWhere(NeedsPayment).is("budgetId", payment.budgetId), 1)
+		const [needsPayment] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", payment.budgetId), limit: 1})
 		
 		if(needsPayment) {
 			if(needsPayment.amount - diffAmount <= 0)

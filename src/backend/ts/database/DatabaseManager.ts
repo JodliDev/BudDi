@@ -6,32 +6,43 @@ import {Options} from "../Options";
 import {DatabaseMigrationManager} from "./DatabaseMigrationManager";
 import {BasePublicTable} from "../../../shared/BasePublicTable";
 import {column} from "./column";
-import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {TableSettings} from "./TableSettings";
 import {User} from "./dataClasses/User";
 import {SqlWhereData} from "./SqlWhere";
-import {FaultyListException} from "../exceptions/FaultyListException";
 import {FileDataStore} from "../FileDataStore";
+import {JoinedResponseEntry} from "../../../shared/JoinedResponseEntry";
 
 
 const DB_NAME = "db.sqlite"
 
-interface JoinedAndSelectData<JoinedT extends BasePublicTable> {
-	joinedTable: Class<JoinedT>,
-	on: string,
-	select: (keyof JoinedT)[]
+export interface SelectOptions<T extends BasePublicTable, JoinedT extends BasePublicTable[]> {
+	select?: (keyof T)[],
+	joinArray?: JoinInstructionsArray<JoinedT>,
+	where?: SqlWhereData,
+	limit?: number,
+	offset?: number,
+	order?: (keyof T | string),
+	orderType?: "ASC" | "DESC"
 }
+
 export interface SqlJoinData {
 	joinedTableName: string
 	on: string
 }
-
-type MapToJoinedDataArray<JoinedT extends BasePublicTable[]> = {[K in keyof JoinedT]: JoinedAndSelectData<JoinedT[K]>};
-
-export interface JoinedResponseEntry<T extends BasePublicTable> extends ListResponseEntry<Partial<T>>{
-	item: Partial<T>,
-	joined: Record<string, unknown>
+export interface JoinData extends SqlJoinData {
+	joinedTable: Class<BasePublicTable>
 }
+
+interface JoinInstructions<JoinedT extends BasePublicTable> {
+	joinedTable: Class<JoinedT>,
+	select: (keyof JoinedT)[]
+}
+
+/**
+ * The result is ExternalJoinData[] but with different Generic types
+ * Used so autocomplete offers the correct types
+ */
+type JoinInstructionsArray<JoinedT extends BasePublicTable[]> = {[K in keyof JoinedT]: JoinInstructions<JoinedT[K]>};
 
 export type UpdateValues<T> = {
 	"="?: Partial<T>,
@@ -41,11 +52,14 @@ export type UpdateValues<T> = {
 
 
 export class DatabaseManager {
-	private readonly db: BetterSqlite3.Database
 	public readonly fileDataStore: FileDataStore
+	private readonly db: BetterSqlite3.Database
+	private readonly publicJoins: Record<string, JoinData[]> = {}
+	private readonly publicSelects: Record<string, string[]> = {}
+	private readonly fullPublicSelects: Record<string, string[]> = {}
 	
 	public static async access(dbInstructions: DatabaseInstructions, options: Options): Promise<DatabaseManager> {
-		const manager = new DatabaseManager(options)
+		const manager = new DatabaseManager(options, dbInstructions)
 		const db = manager.db
 		const version = db.pragma("user_version", {simple: true}) as number
 		if(dbInstructions.version != version) {
@@ -56,45 +70,55 @@ export class DatabaseManager {
 				await migrationManager.migrateTables(version, options)
 		}
 		
-		Options.serverSettings.registrationAllowed = manager.selectTable(User, undefined, 1).length == 0
+		Options.serverSettings.registrationAllowed = manager.selectTable(User, {limit: 1}).length == 0
 		return manager
 	}
 	
-	
-	public static async getPublicTableClass(tableName: string): Promise<Class<BasePublicTable>> {
-		const className = `Pub${tableName}`
-		const tableClass = await require(`../../../shared/public/${className}`);
-		if(!tableClass)
-			throw new FaultyListException()
+	private constructor(options: Options, dbInstructions: DatabaseInstructions) {
+		const path = `${options.root}/${options.sqlite}`
+		console.log(`Loading Database ${path}/${DB_NAME}`)
+		this.db = new BetterSqlite3(`${path}/${DB_NAME}`)
+		this.fileDataStore = new FileDataStore(options)
 		
-		const c = tableClass[className] as Class<BasePublicTable>
-		if(!c)
-			throw new FaultyListException()
-		return c
+		this.fillPublicJoins(dbInstructions)
+		this.fillPublicSelects(dbInstructions)
 	}
 	
-	private static async getPublicJoinArray<T extends BasePublicTable>(
-		listClass: Class<T>,
-		settings: TableSettings<T>
-	): Promise<JoinedAndSelectData<BasePublicTable>[]> {
-		const foreignKeys = settings?.foreignKeys
-		const joinArray: JoinedAndSelectData<BasePublicTable>[] = []
-		for(const key in foreignKeys) {
-			const foreignKey = foreignKeys[key]
-			if(!foreignKey.isPublic)
-				continue
-			
-			joinArray.push(await this.getJoinAndSelectData(
-				listClass,
-				foreignKey.table,
-				foreignKey.from as keyof T,
-				foreignKey.to
-			))
+	private fillPublicSelects(dbInstructions: DatabaseInstructions): void {
+		for(const tableClass of dbInstructions.tables) {
+			const publicJoinedClass = Object.getPrototypeOf(tableClass.prototype).constructor //we want the public class so we can skip private columns
+			const joinedObj = new publicJoinedClass as BasePublicTable
+			const columnNames = joinedObj.getColumnNames()
+			this.publicSelects[tableClass.name] = columnNames
+			this.fullPublicSelects[tableClass.name] = columnNames.map((columnName) => column(publicJoinedClass, columnName))
 		}
-		return joinArray
 	}
 	
-	private static getSqlJoinData<T extends BasePublicTable>(
+	private fillPublicJoins(dbInstructions: DatabaseInstructions): void {
+		for(const tableClass of dbInstructions.tables) {
+			const tableObj = new tableClass
+			const settings = tableObj.getSettings() as TableSettings<BasePublicTable>
+			const foreignKeys = settings?.foreignKeys
+			
+			const sqlJoinArray: JoinData[] = []
+			
+			for(const key in foreignKeys) {
+				const foreignKey = foreignKeys[key as keyof BasePublicTable]
+				if(!foreignKey.isPublic)
+					continue
+				
+				sqlJoinArray.push({
+					joinedTable: foreignKey.table,
+					joinedTableName: foreignKey.table.name,
+					on: `${column(tableClass, foreignKey.from as keyof BasePublicTable)} = ${column(foreignKey.table, foreignKey.to)}`
+				})
+			}
+			this.publicJoins[tableClass.name] = sqlJoinArray
+		}
+	}
+	
+	
+	private getSqlJoinData<T extends BasePublicTable>(
 		listClass: Class<T>,
 		settings: TableSettings<T>,
 		joinedTables: Class<BasePublicTable>[]
@@ -119,30 +143,6 @@ export class DatabaseManager {
 		}
 		
 		return joinArray
-	}
-	
-	private static async getJoinAndSelectData<T extends BasePublicTable, ForeignKeyT extends BasePublicTable>(
-		listClass: Class<T>,
-		foreignKeyTable: Class<ForeignKeyT>,
-		on: keyof T,
-		to: keyof ForeignKeyT
-	): Promise<JoinedAndSelectData<BasePublicTable>> {
-		const joinedPublicClass = await this.getPublicTableClass(BasePublicTable.getName(foreignKeyTable))
-		const joinedObj = new joinedPublicClass
-		
-		return {
-			joinedTable: foreignKeyTable,
-			select: joinedObj.getColumnNames(),
-			on: `${column(listClass, on)} = ${column(foreignKeyTable, to)}`
-		}
-	}
-	
-	
-	private constructor(options: Options) {
-		const path = `${options.root}/${options.sqlite}`
-		console.log(`Loading Database ${path}/${DB_NAME}`)
-		this.db = new BetterSqlite3(`${path}/${DB_NAME}`)
-		this.fileDataStore = new FileDataStore(options)
 	}
 	
 	private correctValues<T extends BasePublicTable>(
@@ -172,54 +172,50 @@ export class DatabaseManager {
 	
 	public selectTable<T extends BasePublicTable>(
 		table: Class<T>,
-		where?: SqlWhereData,
-		limit?: number,
-		offset?: number,
-		order?: keyof T | "RANDOM()",
-		orderType: "ASC" | "DESC" = "ASC"
+		options: Pick<SelectOptions<T, T[]>, "where" | "limit" | "offset" | "order" | "orderType">
 	): T[] {
-		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, where, limit, offset, order?.toString(), orderType) as Partial<T>[]) as T[]
-	}
-	
-	public async selectFullyJoinedPublicTable<T extends BasePublicTable>(
-		table: Class<T>,
-		select: (keyof T)[],
-		settings?: TableSettings<T>,
-		where?: SqlWhereData,
-		limit?: number,
-		offset?: number,
-		order?: (keyof T | string),
-		orderType: "ASC" | "DESC" = "ASC"
-	): Promise<ListResponseEntry<T>[]> {
-		const joinArray = settings ? await DatabaseManager.getPublicJoinArray(table, settings) : []
-		return this.selectJoinedTable(table, select, joinArray, where, limit, offset, order, orderType) as ListResponseEntry<T>[]
+		return this.typesToJs(table, this.unsafeSelect(BasePublicTable.getName(table), undefined, options.where, options.limit, options.offset, options.order?.toString(), options.orderType) as Partial<T>[]) as T[]
 	}
 	
 	public selectJoinedTable<T extends BasePublicTable, JoinedT extends BasePublicTable[]>(
 		table: Class<T>,
-		select: (keyof T)[],
-		joinArray: MapToJoinedDataArray<JoinedT>,
-		where?: SqlWhereData,
-		limit?: number,
-		offset?: number,
-		order?: (keyof T | string),
-		orderType: "ASC" | "DESC" = "ASC"
+		options: SelectOptions<T, JoinedT>
 	): JoinedResponseEntry<T>[] {
-		let selectWithTable = select.map(entry => column(table, entry))
-		const joinSqlArray = []
-		for(const join of joinArray) {
-			selectWithTable = selectWithTable.concat(join.select.map(entry => column(join.joinedTable, entry)))
-			joinSqlArray.push({joinedTableName: BasePublicTable.getName(join.joinedTable), on: join.on})
+		let selectWithTable = options.select ? options.select.map(entry => column(table, entry)) : this.fullPublicSelects[BasePublicTable.getName(table)]
+		
+		const tableName = BasePublicTable.getName(table)
+		
+		let joinSqlArray: SqlJoinData[]
+		if(options.joinArray) {
+			const joinTableIndex = this.publicJoins[tableName]
+			joinSqlArray = []
+			for(const join of options.joinArray) {
+				const joinedTableName = BasePublicTable.getName(join.joinedTable)
+				const entry = joinTableIndex.find((joinTable) => joinTable.joinedTableName == joinedTableName) //find cached joinEntry to use its "on"
+				if(!entry)
+					continue
+				selectWithTable = selectWithTable.concat(join.select.map(entry => column(join.joinedTable, entry)))
+				joinSqlArray.push({joinedTableName: joinedTableName, on: entry.on})
+			}
+		}
+		else {
+			joinSqlArray = this.publicJoins[tableName]
+			
+			//we add all the selects from the joins:
+			for(const join of joinSqlArray) {
+				const selects = this.fullPublicSelects[join.joinedTableName]
+				selectWithTable = selectWithTable.concat(selects)
+			}
 		}
 		
 		const lines = this.unsafeSelect(
 			BasePublicTable.getName(table),
 			selectWithTable,
-			where,
-			limit,
-			offset,
-			order?.toString(),
-			orderType,
+			options.where,
+			options.limit,
+			options.offset,
+			options.order?.toString(),
+			options.orderType,
 			joinSqlArray
 		) as Record<string, unknown>[]
 		
@@ -229,17 +225,30 @@ export class DatabaseManager {
 			const entry: Partial<T> = {}
 			const joinedResult: Record<string, unknown> = {}
 			
-			for(const selectEntry of select) {
-				entry[selectEntry] = line[selectEntry.toString()] as any
+			
+			for(const column of options.select ?? this.publicSelects[tableName]) {
+				entry[column as keyof T] = line[column.toString()] as T[keyof T]
 			}
 			
-			for(const join of joinArray) {
-				const joined: Partial<BasePublicTable> = {}
-				for(const selectEntry of join.select) {
-					joined[selectEntry] = line[selectEntry.toString()] as any
+			if(options.joinArray) {
+				for(const join of options.joinArray) {
+					const joined: Partial<BasePublicTable> = {}
+					for(const selectEntry of join.select) {
+						joined[selectEntry] = line[selectEntry.toString()] as any
+					}
+					joinedResult[BasePublicTable.getName(join.joinedTable)] = this.typesToJs(join.joinedTable, [joined])[0]
 				}
-				joinedResult[BasePublicTable.getName(join.joinedTable)] = this.typesToJs(join.joinedTable, [joined])[0]
 			}
+			else {
+				for(const join of this.publicJoins[tableName]) {
+					const joined: Partial<BasePublicTable> = {}
+					for(const selectEntry of this.publicSelects[join.joinedTableName]) {
+						joined[selectEntry as keyof BasePublicTable] = line[selectEntry.toString()] as any
+					}
+					joinedResult[join.joinedTableName] = this.typesToJs(join.joinedTable, [joined])[0]
+				}
+			}
+			
             response.push({
 				item: this.typesToJs(table, [entry])[0],
 				joined: joinedResult
@@ -269,7 +278,7 @@ export class DatabaseManager {
 	
 	public getJoinedCount<T extends BasePublicTable>(table: Class<T>, where: SqlWhereData, settings: TableSettings<T>): number {
 		const joinTables = where.getJoinedTables()
-		return this.getInternalJoinedCount(table, where, joinTables?.length ? DatabaseManager.getSqlJoinData(table, settings, joinTables) : undefined)
+		return this.getInternalJoinedCount(table, where, joinTables?.length ? this.getSqlJoinData(table, settings, joinTables) : undefined)
 	}
 	private getInternalJoinedCount<T extends BasePublicTable>(table: Class<T>, where?: SqlWhereData, joinData?: SqlJoinData[]): number {
 		const query = SqlQueryGenerator.createSelectSql(

@@ -9,7 +9,7 @@ import {SqlWhere} from "../../database/SqlWhere";
 // noinspection JSUnusedGlobalSymbols
 export class DownloadReceiptMessageAction extends LoggedInMessageAction<DownloadReceiptMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [payment] = db.selectTable(Payment, SqlWhere(Payment).is("paymentId", this.data.paymentId))
+		const [payment] = db.selectTable(Payment, {where: SqlWhere(Payment).is("paymentId", this.data.paymentId)})
 		
 		if(payment.userId != session.userId)
 			throw new NoPermissionException()

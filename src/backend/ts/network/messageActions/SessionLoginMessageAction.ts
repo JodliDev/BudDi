@@ -11,7 +11,7 @@ import {SqlWhere} from "../../database/SqlWhere";
 export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionLoginMessage> {
 	async exec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const sqlConstraint = SqlWhere(LoginSession).is("loginSessionId", this.data.sessionId)
-		const [loginSession] = db.selectTable(LoginSession, sqlConstraint, 1)
+		const [loginSession] = db.selectTable(LoginSession, {where: sqlConstraint, limit: 1})
 		if(!loginSession)
 			return
 		const timedHash = await SessionLoginMessage.createSessionHash(loginSession.sessionSecret, this.data.sessionTimestamp)
@@ -21,7 +21,7 @@ export class SessionLoginMessageAction extends BaseBackendMessageAction<SessionL
 		
 		db.update(LoginSession, {"=": {lastLogin: Date.now()}}, sqlConstraint, 1)
 		
-		const [user] = db.selectTable(User, SqlWhere(User).is("userId", loginSession.userId), 1)
+		const [user] = db.selectTable(User, {where: SqlWhere(User).is("userId", loginSession.userId), limit: 1})
 		
 		session.login(user.userId, user.isAdmin)
 		session.send(new IsLoggedInMessage({

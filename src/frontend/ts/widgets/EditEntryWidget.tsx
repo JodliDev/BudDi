@@ -11,7 +11,7 @@ import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
 import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
 import {FeedbackCallBack, FeedbackIcon} from "./FeedbackIcon";
 
-interface EditEntryComponentOptions<EntryT> {
+interface EditEntryComponentOptions<EntryT extends BasePublicTable> {
 	mode: "edit" | "add"
 	site: Site, 
 	tableClass: Class<EntryT>

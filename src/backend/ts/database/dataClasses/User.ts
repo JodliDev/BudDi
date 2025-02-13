@@ -11,7 +11,7 @@ export class User extends PubUser {
 		
 		settings.setOnBeforeEdit((data, db, session) => {
 			if(Object.prototype.hasOwnProperty.call(data, "username")) {
-				const [existingUser] = db.selectTable(User, SqlWhere(User).is("username", data.username), 1)
+				const [existingUser] = db.selectTable(User, {where: SqlWhere(User).is("username", data.username), limit: 1})
 				if(existingUser && existingUser.userId != session.userId)
 					throw new UsernameAlreadyExistsException()
 			}

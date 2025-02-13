@@ -1,4 +1,3 @@
-import {DatabaseManager} from "../../database/DatabaseManager";
 import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import {LoggedInMessageAction} from "../LoggedInMessageAction";
 import {BaseListMessage} from "../../../../shared/BaseListMessage";
@@ -42,7 +41,19 @@ export abstract class BaseListMessageAction<T extends BaseListMessage> extends L
 	private async getPublicTableClassFromMessage(data: BaseListMessage): Promise<Class<BasePublicTable>> {
 		if(!this.stringIsSafe(data.listName))
 			throw new FaultyListException()
-		return DatabaseManager.getPublicTableClass(data.listName)
+		return this.getPublicTableClass(data.listName)
+	}
+	
+	private async getPublicTableClass(tableName: string): Promise<Class<BasePublicTable>> {
+		const className = `Pub${tableName}`
+		const tableClass = await require(`../../../../shared/public/${className}`);
+		if(!tableClass)
+			throw new FaultyListException()
+		
+		const c = tableClass[className] as Class<BasePublicTable>
+		if(!c)
+			throw new FaultyListException()
+		return c
 	}
 	
 	private async getTableClass(publicTableClass: Class<BasePublicTable>): Promise<Class<BasePublicTable>> {

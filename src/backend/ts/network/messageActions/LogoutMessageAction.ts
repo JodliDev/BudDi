@@ -8,7 +8,7 @@ import {SqlWhere} from "../../database/SqlWhere";
 // noinspection JSUnusedGlobalSymbols
 export class LogoutMessageAction extends LoggedInMessageAction<LogoutMessage> {
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
-		const [loginSession] = db.selectTable(LoginSession, SqlWhere(LoginSession).is("userId", session.userId), 1)
+		const [loginSession] = db.selectTable(LoginSession, {where: SqlWhere(LoginSession).is("userId", session.userId), limit: 1})
 
 		if(!loginSession)
 			return

@@ -15,8 +15,7 @@ export class AddToWaitingMessageAction extends LoggedInMessageAction<AddToWaitin
 	async authorizedExec(session: WebSocketSession, db: DatabaseManager): Promise<void> {
 		const [budget] = db.selectTable(
 			Budget,
-			SqlWhere(Budget).is("userId", session.userId).and().is("budgetId", this.data.spendingEntryId),
-			1
+			{where: SqlWhere(Budget).is("userId", session.userId).and().is("budgetId", this.data.spendingEntryId), limit: 1}
 		)
 		if(!budget) {
 			session.send(new ConfirmResponseMessage(this.data, false))
