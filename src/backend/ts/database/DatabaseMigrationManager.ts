@@ -100,6 +100,9 @@ export class DatabaseMigrationManager {
 		const tableQuery = this.sqlGenerator.createStructureSql()
 		console.log(`New table definitions:\n${tableQuery}`)
 		this.db.exec(tableQuery)
+		
+		//Update database version:
+		this.db.pragma(`user_version = ${this.dbInstructions.version}`)
 	}
 	
 	public async migrateTables(fromVersion: number, options: Options): Promise<void> {
@@ -171,9 +174,6 @@ export class DatabaseMigrationManager {
 			
 			//Run post migrations:
 			this.dbInstructions.postMigration(db, fromVersion, this.dbInstructions.version, dataForPostMigration ?? {})
-			
-			//Update database version:
-			db.pragma(`user_version = ${this.dbInstructions.version}`)
 			
 			//Enable foreign key constraints again
 			db.pragma("foreign_keys = ON")
