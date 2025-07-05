@@ -74,7 +74,7 @@ export class ErrorManager {
 			return <div></div>
 		
 		return <div class="errorManager">
-			<div class={`opener clickable ${this.isOpened ? "opened" : ""}`} onclick={this.onToggleOpen.bind(this)}>{Lang.get("logs")}</div>
+			<div class={`opener clickable horizontal vAlignCenter ${this.isOpened ? "opened" : ""}`} onclick={this.onToggleOpen.bind(this)}>{Lang.get("logs")}</div>
 			<div class={`list ${this.isOpened ? "opened" : ""}`}>
 				<div class="listContent">
 					<div class="vertical reversed">
