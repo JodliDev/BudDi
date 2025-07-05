@@ -20,10 +20,13 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 		const [budget] = db.selectTable(Budget, {where: SqlWhere(Budget).is("budgetId", this.data.budgetId), limit: 1})
 		//We assume that there always will be only one entry per budget: 
 		const [needsPayment] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), limit: 1})
+		let addToDownPayments = this.data.addToDownPayments
 		
 		if(needsPayment) {
 			if(needsPayment.budgetId != budget.budgetId)
 				throw new FaultyInputException()
+			
+			addToDownPayments = Math.max(0, addToDownPayments - needsPayment.amount)
 			
 			if(this.data.amount >= needsPayment.amount)
 				db.delete(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", needsPayment.needsPaymentId))
@@ -41,7 +44,7 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 					spendingTimes: budget.spendingTimes + 1
 				},
 				"+=": {
-					downPayment: this.data.addToDownPayments
+					downPayment: addToDownPayments
 				}
 			},
 			SqlWhere(Budget).is("budgetId", budget.budgetId)
