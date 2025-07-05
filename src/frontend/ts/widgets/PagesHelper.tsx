@@ -6,7 +6,7 @@ import {BtnWidget} from "./BtnWidget";
 export class PagesHelper {
 	private totalCount: number = 0
 	private currentPage: number = 0
-	private maxPages: number = 1
+	private lastPage: number = 1
 	
 	constructor(
 		private readonly pageSize: number,
@@ -25,12 +25,12 @@ export class PagesHelper {
 		return this.totalCount == 0
 	}
 	public isNeeded() : boolean {
-		return this.maxPages > 1
+		return this.lastPage >= 1
 	}
 	
 	public setTotalCount(totalCount: number): void {
 		this.totalCount = totalCount
-		this.maxPages = Math.ceil(totalCount / this.pageSize)
+		this.lastPage = Math.floor(totalCount / this.pageSize)
 	}
 	
 	public load(): Promise<void> {
@@ -53,14 +53,14 @@ export class PagesHelper {
 					: BtnWidget.Empty()
 				}
 				
-				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.maxPages}</span>
+				<span>{this.currentPage + 1}&nbsp;/&nbsp;{this.lastPage + 1}</span>
 				
-				{this.currentPage + 1 < this.maxPages
+				{this.currentPage < this.lastPage
 					? BtnWidget.DefaultBtn("next", () => this.onPageChange(this.currentPage + 1))
 					: BtnWidget.Empty()
 				}
-				{this.currentPage + 2 < this.maxPages
-					? BtnWidget.DefaultBtn("toEnd", () => this.onPageChange(this.maxPages))
+				{this.currentPage + 1 < this.lastPage
+					? BtnWidget.DefaultBtn("toEnd", () => this.onPageChange(this.lastPage))
 					: BtnWidget.Empty()
 				}
 			</div>
