@@ -49,7 +49,7 @@ class LangClass {
 						search = `%${i++}$s`
 						break;
 				}
-				value = value.replace(search, replace?.toString() ?? "")
+				value = value.replaceAll(search, replace?.toString() ?? "")
 			}
 			return value
 		}
