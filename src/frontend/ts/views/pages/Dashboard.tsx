@@ -182,6 +182,17 @@ export class Dashboard extends LoggedInBasePage {
 						{BtnWidget.PopoverBtn("remove", Lang.get("removeFromSpendingInfo"), this.removeFromSpending.bind(this, info.needsPayment))}
 					</div>
 				)}
+				{ this.needsPaymentEntries.length > 1 && 
+					<div class="needsSpendingTotal vertical surface needsSpendingEntry hAlignStretched">
+						<div class="subSurface textCentered spendingHeader">
+							{this.needsPaymentEntries.reduce((sum, info) => sum + info.needsPayment.amount, 0)}
+							{this.site.getCurrency()}
+						</div>
+						<div class="subSurface fillSpace horizontal vAlignCenter hAlignCenter">
+							{Lang.get("total")}
+						</div>
+					</div>
+				}
 			</div>
 			<div class="horizontal hAlignCenter wrapContent">
 				{
