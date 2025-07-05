@@ -10,6 +10,7 @@ import {AddToWaitingMessageAction} from "./AddToWaitingMessageAction";
 import {History} from "../../database/dataClasses/History";
 import {ChooseForPaymentMessage} from "../../../../shared/messages/ChooseForPaymentMessage";
 import {SqlWhere} from "../../database/SqlWhere";
+import {User} from "../../database/dataClasses/User";
 
 // noinspection JSUnusedGlobalSymbols
 export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseForPaymentMessage> {
@@ -23,11 +24,11 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 		const [data] = db.selectJoinedTable(
 			Waiting,
 			{
-				select: ["budgetId", "waitingId"],
+				select: ["budgetId", "waitingId", "userId"],
 				joinArray: [
 					{
 						joinedTable: Budget,
-						select: ["budgetName"],
+						select: ["budgetName", "downPayment"],
 					}
 				],
 				where: SqlWhere(Waiting).is("userId", userId),
@@ -36,31 +37,47 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 			}
 		)
 		const waitingEntry = data.item
-		const budget = data.joined["Budget"] as Budget
+		const budget = data.joined["Budget"] as Partial<Budget>
+		const [user] = db.selectTable(User, {where: SqlWhere(User).is("userId", waitingEntry.userId), limit: 1})
+		const currency = user.currency
 		
 		if(!waitingEntry)
 			return false
 		
-		const [needsSpendingEntry] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId), limit:1})
-		
-		if(needsSpendingEntry) {
-			db.update(
-				NeedsPayment, 
-				{"+=": {amount: amount}}, 
-				SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId)
-			)
+		let createSpendingEntry = true
+		if(budget.downPayment) {
+			if(amount > budget.downPayment) {
+				amount -= budget.downPayment
+				db.update(Budget, {"=": {downPayment: 0}}, SqlWhere(Budget).is("budgetId", waitingEntry.budgetId))
+			}
+			else {
+				db.update(Budget, {"-=": {downPayment: amount}}, SqlWhere(Budget).is("budgetId", waitingEntry.budgetId))
+				createSpendingEntry = false
+			}
+			History.addHistory(db, userId, "reduceDownPayment", [budget.budgetName, budget.downPayment, Math.max(budget.downPayment - amount, 0), currency], waitingEntry.budgetId)
 		}
-		else {
-			db.insert(NeedsPayment, {
-				budgetId: waitingEntry.budgetId,
-				userId: userId,
-				addedAt: Date.now(),
-				amount: amount
-			})
+		
+		if(createSpendingEntry) {
+			const [needsSpendingEntry] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId), limit: 1})
+			
+			if(needsSpendingEntry) {
+				db.update(
+					NeedsPayment,
+					{"+=": {amount: amount}},
+					SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId)
+				)
+			} else {
+				db.insert(NeedsPayment, {
+					budgetId: waitingEntry.budgetId,
+					userId: userId,
+					addedAt: Date.now(),
+					amount: amount
+				})
+			}
 		}
 		db.delete(Waiting, SqlWhere(Waiting).is("waitingId", waitingEntry.waitingId))
 		
-		History.addHistory(db, userId, "historyChooseForPayment", [budget.budgetName], waitingEntry.budgetId)
+		History.addHistory(db, userId, "historyChooseForPayment", [budget.budgetName, amount, currency], waitingEntry.budgetId)
 		
 		this.refillWaitingEntriesIfNeeded(db, userId)
 		

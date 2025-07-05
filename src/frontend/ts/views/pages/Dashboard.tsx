@@ -69,13 +69,15 @@ export class Dashboard extends LoggedInBasePage {
 			})
 	}
 	
-	private getPaymentEditorView(amount: number, budget: PubBudget): Vnode<any, unknown> {
+	private getPaymentEditorView(amount: number, budget: PubBudget, downPaymentEnabled?: boolean): Vnode<any, unknown> {
 		return PaymentEditor({
 			site: this.site,
 			iconKey: "donate",
 			langKey: "addPayment",
 			amount: amount,
-			getMessage: (amount, _, file) => new AddPaymentMessage(amount, file, file?.type, file?.name, budget),
+			downPaymentEnabled: downPaymentEnabled,
+			getMessage: (amount, _, file, addToDownPayments) =>
+				new AddPaymentMessage(amount, file, file?.type, file?.name, addToDownPayments, budget),
 			onFinish: async (response, amount) => {
 				if(response.success) {
 					await this.loadNeedsPayment()
@@ -139,6 +141,13 @@ export class Dashboard extends LoggedInBasePage {
 						<span class="mainContent">{(new Date(addedAt)).toLocaleDateString()}</span>
 					</div>
 				}
+				{!!entry.downPayment &&
+					<div class="subSurface labelLike">
+						<small>{Lang.get("downPayments")}</small>
+						<span class="mainContent">{entry.downPayment}{this.site.getCurrency()}</span>
+					</div>
+				}
+				
 			</div>,
 			this.dropdownOptions
 		)
@@ -245,7 +254,7 @@ export class Dashboard extends LoggedInBasePage {
 									{BtnWidget.PopoverBtn("home", Lang.get("homepage"))}
 								</a>
 								: BtnWidget.Empty(),
-							this.getPaymentEditorView(1, entry.item)
+							this.getPaymentEditorView(1, entry.item, true)
 						]
 					})
 				}

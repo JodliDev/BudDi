@@ -9,6 +9,7 @@ export class AddPaymentMessage extends BinaryUploadMessage {
 		sendFile: Blob | undefined,
 		public readonly receiptFileType: string | undefined,
 		public readonly receiptFileName: string | undefined,
+		public readonly addToDownPayments: number,
 		budget: PubBudget
 	) {
 		super(sendFile)

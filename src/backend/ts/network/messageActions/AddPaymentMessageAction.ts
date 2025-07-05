@@ -39,6 +39,9 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 					lastPayment: Date.now(),
 					spendingSum: budget.spendingSum + this.data.amount,
 					spendingTimes: budget.spendingTimes + 1
+				},
+				"+=": {
+					downPayment: this.data.addToDownPayments
 				}
 			},
 			SqlWhere(Budget).is("budgetId", budget.budgetId)

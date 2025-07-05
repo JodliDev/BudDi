@@ -15,12 +15,14 @@ interface PaymentEditorComponentOptions {
 	iconKey: keyof typeof ButtonType
 	langKey: LangKey,
 	amount: number
+	downPaymentEnabled?: boolean
 	fileExists?: boolean
-	getMessage: (amount: number, deleteExistingFile: boolean, file: File | undefined) => BinaryUploadMessage,
+	getMessage: (amount: number, deleteExistingFile: boolean, file: File | undefined, subtractFromRandomPayments: number) => BinaryUploadMessage,
 	onFinish: (response: ConfirmResponseMessage, amount: number) => void
 }
 class PaymentEditorComponent implements Component<PaymentEditorComponentOptions, unknown> {
 	private paymentAmount: number = 0
+	private addToDownPayments: boolean = false
 	private setPaidFeedback = new FeedbackCallBack()
 	private fileExists = false
 	
@@ -38,7 +40,7 @@ class PaymentEditorComponent implements Component<PaymentEditorComponentOptions,
 			return
 		}
 		const amount = parseInt(amountEl.value) ?? 1
-		const message = options.getMessage(amount, !this.fileExists, file)
+		const message = options.getMessage(amount, !this.fileExists, file, this.addToDownPayments ? amount : 0)
 		const response = await options.site.socket.sendAndReceive(message) as ConfirmResponseMessage
 		
 		this.setPaidFeedback.feedback(response.success)
@@ -71,6 +73,12 @@ class PaymentEditorComponent implements Component<PaymentEditorComponentOptions,
 					<small>{Lang.get("amount")}</small>
 					<input type="number" name="amount" min="0" {...BindValueToInput(() => this.paymentAmount, (value) => this.paymentAmount = value)}/>
 				</label>
+				{options.downPaymentEnabled &&
+					<label>
+						<small>{Lang.get("addToDownPayments")}</small>
+						<input type="checkbox" name="addToDownPayments" {...BindValueToInput(() => this.addToDownPayments, (value) => this.addToDownPayments = value)}/>
+					</label>
+				}
 				<label>
 					<small>{Lang.get("receipt")}</small>
 					{this.fileExists

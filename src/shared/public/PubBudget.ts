@@ -22,6 +22,7 @@ export class PubBudget extends BasePublicTable {
 	public enabledForWaitingList: boolean = true
 	public spendingSum: number = 0
 	public spendingTimes: number = 0
+	public downPayment: number = 0
 	public lastPayment: number = 0
 	public isTaxExempt: boolean = false
 }

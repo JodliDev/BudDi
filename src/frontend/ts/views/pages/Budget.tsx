@@ -72,7 +72,8 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 										iconKey: "donate",
 										langKey: "addPayment",
 										amount: 1,
-										getMessage: (amount, _, file) => new AddPaymentMessage(amount, file, file?.type, file?.name, this.budget!),
+										downPaymentEnabled: true,
+										getMessage: (amount, _, file, addToDownPayments) => new AddPaymentMessage(amount, file, file?.type, file?.name, addToDownPayments, this.budget!),
 										onFinish: async (response) => {
 											if(response.success)
 												await this.load()
@@ -128,6 +129,10 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 								</div>
 							</div>
 							<div class="horizontal hAlignCenter wrapContent">
+								<div class="subSurface labelLike">
+									<small>{Lang.get("downPayments")}</small>
+									<span class="mainContent">{this.budget.downPayment}{this.site.getCurrency()}</span>
+								</div>
 								<div class="subSurface labelLike">
 									<small>{Lang.get("enabledForWaitingList")}</small>
 									<span class="mainContent">{Lang.get(this.budget.enabledForWaitingList ? "yes" : "no")}</span>

@@ -20,7 +20,7 @@ export interface BackendTableMethods {
 }
 
 export class DatabaseInstructions {
-	public version: number = 13
+	public version: number = 14
 	
 	/**
 	 * Order needs to reflect foreign keys

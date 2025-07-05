@@ -70,7 +70,7 @@ export class DatabaseManager {
 				await migrationManager.migrateTables(version, options)
 		}
 		
-		Options.serverSettings.registrationAllowed = manager.selectTable(User, {limit: 1}).length == 0
+		Options.serverSettings.registrationAllowed = manager.selectTable(User, {limit: 1}).length == 0 || process.env.NODE_ENV != "production"
 		return manager
 	}
 	
