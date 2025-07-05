@@ -2,25 +2,26 @@
 <img alt="" src="images/header.png"/>
 </p>
 
-BudDi is an open source project intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.
+BudDi is a web platform intended to automatically fill random budgets (either manually or regularly) and keep track of expenses.
 
-For example: You can use it to organize all projects or organisations you want to donate money to. BudDi will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to.
+For example, you can use it to organize all projects or organisations you want to donate money to. BudDi will make sure that your donations are distributed equally between all projects. And if you want to use an automated schedule, it will also randomly choose the next projects you want to donate to depending on the time schedule that you have set.
 
-> Note: I developed this project mostly for my personal use. When it has been running bug free for a while, I will consider this project feature complete. I might add features if new needs arise or if somebody has interesting ideas (please open a new issue).
+> Note: I developed this project mostly for my personal use. ~~When it has been running bug-free for a while~~It has been running smoothly for a while now so I ~~will~~ consider BudDi feature complete. I might add features if new needs arise or if somebody has interesting ideas (please open a new issue).
 
 ## How does it work?
 BudDi keeps two lists: "All budgets" and "Waiting to be chosen".
 Entries that are added to the "All budgets" section will also be added to "Next up" automatically.
-Every time you press the "Select a random spending now" button (or when the scheduler does it automatically), one random entry is removed from the "Waiting to be chosen" list and BudDi prompts you to pay money to this budget (by adding it to a third list at the top that can be checkmarked).
-
-When "Waiting to be chosen" is empty, it will automatically be refilled with the entries von "All budgets" and the cycle restarts.
+Every time you press the "Select random spending now" button (or when the scheduler does it automatically), one random entry is removed from the "Waiting to be chosen" list. Also, BudDi prompts you to pay money to this budget (by adding it to a third list at the top that can be checkmarked).
+When the list "Waiting to be chosen" is empty, it will automatically be refilled with the entries from "All budgets" and the cycle restarts.
 
 ## Features
-- Create budgets and randomly chose them for payment (in an equally distributed fashion).
-- A Scheduler that randomly chooses X budgets every Y days (add 00:30) for payment.
+- Create budgets and randomly choose them for payment (in an equally distributed fashion).
+- A Scheduler that randomly chooses X budgets every Y days (at 00:30) for payment.
 - Upload recipes for payments.
 - Filter payments for a specific year, by budget or tax-exempt state.
-- Rudimentary user management.
+- Set down payments for budgets which will be calculated against random spending.
+- A detailed history of expenses and budgets.
+- User management.
 
 ## Screenshots
 
@@ -52,7 +53,7 @@ When "Waiting to be chosen" is empty, it will automatically be refilled with the
 </p>
 
 ## How to install?
-Use docker compose.
+The easiest way is to use docker compose.
 
 Create a new directory and move there:
 ```shell
@@ -71,12 +72,12 @@ docker compose up -d
 ```
 
 
-Then open <http://localhost:1304>.
-- The first user that is created, will have admin permissions.
+Then, open <http://localhost:1304>.
+- The first user that is created will have admin permissions.
 - If you want to register other users, you have to enable registrations in the admin section (<http://localhost:1304#Admin>)
 
-### (Optional) Using a reverse Proxy (e.g. Nginx)
-Use the following configuration (assuming, that you use SSL and you want you use **Let's Encrypt**):
+### (Optional) Using a reverse Proxy (e.g., Nginx)
+Use the following configuration (assuming that you use TLS and you want to use **Let's Encrypt**):
 > **Note 1:** Replace SERVERNAME with your domain:
 
 > **Note 2:** `/websocket` needs to match the option `pathWs`
@@ -123,17 +124,14 @@ server {
     listen 80;
     listen [::]:80;
 
-    if ($host = SERVERNAME) {
-        return 301 https://$host$request_uri;
-    }
-    return 404;
+    return 301 https://$host$request_uri;
 }
 
 ```
 
 ## Options
 Can be set in the environment section in `docker-compose.yml`:
-- **keepAliveTimeoutMs**: Milliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g. nginx closes connections after one minute) (default: 50000).
+- **keepAliveTimeoutMs**: Milliseconds after which the frontend should send keep-alive packages to prevent websocket being closed (e.g., nginx closes connections after one minute) (default: "50000").
 - **lang**: Language code to select a translation for the frontend (currently there is only "en") (default: "en").
 - **pathWs**: Relative path on which the websocket should be accessible (default: "/websocket").
 - **portHttp**: Internal port on which the application should run in the docker image (default: 1304).
@@ -155,6 +153,6 @@ docker image prune
 ```
 
 ## What is it made of?
-The backend is written in TypeScript using Node.js which starts an HTTP and WebSocket server using Express. Data is saved using SQLite.
+The backend is written in TypeScript using Node.js, which starts an HTTP and WebSocket server using Express and ws. Data is saved using SQLite.
 The frontend is written in TypeScript using Mithril.js.
-Both backend and frontend are packed by Webpack.
+Both backend and frontend are packed and minified via Webpack.
