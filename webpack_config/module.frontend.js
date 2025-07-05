@@ -15,26 +15,26 @@ module.exports = {
 		]
 	},
 	entry: {
-		frontend: path.join(__dirname, '../ts/index.ts')
+		frontend: path.join(__dirname, '../src/frontend/ts/index.ts')
 	},
 	resolve: {
 		extensions: [".ts", ".tsx", ".js"],
 	},
 	output: {
-		path: path.join(__dirname, '../../../dist/frontend'),
+		path: path.join(__dirname, '../dist/frontend'),
 		clean: true,
 		filename: '[name].[contenthash].js',
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
-			template: path.join(__dirname, '../index.html'),
+			template: path.join(__dirname, '../src/frontend/index.html'),
 		}),
 		new MiniCssExtractPlugin({
 			filename: '[name].[contenthash].css',
 		}),
 		
 		new FaviconsWebpackPlugin( {
-			logo: path.join(__dirname, '../../../images/logo.svg'),
+			logo: path.join(__dirname, '../images/logo.svg'),
 			cache: true,
 			favicons: {
 				icons: {

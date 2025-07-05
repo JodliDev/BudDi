@@ -15,7 +15,7 @@
 	"author": "JodliDev",
 	"scripts": {
 		"dev_backend": "npm run prepare_dist & node --watch -r ts-node/register src/backend/ts/index.ts -- sqlite=dist/config frontend=dist/frontend",
-		"dev_frontend": "webpack --watch --stats-error-details --config src/frontend/webpack_config/build.dev.js",
+		"dev_frontend": "webpack --watch --stats-error-details --config webpack_config/build.dev.js",
 		"build_production": "npm run prepare_dist & webpack --config webpack_config/build.production.js",
 		"run_production": "node dist/backend/backend.js src/backend/ts/index.ts -- sqlite=dist/config frontend=dist/frontend",
 		"prepare_dist": "node create_folder_structure.js"
