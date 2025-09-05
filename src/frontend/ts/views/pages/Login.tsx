@@ -40,11 +40,11 @@ export class Login extends BasePage {
 					{m.trust(headerSvg)}
 				</div>
 				<label>
-					<small>Username:</small>
+					<small>{Lang.get("username")}</small>
 					<input type="text" name="username"/>
 				</label>
 				<label>
-					<small>Password:</small>
+					<small>{Lang.get("password")}</small>
 					<input type="password" name="password"/>
 				</label>
 				<div class="entry horizontal vAlignCenter fullLine">
