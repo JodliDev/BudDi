@@ -20,13 +20,13 @@ export class AddPaymentMessageAction extends LoggedInMessageAction<AddPaymentMes
 		const [budget] = db.selectTable(Budget, {where: SqlWhere(Budget).is("budgetId", this.data.budgetId), limit: 1})
 		//We assume that there always will be only one entry per budget: 
 		const [needsPayment] = db.selectTable(NeedsPayment, {where: SqlWhere(NeedsPayment).is("budgetId", this.data.budgetId), limit: 1})
-		let addToDownPayments = this.data.addToDownPayments
+		let addToDownPayments = this.data.amount
 		
 		if(needsPayment) {
 			if(needsPayment.budgetId != budget.budgetId)
 				throw new FaultyInputException()
 			
-			addToDownPayments = Math.max(0, addToDownPayments - needsPayment.amount)
+			addToDownPayments = Math.max(0, this.data.amount - needsPayment.amount) //will make sure, downPayment is only increased if the amount is actually higher than needed
 			
 			if(this.data.amount >= needsPayment.amount)
 				db.delete(NeedsPayment, SqlWhere(NeedsPayment).is("needsPaymentId", needsPayment.needsPaymentId))

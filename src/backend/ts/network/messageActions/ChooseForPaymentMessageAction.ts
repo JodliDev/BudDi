@@ -66,7 +66,8 @@ export class ChooseForPaymentMessageAction extends LoggedInMessageAction<ChooseF
 					{"+=": {amount: amount}},
 					SqlWhere(NeedsPayment).is("budgetId", waitingEntry.budgetId)
 				)
-			} else {
+			}
+			else {
 				db.insert(NeedsPayment, {
 					budgetId: waitingEntry.budgetId,
 					userId: userId,
