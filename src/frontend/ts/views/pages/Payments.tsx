@@ -1,24 +1,25 @@
 import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
-import {ListWidget, ListWidgetCallback} from "../../widgets/ListWidget";
+import ListEntries, {ListCallback} from "../structures/ListEntries";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 import {PubBudget} from "../../../../shared/public/PubBudget";
 import {PubPayment} from "../../../../shared/public/PubPayment";
-import {BtnWidget} from "../../widgets/BtnWidget";
 import {DownloadReceiptMessage} from "../../../../shared/messages/DownloadReceiptMessage";
 import "./payments.css"
-import {BindValueToInput} from "../../widgets/BindValueToInput";
+import bindValueToInput from "../structures/bindValueToInput";
 import {ListFilter} from "../../../../shared/ListFilter";
 import {Site} from "../Site";
 import {Budget} from "./Budget";
-import {PaymentEditor} from "../PaymentEditor";
+import PaymentEditor from "../structures/PaymentEditor";
 import {EditPaymentMessage} from "../../../../shared/messages/EditPaymentMessage";
+import {Btn} from "../structures/Btn";
+import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 
 export class Payments extends LoggedInBasePage {
 	private isTaxExempt: boolean = false;
 	private yearsForFilter: number[] = []
 	private selectedYear: string = ""
-	private paymentsCallback: ListWidgetCallback = new ListWidgetCallback()
+	private paymentsCallback: ListCallback = new ListCallback()
 	
 	constructor(
 		site: Site,
@@ -71,105 +72,102 @@ export class Payments extends LoggedInBasePage {
 			filter.addRule("budgetId", "=", this.budgetId)
 		
 		return <div class="vertical hAlignCenter">
-			{
-				ListWidget({
-					title: Lang.get("payments"),
-					tableClass: PubPayment,
-					order: "paymentTime",
-					orderType: "DESC",
-					site: this.site,
-					filter: filter,
-					callback: this.paymentsCallback,
-					AddSubHeader: () => <form>
+			<ListEntries<PubPayment>
+				title={Lang.get("payments")}
+				tableClass={PubPayment}
+				order="paymentTime"
+				orderType="DESC"
+				site={this.site}
+				filter={filter}
+				callback={this.paymentsCallback}
+				AddSubHeader={() => <form>
+					<label>
+						<small>{Lang.get("year")}</small>
+						<select {...bindValueToInput(
+							this.selectedYear,
+							(value) => {
+								this.selectedYear = value
+								m.redraw()
+							}
+						)}>
+							<option value="">{Lang.get("all")}</option>
+							{
+								this.yearsForFilter.map((year) =>
+									<option>{year}</option>
+								)
+							}
+						</select>
+					</label>
+					{ !this.budgetId &&
 						<label>
-							<small>{Lang.get("year")}</small>
-							<select {...BindValueToInput(
-								() => this.selectedYear,
-								(value) => {
-									this.selectedYear = value
-									m.redraw()
-								}
-							)}>
-								<option value="">{Lang.get("all")}</option>
-								{
-									this.yearsForFilter.map((year) =>
-										<option>{year}</option>
-									)
-								}
-							</select>
+							<small>{Lang.get("isTaxExempt")}</small>
+							<input type="checkbox" {...bindValueToInput(this.isTaxExempt, (value) => this.isTaxExempt = value)} />
 						</label>
-						{ !this.budgetId &&
-							<label>
-								<small>{Lang.get("isTaxExempt")}</small>
-								<input type="checkbox" {...BindValueToInput(() => this.isTaxExempt, (value) => this.isTaxExempt = value)} />
-							</label>
-						}
-					</form>,
-					AddFirstLineView: () => <tr>
-						<th class="name">{Lang.get("budget")}</th>
-						<th class="date">{Lang.get("date")}</th>
-						<th class="time">{Lang.get("time")}</th>
-						<th class="amount">{Lang.get("amount")}</th>
-						<th class="recipes"></th>
-					</tr>,
-					getEntryView: entry => {
-						const payment = entry.item
-						const budget = entry.joined["Budget"] as PubBudget
-						
-						return [
-							<td class="name overflowHidden">
-								<div class="horizontal vAlignCenter">
-									{budget?.iconDataUrl
-										? <img alt="" src={budget.iconDataUrl} class="icon"/>
-										: BtnWidget.Empty()
-									}
-									<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
-										{budget.budgetName}
-									</a>
-								</div>
-							</td>,
-							<td class="date">
-								{(new Date(payment.paymentTime)).toLocaleDateString(undefined, {
-									year: "numeric",
-									month: "2-digit",
-									day: "2-digit"
-								})}
-							</td>,
-							<td class="time">
-								{(new Date(payment.paymentTime)).toLocaleTimeString(undefined, {
-									timeStyle: "short"
-								})}
-							</td>,
-							<td class="amount">
-								{payment.amount}
-								{this.site.getCurrency()}
-							</td>,
-							<td class="recipes horizontal">
-								{!!payment.receiptFileName
-									? BtnWidget.PopoverBtn("receipt", Lang.get("downloadReceipt"), this.downloadReceipt.bind(this, payment))
-									: BtnWidget.Empty()
-								}
-								{
-									PaymentEditor({
-										site: this.site,
-										iconKey: "edit",
-										langKey: "changeEntry",
-										amount: payment.amount,
-										fileExists: !!payment.receiptFileName,
-										getMessage: (amount, deleteExistingFile, file) => new EditPaymentMessage(amount, deleteExistingFile, file, file?.type, file?.name, payment),
-										onFinish: async (response, _) => {
-											if(response.success) {
-												await this.paymentsCallback.reload()
-												m.redraw()
-											}
-										}
-									})
-								}
-							</td>
-						]
 					}
-				})
-			}
+				</form>}
+				AddFirstLineView={() => <tr>
+					<th class="name">{Lang.get("budget")}</th>
+					<th class="date">{Lang.get("date")}</th>
+					<th class="time">{Lang.get("time")}</th>
+					<th class="amount">{Lang.get("amount")}</th>
+					<th class="recipes"></th>
+				</tr>}
+				getEntryView={entry => {
+					const payment = entry.item
+					const budget = entry.joined["Budget"] as PubBudget
+					
+					return [
+						<td class="name overflowHidden">
+							<div class="horizontal vAlignCenter">
+								{budget?.iconDataUrl
+									? <img alt="" src={budget.iconDataUrl} class="icon"/>
+									: <Btn.Empty/>
+								}
+								<a href={`#${Budget.name}/budgetId=${budget.budgetId}`}>
+									{budget.budgetName}
+								</a>
+							</div>
+						</td>,
+						<td class="date">
+							{(new Date(payment.paymentTime)).toLocaleDateString(undefined, {
+								year: "numeric",
+								month: "2-digit",
+								day: "2-digit"
+							})}
+						</td>,
+						<td class="time">
+							{(new Date(payment.paymentTime)).toLocaleTimeString(undefined, {
+								timeStyle: "short"
+							})}
+						</td>,
+						<td class="amount">
+							{payment.amount}
+							{this.site.getCurrency()}
+						</td>,
+						<td class="recipes horizontal">
+							{!!payment.receiptFileName
+								? <Btn.TooltipBtn iconKey="receipt" description={Lang.get("downloadReceipt")} onclick={this.downloadReceipt.bind(this, payment)}/>
+								: <Btn.Empty/>
+							}
+							<PaymentEditor
+								site={this.site}
+								iconKey="edit"
+								langKey="changeEntry"
+								amount={payment.amount}
+								fileExists={!!payment.receiptFileName}
+								getMessage={(amount: number, deleteExistingFile: boolean, file?: File) =>
+									new EditPaymentMessage(amount, deleteExistingFile, file, file?.type, file?.name, payment)}
+								onFinish={async (response: ConfirmResponseMessage) => {
+									if(response.success) {
+										await this.paymentsCallback.reload()
+										m.redraw()
+									}
+								}}
+							/>
+						</td>
+					]
+				}}
+			/>
 		</div>
 	}
 }

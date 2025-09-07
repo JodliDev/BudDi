@@ -21,7 +21,7 @@
 				padding: 10px;
 			}
 			
-			.btn.remove {
+			.Btn.remove {
 				position: absolute;
 				right: 0;
 				top: 0;
@@ -35,7 +35,7 @@
 	}
 	
 	
-	.listWidget {
+	.ListEntries {
 		max-width: 90vw;
 		
 		.entry:has(.notEnabledForWaitingList) {
@@ -63,17 +63,17 @@
 }
 
 @media (width <= 800px) {
-	.page.Dashboard .listWidget {
+	.page.Dashboard .ListEntries {
 		width: 90vw;
 	}
 }
 @media (width > 800px) {
-	.page.Dashboard .listWidget {
+	.page.Dashboard .ListEntries {
 		width: 45vw;
 	}
 }
 @media (width > 1500px) {
-	.page.Dashboard .listWidget {
+	.page.Dashboard .ListEntries {
 		width: 700px;
 	}
 }

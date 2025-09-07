@@ -2,11 +2,11 @@ import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {ListMessage} from "../../../../shared/messages/ListMessage";
 import {PubSchedule} from "../../../../shared/public/PubSchedule";
-import {ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
-import {BindValueToInput} from "../../widgets/BindValueToInput";
+import {ListResponseEntry, ListResponseMessage} from "../../../../shared/messages/ListResponseMessage";
+import bindValueToInput from "../structures/bindValueToInput";
 import {EditMessage} from "../../../../shared/messages/EditMessage";
 import {LoggedInBasePage} from "../LoggedInBasePage";
-import {EditEntryWidget} from "../../widgets/EditEntryWidget";
+import EditEntry from "../structures/EditEntry";
 
 export class Schedule extends LoggedInBasePage {
 	private scheduleEnabled: boolean = false
@@ -54,7 +54,7 @@ export class Schedule extends LoggedInBasePage {
 				<h3>{Lang.get("schedule")}</h3>
 				<label>
 					<div class="horizontal vAlignCenter">
-						<input type="checkbox" disabled={this.isLoading} {...BindValueToInput(() => this.scheduleEnabled, async value => {
+						<input type="checkbox" disabled={this.isLoading} {...bindValueToInput(this.scheduleEnabled, async value => {
 							this.scheduleEnabled = value
 							await this.saveScheduleActivation()
 						})}/>
@@ -77,26 +77,27 @@ export class Schedule extends LoggedInBasePage {
 								</div>
 							}
 						</form>
-						
-						{EditEntryWidget<PubSchedule>({
-							mode: "edit",
-							site: this.site,
-							editId: this.schedule.scheduleId,
-							defaults: this.schedule,
-							tableClass: PubSchedule,
-							columns: ["amount", "count", "fixedDayOfMonth", "repeatDays"],
-							onFinish: newSchedule => {this.schedule = newSchedule.item},
-							customInputView: (key, value, setValue) => {
+						<EditEntry<PubSchedule>
+							mode="edit"
+							site={this.site}
+							editId={this.schedule.scheduleId}
+							defaults={this.schedule}
+							tableClass={PubSchedule}
+							columns={["amount", "count", "fixedDayOfMonth", "repeatDays"]}
+							onFinish={(newSchedule: ListResponseEntry<PubSchedule>) => {
+								this.schedule = newSchedule.item
+							}}
+							customInputView={(key: keyof PubSchedule, value: any, setValue: (newValue: any) => void) => {
 								switch(key) {
 									case "fixedDayOfMonth":
 										return <label>
 											<small>{Lang.get("dayOfMonth")}</small>
 											<div class="horizontal">
 												<input
-													type="checkbox" {...BindValueToInput(() => value != 0, newValue => setValue(newValue ? 1 : 0))}/>
+													type="checkbox" {...bindValueToInput(value != 0, newValue => setValue(newValue ? 1 : 0))}/>
 												
 												{schedule.fixedDayOfMonth != 0 &&
-													<input type="number" min="1" max="31"{...BindValueToInput(() => value, setValue)}/>
+													<input type="number" min="1" max="31"{...bindValueToInput(value, setValue)}/>
 												}
 											</div>
 											<small>{Lang.get("atSpecificDayOfMonth")}</small>
@@ -105,13 +106,13 @@ export class Schedule extends LoggedInBasePage {
 										return <label>
 											<small>{Lang.get("amount")}</small>
 											<div>
-												<input type="number" min="1" {...BindValueToInput(() => value, setValue)}/>
+												<input type="number" min="1" {...bindValueToInput(value, setValue)}/>
 												<span>{this.site.getCurrency()}</span>
 											</div>
 										</label>
 								}
-							}
-						})}
+							}}
+						/>
 					</div>
 				}
 			</div>

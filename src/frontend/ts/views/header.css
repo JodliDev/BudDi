@@ -39,7 +39,7 @@
 }
 
 
-.siteHeader .navigation, .dropdown.dropdownNavigation .navigation {
+.siteHeader .navigation, .floatingMenu.dropdownNavigation .navigation {
 	display: flex;
 	align-items: center;
 	justify-content: start;
@@ -63,7 +63,7 @@
 
 
 /*Used when screen is too small (width <= 700)*/
-.dropdown.dropdownNavigation {
+.floatingMenu.dropdownNavigation {
 	left: 0 !important;
 	top: 50px !important;
 	padding-right: 0;

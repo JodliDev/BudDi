@@ -52,7 +52,7 @@ export class TableSettings<TableT extends BackendTable> {
 	}
 	
 	/**
-	 * Adds where conditions whenever the table is used in {@Link ListMessageAction} / {@link ListWidget}
+	 * Adds where conditions whenever the table is used in {@Link ListMessageAction} / {@link ListEntries}
 	 * @param listFilter
 	 */
 	setListFilter(listFilter: (session: WebSocketSession) => SqlWhereData): void {

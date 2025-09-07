@@ -3,8 +3,8 @@ import {Lang, LangKey} from "../../../shared/Lang";
 import "./header.css"
 import {Site} from "./Site";
 import logoSvg from "../../img/logo.svg"
-import {DropdownMenu, MouseOverDropdownMenu} from "../widgets/DropdownMenu";
-import {BtnWidget} from "../widgets/BtnWidget";
+import { Btn } from "./structures/Btn";
+import floatingMenu from "./structures/floatingMenu";
 
 export class Header {
 	constructor(private site: Site) { }
@@ -40,19 +40,13 @@ export class Header {
 			
 			<div class="icon">
 				<a href="#About">
-					{MouseOverDropdownMenu(
-						"appName",
-						<div>{m.trust(logoSvg)}</div>,
-						() => <div>{`${Lang.get("appName")} - ${Lang.get("appTitle")}`}</div>
-					)}
+					<div {...floatingMenu("appName", () => <div>{`${Lang.get("appName")} - ${Lang.get("appTitle")}`}</div>, {eventName: "mouseenter"})}>
+						{m.trust(logoSvg)}
+					</div>
 				</a>
 			</div>
 			<div class="menuButton">
-				{DropdownMenu(
-					"dropdownNavigation",
-					BtnWidget.DefaultBtn("menu"),
-					this.getNavigation.bind(this, currentPage)
-				)}
+				<Btn.Default iconKey="menu" {...floatingMenu("dropdownNavigation", this.getNavigation.bind(this, currentPage), {className: "dropdownNavigation"})} />
 			</div>
 			
 			{this.getNavigation(currentPage)}

@@ -1,11 +1,11 @@
 import m, {Vnode} from "mithril";
 import {Lang} from "../../../../shared/Lang";
 import {PubUser} from "../../../../shared/public/PubUser";
-import {ListWidget} from "../../widgets/ListWidget";
-import {BindValueToInput} from "../../widgets/BindValueToInput";
+import ListEntries from "../structures/ListEntries";
+import bindValueToInput from "../structures/bindValueToInput";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 import {SetServerSettingsMessage} from "../../../../shared/messages/SetServerSettingsMessage";
-import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
+import FeedbackIcon, {FeedbackCallBack} from "../structures/FeedbackIcon";
 import {LoggedInBasePage} from "../LoggedInBasePage";
 
 export class Admin extends LoggedInBasePage {
@@ -13,35 +13,32 @@ export class Admin extends LoggedInBasePage {
 	
 	private async setRegistrationAllowed(value: boolean) {
 		this.site.serverSettings.registrationAllowed = value
-		this.feedback.loading(true)
+		this.feedback.setLoading(true)
 		m.redraw()
 		
 		const response: ConfirmResponseMessage = await this.site.socket.sendAndReceive(new SetServerSettingsMessage(this.site.serverSettings))
 		
-		this.feedback.feedback(response.success)
-		this.feedback.loading(false)
+		this.feedback.setSuccess(response.success)
+		this.feedback.setLoading(false)
 		m.redraw()
 	}
 	
 	getView(): Vnode {
 		return <div class="vertical hAlignCenter">
-			{
-				ListWidget({
-					title: Lang.get("user"),
-					tableClass: PubUser,
-					site: this.site,
-					deleteOptions: {},
-					getEntryView: entry => <div class="fillSpace">
-						{entry.item.username}
-					</div>
-				})
-			}
+			<ListEntries<PubUser>
+				title={Lang.get("user")}
+				tableClass={PubUser} 
+				site={this.site}
+				deleteOptions={{}}
+				getEntryView={entry =>
+					<div class="fillSpace">{entry.item.username}</div>}
+			/>
 			<div class="surface horizontal vAlignCenter">
 				<label class="fillSpace">
 					<small>{Lang.get("enableRegistration")}</small>
-					<input type="checkbox" disabled={!this.feedback.isReady()} {...BindValueToInput(() => this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this))}/>
+					<input type="checkbox" disabled={!this.feedback.isReady()} {...bindValueToInput(this.site.serverSettings.registrationAllowed, this.setRegistrationAllowed.bind(this))}/>
 				</label>
-				{FeedbackIcon(this.feedback, true)}
+				<FeedbackIcon callback={this.feedback} reserveSpace={true}/>
 			</div>
 		</div>;
 	}

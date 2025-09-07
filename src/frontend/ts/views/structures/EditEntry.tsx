@@ -1,17 +1,17 @@
-import {Class} from "../../../shared/Class";
-import {BasePublicTable} from "../../../shared/BasePublicTable";
+import {Class} from "../../../../shared/Class";
+import {BasePublicTable} from "../../../../shared/BasePublicTable";
 import m, {Component, Vnode} from "mithril";
-import {BindValueToInput} from "./BindValueToInput";
-import {Lang, LangKey} from "../../../shared/Lang";
-import {AddMessage} from "../../../shared/messages/AddMessage";
-import {ListEntryResponseMessage} from "../../../shared/messages/ListEntryResponseMessage";
-import {EditMessage} from "../../../shared/messages/EditMessage";
-import {Site} from "../views/Site";
-import {ListResponseEntry} from "../../../shared/messages/ListResponseMessage";
-import {ConfirmMessage} from "../../../shared/messages/ConfirmMessage";
-import {FeedbackCallBack, FeedbackIcon} from "./FeedbackIcon";
+import bindValueToInput from "./bindValueToInput";
+import {Lang, LangKey} from "../../../../shared/Lang";
+import {AddMessage} from "../../../../shared/messages/AddMessage";
+import {ListEntryResponseMessage} from "../../../../shared/messages/ListEntryResponseMessage";
+import {EditMessage} from "../../../../shared/messages/EditMessage";
+import {Site} from "../Site";
+import {ListResponseEntry} from "../../../../shared/messages/ListResponseMessage";
+import {ConfirmMessage} from "../../../../shared/messages/ConfirmMessage";
+import FeedbackIcon, {FeedbackCallBack} from "./FeedbackIcon";
 
-interface EditEntryComponentOptions<EntryT extends BasePublicTable> {
+interface Attributes<EntryT extends BasePublicTable> {
 	mode: "edit" | "add"
 	site: Site, 
 	tableClass: Class<EntryT>
@@ -23,12 +23,12 @@ interface EditEntryComponentOptions<EntryT extends BasePublicTable> {
 	defaults?: EntryT
 }
 
-export class EditEntryComponent<EntryT extends BasePublicTable> implements Component<EditEntryComponentOptions<EntryT>, unknown> {
+export default class EditEntry<EntryT extends BasePublicTable> implements Component<Attributes<EntryT>, unknown> {
 	private feedback = new FeedbackCallBack()
 	private invalidColumns: Record<string, string> = {}
 	private data: Partial<EntryT> = {}
 	
-	getTypedInputView(data: Partial<EntryT>, column: keyof EntryT, options: EditEntryComponentOptions<EntryT>) {
+	getTypedInputView(data: Partial<EntryT>, column: keyof EntryT, options: Attributes<EntryT>) {
 		const tableClass = new options.tableClass()
 		const obj = options.defaults ?? tableClass
 		const entry = data[column] ?? obj[column]
@@ -63,7 +63,7 @@ export class EditEntryComponent<EntryT extends BasePublicTable> implements Compo
 		const descKey = `${titleKey}_desc`
 		return <label>
 			<small>{Lang.get(titleKey)}</small>
-			{<input type={inputType} {...BindValueToInput(() => entry, setValue)}/>}
+			{<input type={inputType} {...bindValueToInput(entry, setValue)}/>}
 			<small class="vertical">
 				{Lang.has(descKey) && <div>{Lang.getDynamic(descKey)}</div>}
 				{this.invalidColumns.hasOwnProperty(column) && <div class="warn">{this.invalidColumns[column.toString()]}</div>}
@@ -78,20 +78,20 @@ export class EditEntryComponent<EntryT extends BasePublicTable> implements Compo
 		return false
 	}
 	
-	private async onSubmit(options: EditEntryComponentOptions<EntryT>, e: SubmitEvent): Promise<void> {
+	private async onSubmit(options: Attributes<EntryT>, e: SubmitEvent): Promise<void> {
 		e.preventDefault()
-		this.feedback.loading(true)
+		this.feedback.setLoading(true)
 		m.redraw()
 		if(options.mode == "edit")
 			await this.sendEntry(options, new EditMessage(options.tableClass, options.editId ?? -1, this.data), "errorEdit")
 		else
 			await this.sendEntry(options, new AddMessage(options.tableClass, this.data), "errorAdd")
 		
-		this.feedback.loading(false)
+		this.feedback.setLoading(false)
 		m.redraw()
 	}
 	
-	private async sendEntry(options: EditEntryComponentOptions<EntryT>, message: ConfirmMessage, errorKey: LangKey): Promise<void> {
+	private async sendEntry(options: Attributes<EntryT>, message: ConfirmMessage, errorKey: LangKey): Promise<void> {
 		const response = await options.site.socket.sendAndReceive(message) as ListEntryResponseMessage<EntryT>
 		
 		if(response.success)
@@ -99,23 +99,19 @@ export class EditEntryComponent<EntryT extends BasePublicTable> implements Compo
 		else
 			options.site.errorManager.error(Lang.get(errorKey))
 		
-		this.feedback.feedback(response.success)
+		this.feedback.setSuccess(response.success)
 	}
 	
-	view(vNode: Vnode<EditEntryComponentOptions<EntryT>, unknown>): Vnode {
+	view(vNode: Vnode<Attributes<EntryT>, unknown>): Vnode {
 		const isEditMode = vNode.attrs.mode == "edit"
 		
 		return <form onsubmit={this.onSubmit.bind(this, vNode.attrs)} class="vertical">
 			{vNode.attrs.columns.map((column) => this.getTypedInputView(this.data, column, vNode.attrs))}
 			
 			<div class="horizontal hAlignEnd vAlignCenter">
-				{FeedbackIcon(this.feedback, true)}
+				<FeedbackIcon callback={this.feedback} reserveSpace={true}/>
 				<input disabled={this.hasInvalidColumns() || !this.feedback.isReady()} type="submit" value={Lang.get(isEditMode ? "change" : "add")}/>
 			</div>
 		</form>
 	}
-}
-
-export function EditEntryWidget<EntryT extends BasePublicTable>(options: EditEntryComponentOptions<EntryT>): Vnode<EditEntryComponentOptions<EntryT>, unknown> {
-	return m(EditEntryComponent<EntryT>, options)
 }

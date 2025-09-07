@@ -1,6 +1,6 @@
 import {BasePage} from "../BasePage";
 import m, {Vnode} from "mithril";
-import {LoadingSpinner} from "../../widgets/LoadingSpinner";
+import LoadingSpinner from "../structures/LoadingSpinner";
 import {Lang} from "../../../../shared/Lang";
 import {LoginMessage} from "../../../../shared/messages/LoginMessage";
 import {LoginResponseMessage} from "../../../../shared/messages/LoginResponseMessage";
@@ -49,7 +49,7 @@ export class Login extends BasePage {
 				</label>
 				<div class="entry horizontal vAlignCenter fullLine">
 					<div class="fillSpace"></div>
-					{LoadingSpinner(this.isLoading)}
+					{this.isLoading && <LoadingSpinner/>}
 					<input type="submit" value={Lang.get("login")} disabled={this.isLoading}/>
 				</div>
 			</form>

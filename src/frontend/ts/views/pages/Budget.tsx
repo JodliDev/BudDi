@@ -3,18 +3,19 @@ import {LoggedInBasePage} from "../LoggedInBasePage";
 import "./budget.css"
 import {PubBudget} from "../../../../shared/public/PubBudget";
 import {ListFilter} from "../../../../shared/ListFilter";
-import {FeedbackCallBack, FeedbackIcon} from "../../widgets/FeedbackIcon";
+import FeedbackIcon, {FeedbackCallBack} from "../structures/FeedbackIcon";
 import {Payments} from "./Payments";
 import {Site} from "../Site";
 import {History} from "./History";
 import {Lang} from "../../../../shared/Lang";
-import {BtnWidget} from "../../widgets/BtnWidget";
-import {DropdownMenu} from "../../widgets/DropdownMenu";
-import {EditEntryWidget} from "../../widgets/EditEntryWidget";
-import {ImageUpload} from "../../widgets/ImageUpload";
-import {DeleteEntryWidget} from "../../widgets/DeleteEntryWidget";
-import {PaymentEditor} from "../PaymentEditor";
+import EditEntry from "../structures/EditEntry";
+import {ImageUpload} from "../structures/ImageUpload";
+import DeleteEntry from "../structures/DeleteEntry";
+import PaymentEditor from "../structures/PaymentEditor";
 import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
+import { Btn } from "../structures/Btn";
+import floatingMenu from "../structures/floatingMenu";
+import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
 
 export class Budget extends LoggedInBasePage<"budgetId"> {
 	private budget: PubBudget | null = null
@@ -42,10 +43,10 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 		if(!budgetId || isNaN(budgetId))
 			return
 		
-		this.feedback.loading(true)
+		this.feedback.setLoading(true)
 		this.budget = await this.site.socket.getSingleEntry(PubBudget, ListFilter<PubBudget>().addRule("budgetId", "=", budgetId))
 		
-		this.feedback.feedback(this.budget != null)
+		this.feedback.setSuccess(this.budget != null)
 		m.redraw()
 	}
 	
@@ -67,48 +68,43 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 							</div>
 							<div class="horizontal vAlignCenter">
 								{this.budget && [
-									PaymentEditor({
-										site: this.site,
-										iconKey: "donate",
-										langKey: "addPayment",
-										amount: 1,
-										downPaymentEnabled: true,
-										getMessage: (amount, _, file, addToDownPayments) => new AddPaymentMessage(amount, file, file?.type, file?.name, addToDownPayments, this.budget!),
-										onFinish: async (response) => {
+									<PaymentEditor
+										site={this.site}
+										iconKey="donate"
+										langKey="addPayment"
+										amount={1}
+										getMessage={(amount: number, _: boolean, file?: File) =>
+											new AddPaymentMessage(amount, file, file?.type, file?.name, this.budget!)}
+										onFinish={async (response: ConfirmResponseMessage) => {
 											if(response.success)
 												await this.load()
-										}
-									}),
-									DropdownMenu(
-										"ChangeBudget",
-										BtnWidget.PopoverBtn("edit", Lang.get("changeEntry")),
-										(close) => EditEntryWidget<PubBudget>({
-											mode: "edit",
-											site: this.site,
-											editId: this.budget!.budgetId,
-											defaults: this.budget!,
-											tableClass: PubBudget,
-											columns: ["budgetName", "homepage", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"],
-											customInputView: (key, value, setValue) => {
+										}}
+									/>,
+									<Btn.TooltipBtn iconKey="edit" description={Lang.get("changeEntry")} {...floatingMenu("ChangeBudget", (close) => 
+										<EditEntry<PubBudget>
+											mode="edit"
+											site={this.site}
+											editId={this.budget!.budgetId}
+											defaults={this.budget!}
+											tableClass={PubBudget}
+											columns={["budgetName", "homepage", "iconDataUrl", "isTaxExempt", "enabledForWaitingList"]}
+											customInputView={(key: keyof PubBudget, value: any, setValue: (newValue: any) => void) => {
 												switch(key) {
 													case "iconDataUrl":
-														return ImageUpload(value.toString(), 50, setValue)
+														return <ImageUpload defaultValue={value.toString()} maxSize={50} callback={setValue}/>
 												}
-											},
-											onFinish: async () => {
+											}}
+											onFinish={async() => {
 												close()
 												await this.load()
-											}
-										})
-									),
-									DeleteEntryWidget({
-										site: this.site,
-										entryId: this.budget!.budgetId,
-										tableClass: PubBudget,
-										onDeleted: () => {
-											this.site.goto("Dashboard")
-										}
-									})
+											}}
+									/>)}/>,
+									<DeleteEntry
+										site={this.site}
+										entryId={this.budget!.budgetId}
+										tableClass={PubBudget}
+										onDeleted={() => this.site.goto("Dashboard")}
+									/>,
 								]}
 							</div>
 						</h3>
@@ -154,6 +150,7 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 					</div>
 				</div>
 			</div>
-			: FeedbackIcon(this.feedback)
+			:
+			<FeedbackIcon callback={this.feedback} reserveSpace={true}/>
 	}
 }

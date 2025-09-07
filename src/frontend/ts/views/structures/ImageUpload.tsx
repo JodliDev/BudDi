@@ -1,13 +1,13 @@
-import m, {Component, Vnode} from "mithril";
-import {Lang} from "../../../shared/Lang";
+import m, {Vnode} from "mithril";
+import {Lang} from "../../../../shared/Lang";
 
-interface ImageUploadComponentOptions {
+interface ImageUploadAttributes {
 	defaultValue: string
 	maxSize: number
 	callback: (base64: string) => void
 }
 
-class ImageUploadComponent implements Component<ImageUploadComponentOptions, unknown> {
+export class ImageUpload implements m.ClassComponent<ImageUploadAttributes> {
 	private value: string = ""
 	private error: string = ""
 	
@@ -70,12 +70,12 @@ class ImageUploadComponent implements Component<ImageUploadComponentOptions, unk
 		}
 	}
 	
-	oncreate(vNode: Vnode<ImageUploadComponentOptions, unknown>): void {
+	oncreate(vNode: Vnode<ImageUploadAttributes, unknown>): void {
 		const options = vNode.attrs
 		this.value = options.defaultValue
 	}
 	
-	view(vNode: Vnode<ImageUploadComponentOptions, unknown>): Vnode {
+	view(vNode: Vnode<ImageUploadAttributes, unknown>): Vnode {
 		const options = vNode.attrs
 		
 		return <label>
@@ -87,12 +87,4 @@ class ImageUploadComponent implements Component<ImageUploadComponentOptions, unk
 			</div>
 		</label>
 	}
-}
-
-export function ImageUpload(currentValue: string, maxSize: number, callback: (base64: string) => void): Vnode<ImageUploadComponentOptions, unknown> {
-	return m(ImageUploadComponent, {
-		defaultValue: currentValue,
-		maxSize: maxSize,
-		callback: callback
-	})
 }
