@@ -1,7 +1,7 @@
 {
 	"name": "buddi",
-	"version": "1.4.2",
-	"description": "BudDi is an open source project intended to keep track of multiple budgets that you want to send money in a random and distributed fashion.",
+	"version": "1.5.0",
+	"description": "BudDi is a web platform intended to automatically fill random budgets (either manually or regularly) and keep track of expenses.",
 	"private": true,
 	"keywords": [
 		"Open Source",
