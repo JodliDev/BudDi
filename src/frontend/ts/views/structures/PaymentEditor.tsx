@@ -38,7 +38,7 @@ export default class PaymentEditor implements m.ClassComponent<Attributes> {
 			options.site.errorManager.error(Lang.get("errorFileTooBig", PubPayment.RECEIPT_MAX_SIZE / 1e+6))
 			return
 		}
-		const amount = parseInt(amountEl.value) ?? 1
+		const amount = parseFloat(amountEl.value) ?? 1
 		const message = options.getMessage(amount, !this.fileExists, file)
 		const response = await options.site.socket.sendAndReceive(message) as ConfirmResponseMessage
 		
