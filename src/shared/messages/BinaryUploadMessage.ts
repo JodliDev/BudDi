@@ -4,7 +4,7 @@ import {BaseMessage} from "../BaseMessage";
 export class BinaryUploadMessage extends ConfirmMessage {
 	public isBinaryMessage: boolean = true;
 	public sendFile: Blob | undefined = undefined
-	public receiveFile: ArrayBuffer | Buffer | Buffer[] | undefined
+	public receiveFile: BlobPart[] | undefined
 	public readonly initialConfirm: ConfirmMessage
 	
 	constructor(

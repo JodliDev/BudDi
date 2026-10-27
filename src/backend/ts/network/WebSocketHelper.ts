@@ -56,7 +56,7 @@ export class WebSocketHelper {
 						if(!binaryMessage)
 							return
 						
-						binaryMessage.receiveFile = data
+						binaryMessage.receiveFile = data as BlobPart[]
 						message = binaryMessage //message is complete now. We can continue as usual
 						binaryMessage = null
 					}

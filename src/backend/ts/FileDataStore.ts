@@ -17,7 +17,7 @@ export class FileDataStore {
 		const path = `${this.fileFolderPath}/${id}`
 		return existsSync(path) ? readFileSync(path) : undefined
 	}
-	public saveFile(buffer: ArrayBuffer | Buffer | Buffer[]): number | bigint {
+	public saveFile(buffer: BlobPart[]): number | bigint {
 		let tries = FileDataStore.MAX_FILE_TRIES
 		
 		let path: string
