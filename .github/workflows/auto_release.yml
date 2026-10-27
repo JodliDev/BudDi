@@ -28,10 +28,19 @@ jobs:
       
       - name: Check if release exists
         id: check-release-exists
-        uses: f2calv/gha-check-release-exists@v2
-        with:
-            GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-            ReleaseName: ${{steps.package-version.outputs.current-version}}
+        shell: bash
+        run: |
+          priorRelease=$(gh release list --limit 1 --json tagName --jq .[0].tagName)
+          echo "Prior release: $priorRelease"
+          if [[ "$priorRelease" == "v${{steps.package-version.outputs.current-version}}" ]]; then
+            echo "Release 'v${{steps.package-version.outputs.current-version}}' already exists."
+            echo "ReleaseExists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Release 'v${{steps.package-version.outputs.current-version}}' not found."
+            echo "ReleaseExists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Install Dependencies
         if: ${{steps.check-release-exists.outputs.ReleaseExists == 'false'}}
