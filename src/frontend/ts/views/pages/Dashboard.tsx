@@ -18,6 +18,7 @@ import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 import {Btn} from "../structures/Btn";
 import floatingMenu from "../structures/floatingMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
+import bindValueToInput from "../structures/bindValueToInput";
 
 interface NeedsPaymentInformation {
 	budget: PubBudget
@@ -217,6 +218,11 @@ export class Dashboard extends LoggedInBasePage {
 							switch(key) {
 								case "iconDataUrl":
 									return <ImageUpload defaultValue={value.toString()} maxSize={50} callback={setValue}/>
+								case "homepage":
+									return <label>
+										<small>{Lang.get("homepage")}</small>
+										<input type="url" {...bindValueToInput(value, setValue)}/>
+									</label>
 							}
 						},
 						getValueError: (key, value) => {

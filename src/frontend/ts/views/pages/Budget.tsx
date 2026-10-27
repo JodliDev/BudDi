@@ -16,6 +16,7 @@ import {AddPaymentMessage} from "../../../../shared/messages/AddPaymentMessage";
 import { Btn } from "../structures/Btn";
 import floatingMenu from "../structures/floatingMenu";
 import {ConfirmResponseMessage} from "../../../../shared/messages/ConfirmResponseMessage";
+import bindValueToInput from "../structures/bindValueToInput";
 
 export class Budget extends LoggedInBasePage<"budgetId"> {
 	private budget: PubBudget | null = null
@@ -92,6 +93,11 @@ export class Budget extends LoggedInBasePage<"budgetId"> {
 												switch(key) {
 													case "iconDataUrl":
 														return <ImageUpload defaultValue={value.toString()} maxSize={50} callback={setValue}/>
+													case "homepage":
+														return <label>
+															<small>{Lang.get("homepage")}</small>
+															<input type="url" {...bindValueToInput(value, setValue)}/>
+														</label>
 												}
 											}}
 											onFinish={async() => {
