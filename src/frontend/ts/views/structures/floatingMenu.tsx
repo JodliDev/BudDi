@@ -94,9 +94,14 @@ class FloatingMenuClass {
 	 *
 	 * @param event - The mouse event that triggers the creation of the dropdown. Used to determine the dropdown's position on the screen.
 	 */
-	private createDropdown(event: MouseEvent): void {
+	private createMenu(event: MouseEvent): void {
 		if(this.view) {
 			this.closeMenu()
+		}
+		for(const key in FloatingMenuClass.openedMenus) { // close other menus with the same id
+			if(key == this.id) {
+				FloatingMenuClass.openedMenus[key].closeMenu();
+			}
 		}
 		this.view = document.createElement("div")
 		if(this.options?.className) {
@@ -180,7 +185,7 @@ class FloatingMenuClass {
 							this.closeMenu()
 						}
 						else {
-							this.createDropdown(event)
+							this.createMenu(event)
 						}
 					}
 				}
@@ -188,7 +193,7 @@ class FloatingMenuClass {
 				return {
 					onmouseenter: (event: MouseEvent) => {
 						(event as MithrilEvent).redraw = false
-						this.createDropdown(event)
+						this.createMenu(event)
 					},
 					onmouseleave: (event: MouseEvent) => {
 						(event as MithrilEvent).redraw = false
@@ -199,7 +204,7 @@ class FloatingMenuClass {
 				return {
 					onmouseenter: (event: MouseEvent) => {
 						(event as MithrilEvent).redraw = false
-						this.createDropdown(event)
+						this.createMenu(event)
 						if(!this.view) {
 							return
 						}
@@ -263,7 +268,7 @@ export default function floatingMenu(id: string, menu: (close: () => void) => Ch
  * @param description - The text to display in the tooltip.
  */
 export function tooltip(description: string): OutputEvents {
-	return floatingMenu(description, () => <div class="textCentered">{description}</div>, {eventName: "mousemove"})
+	return floatingMenu("tooltip", () => <div class="textCentered">{description}</div>, {eventName: "mousemove"})
 }
 
 export function floatingMenuIsOpened(id: string): boolean {
